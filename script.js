@@ -978,8 +978,14 @@ function normalizeData(data) {
         data.coins = 0;
     }
 
+    // 14/11 : une partie COMMENCÉE après le 09/11 est déjà dans la disposition actuelle (300 niveaux, 10 paliers) :
+    // si elle n'a pas ses numéros (bug du 1er lancement), on les pose sans rien convertir.
+    const firstDay = firstActivityDay(data);
+    if (!data.levelLayout && firstDay && firstDay >= LAYOUT_NEW_FROM) data.levelLayout = LEVEL_LAYOUT;
+    if (!data.trainLayout && firstDay && firstDay >= LAYOUT_NEW_FROM) data.trainLayout = TRAIN_LAYOUT;
     if ((data.levelLayout || 1) < LEVEL_LAYOUT) migrateLevelLayout(data);
     if ((data.trainLayout || 1) < TRAIN_LAYOUT) migrateTrainLayout(data);
+    if (!data.layoutFix) repairWrongLayout(data, firstDay);
     const doneLevels = Object.keys(data.done).map(Number).filter(n => data.done[n]);
     const lastDone = doneLevels.length ? Math.max(...doneLevels) : 0;
     data.unlocked = Math.max(1, data.unlocked || 1, Math.min(lastDone + 1, MAX_LEVEL));
@@ -1001,6 +1007,35 @@ function normalizeData(data) {
    bloc inséré (ex. : il allait jouer l'ancien 81) commence ce bloc. Pas de « levelLayout » dans defaultData : sinon une
    vieille sauvegarde, complétée par defaultData au chargement, paraîtrait déjà convertie. */
 const LEVEL_LAYOUT = 5;   // 2 = 190 niveaux, 3 = 230, 4 = 310 (une heure le 09/11), 5 = 300 (bloc après l'ancien 10 retiré)
+const LAYOUT_NEW_FROM = '2026-11-09';   // disposition actuelle (LEVEL_LAYOUT 5, 10 paliers) depuis ce jour
+/** 1er jour où cette partie a servi (jours joués, placement), ou null si rien. */
+function firstActivityDay(data) {
+    const days = Object.keys(data.activeDays || {}).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k));
+    if (data.placement && data.placement.day) days.push(data.placement.day);
+    return days.length ? days.sort()[0] : null;
+}
+/** 14/11 : réparation UNE fois des parties neuves converties à tort comme des parties de 170 niveaux (bug du 1er lancement,
+    du 09/11 au 14/11) : on défait la conversion (niveaux faits, coffres, niveau en cours, départ du placement).
+    Signe : partie commencée après le 09/11 avec des niveaux non faits AVANT le niveau en cours (impossible sinon). */
+function repairWrongLayout(data, firstDay) {
+    data.layoutFix = true;
+    if (!firstDay || firstDay < LAYOUT_NEW_FROM || typeof levelFromLayout !== 'function') return;
+    const holes = [];
+    for (let n = 1; n < (data.unlocked || 1); n++) if (!data.done[n]) holes.push(n);
+    if (!holes.length) return;
+    const inv = {};   // numéro (après conversion à tort) → numéro d'origine
+    for (let o = 1; o <= 170; o++) { const m = levelFromLayout(o, 1); if (m) inv[m] = o; }
+    const back = obj => Object.fromEntries(Object.entries(obj || {}).map(([k, v]) => [String(inv[Number(k)] || Number(k)), v]));
+    data.done = back(data.done);
+    data.chests = back(data.chests);
+    if (data.replayDay && data.replayDay.levels) data.replayDay.levels = back(data.replayDay.levels);
+    if (data.placement && data.placement.start > 1) data.placement.start = (inv[data.placement.start - 1] || data.placement.start - 1) + 1;
+    const doneNow = Object.keys(data.done).map(Number).filter(n => data.done[n]);
+    const lastDone = doneNow.length ? Math.max(...doneNow) : 0;
+    data.unlocked = Math.max(1, Math.min(MAX_LEVEL, Math.max(lastDone + 1, data.placement?.start || 1)));
+    console.warn('[sauvegarde] disposition des niveaux réparée', holes.length, 'trous');
+}
+
 function migrateLevelLayout(data) {
     const from = data.levelLayout || 1;
     const R = typeof levelFromLayout === 'function' ? n => levelFromLayout(n, from, true) : n => n;
@@ -1025,7 +1060,9 @@ function migrateTrainLayout(data) {
     const right = id => (data.stats[id]?.right || 0) >= 1;
     const mastered = id => !!data.stats[id]?.mastered || (data.stats[id]?.streak || 0) >= 2;
     const today = todayKey();
-    for (const { theme } of THEME_DECOR) {
+    // 14/11 : thèmes tirés de la banque (THEME_DECOR et TRAIN_TIERS sont définis plus bas : au 1er lancement, ils n'existaient
+    // pas encore → plantage → partie neuve SANS levelLayout, convertie à tort ensuite)
+    for (const theme of [...new Set(bankAll.map(q => q.theme))]) {
         const bank = bankAll.filter(q => q.theme === theme).sort((a, b) => a.d - b.d || a.id - b.id);
         if (!bank.length) continue;
         if (data.trainTier[theme] || data.trainTierWon[theme] !== undefined) {
@@ -1042,7 +1079,7 @@ function migrateTrainLayout(data) {
             data.trainTierWon[theme] = oldWon * 2;
             data.trainTier[theme] = Math.max(1, oldWon === oldTier ? oldTier * 2 : oldTier * 2 - 1);
             const given = Math.max(1, data.trainChests[theme] || 1);   // ancien : coffres donnés pour les paliers 1 … given − 1
-            data.trainChests[theme] = oldWon >= 5 ? TRAIN_TIERS + 1 : Math.min(2 * (given - 1), oldWon * 2) + 1;
+            data.trainChests[theme] = oldWon >= 5 ? 10 + 1 : Math.min(2 * (given - 1), oldWon * 2) + 1;
             if (oldWon >= 1) data.trainCatchup[theme] = true;
         }
         if (data.trainMedals[theme]) {   // médailles recalculées une fois sur toutes les questions du thème
