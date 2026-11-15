@@ -10709,7 +10709,7 @@ function openDailyReview() {
         if (friends.length) {
             const fr = el('div', 'review-friends');
             const full = '👥 ' + friends.map(f => `${f.pseudo} ${f.grid[i] === '🟩' ? '✅' : '❌'}`).join(' · ');
-            if (DAILY_LIST_V2 && friends.length > 4) {   // 15/11 : beaucoup d'amis → résumé, détail au toucher (la carte ne grandit plus)
+            if (DAILY_LIST_V2 && friends.length > 6) {   // 15/11 : à partir de 7 amis (choix de l'utilisateur) → résumé, détail au toucher (la carte ne grandit plus)
                 const okN = friends.filter(f => f.grid[i] === '🟩').length;
                 const short = `👥 ${okN} / ${friends.length} amis ont trouvé`;
                 fr.classList.add('is-folded');
