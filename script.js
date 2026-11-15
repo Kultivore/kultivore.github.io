@@ -6077,7 +6077,7 @@ function hintComposed(q, level, typed) {
 const hintLevelNow = () => Math.max(0, ...[...(state.hintUsed || [])].map(id => HINT_LEVEL[id] || 0));
 // 15/11 (essai, bac à sable ; pour tous : true) : toucher un mot de la grille = commencer à taper là (les mots d'avant sont
 // laissés de côté : « Gogh » au lieu de « Vincent van Gogh ») ; bouton « ✍️ Écrire autrement » bien visible ; mots longs à la ligne
-const HINT_V3 = BAC;
+const HINT_V3 = true;
 const gridStartAt = () => (HINT_V3 && state.gridStart) || 0;   // n° du mot (lettres) où l'on commence à taper
 const gridTyping = () => state.phase !== undefined && hintLevelNow() > 0 && state.gridFree !== true && !!state.current;
 /** Ce que le joueur répond : la grille remplie, ou ce qu'il a écrit. */
