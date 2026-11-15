@@ -2924,8 +2924,8 @@ const MISSION_COINS = 30;
 // 11/11 (demande de l'utilisateur, « un peu faciles ») : objectifs relevés (`goal2`) et 40 🪙 par mission, à partir du lundi 16/11
 // (la semaine en cours garde ses objectifs). Sprint : 12 → 8 (personne n'a jamais dépassé 11).
 const MISSIONS_V2_FROM = '2026-11-16';
-const missionsV2 = () => weekStart() >= MISSIONS_V2_FROM;
-const missionCoins = () => (missionsV2() ? 40 : MISSION_COINS);
+const missionsV2 = (week = weekStart()) => week >= MISSIONS_V2_FROM;
+const missionCoins = (week = weekStart()) => (missionsV2(week) ? 40 : MISSION_COINS);
 const MISSION_POOL = [
     { id: 'levels',   icon: '🗺️', goal: 5,  goal2: 8,  text: n => `Réussis ${n} niveaux du parcours` },
     { id: 'flawless', icon: '✨', goal: 2,  goal2: 3,  text: n => `Réussis ${n} niveaux sans faute` },
@@ -2941,14 +2941,13 @@ const MISSION_POOL = [
 ];
 
 /** Les 3 missions de la semaine en cours (et le thème de la mission « thème »). */
-function weekMissions() {
-    const week = weekStart();
-    const ev = currentEvent();
+function weekMissions(week = weekStart()) {
+    const ev = week === weekStart() ? currentEvent() : EVENTS.find(e => e.start === week);
     if (ev?.missions && week === ev.start) return ev.missions.map(m => ({ ...m, theme: null }));
     const picked = seededShuffle(MISSION_POOL, `missions-${week}`).slice(0, 3);
     const themes = THEME_DECOR.map(t => t.theme).filter(t => t !== 'Drapeaux' && t !== 'Monuments');
     const theme = seededShuffle(themes, `missions-theme-${week}`)[0];
-    return picked.map(m => ({ ...m, goal: missionsV2() && m.goal2 ? m.goal2 : m.goal, theme: m.id === 'theme' ? theme : null,
+    return picked.map(m => ({ ...m, goal: missionsV2(week) && m.goal2 ? m.goal2 : m.goal, theme: m.id === 'theme' ? theme : null,
         icon: m.id === 'theme' ? (THEME_DECOR.find(t => t.theme === theme) || {}).icon || m.icon : m.icon }));
 }
 
@@ -2956,8 +2955,30 @@ function weekMissions() {
 function missionData() {
     const d = state.data;
     const week = weekStart();
-    if (!d.missions || d.missions.week !== week) d.missions = { week, progress: {}, claimed: {}, chest: false };
+    if (!d.missions || d.missions.week !== week) {
+        // 15/11 (choix B de l'utilisateur) : la semaine finie reste réclamable pendant la semaine suivante
+        d.missionsPrev = d.missions && d.missions.week === shiftDays(week, -7) ? d.missions : null;
+        d.missions = { week, progress: {}, claimed: {}, chest: false };
+    }
     return d.missions;
+}
+
+/** Semaine dernière : missions réussies pas encore récupérées, coffre pas ouvert (null s'il n'y a rien à prendre). */
+function prevMissions() {
+    missionData();
+    const p = state.data.missionsPrev;
+    if (!p || p.week !== shiftDays(weekStart(), -7)) return null;
+    const list = weekMissions(p.week);
+    const prog = m => {
+        if (m.id !== 'days') return Math.min(m.goal, p.progress[m.id] || 0);
+        let n = 0;
+        for (let i = 0; i < 7; i++) if (state.data.activeDays[shiftDays(p.week, i)]) n++;
+        return Math.min(m.goal, n);
+    };
+    const ready = list.filter(m => prog(m) >= m.goal && !p.claimed[m.id]);
+    const chest = !p.chest && list.every(m => prog(m) >= m.goal);
+    if (!ready.length && !chest) return null;
+    return { p, list, prog, ready, chest, coins: missionCoins(p.week) };
 }
 
 function missionProgress(m) {
@@ -2988,7 +3009,8 @@ function missionsToClaim() {
     const list = weekMissions();
     const ready = list.filter(m => missionProgress(m) >= m.goal && !md.claimed[m.id]).length;
     const chest = list.every(m => md.claimed[m.id]) && !md.chest ? 1 : 0;
-    return ready + chest;
+    const prev = prevMissions();
+    return ready + chest + (prev ? prev.ready.length + (prev.chest ? 1 : 0) : 0);
 }
 
 /** Ligne compacte sous l'objectif du jour : 🗓️ Missions de la semaine ●●○ 2/3 › */
@@ -3023,6 +3045,42 @@ function openMissionsModal() {
     body.replaceChildren();
     const md = missionData();
     const list = weekMissions();
+    const prev = prevMissions();
+    if (prev) {
+        const box = el('div', 'missions-prev');
+        const h = el('p', 'missions-prev-title');
+        h.textContent = '⏪ Semaine dernière · à récupérer avant dimanche';
+        box.append(h);
+        const refresh = () => { saveData(); renderHeader(); renderMissionsRow(); updateNavNotifications(); };
+        for (const m of prev.ready) {
+            const btn = el('button', 'btn btn-green btn-small missions-prev-btn');
+            btn.type = 'button';
+            btn.textContent = `${m.icon} ${prev.coins} 🪙`;
+            btn.addEventListener('click', () => {
+                prev.p.claimed[m.id] = true;
+                state.data.coins += prev.coins;
+                refresh();
+                openMissionsModal();
+                playSound('win');
+            });
+            box.append(btn);
+        }
+        if (prev.chest) {
+            const btn = el('button', 'btn btn-violet btn-small missions-prev-btn is-chest');
+            btn.type = 'button';
+            btn.textContent = '🎁 Ouvrir le coffre';
+            btn.addEventListener('click', () => {
+                prev.list.forEach(m => { if (!prev.p.claimed[m.id]) { prev.p.claimed[m.id] = true; state.data.coins += prev.coins; } });
+                prev.p.chest = true;
+                refresh();
+                $('missionsModal').hidden = true;
+                const drop = avChestDrop();
+                openCardBoxes([{ size: drop ? 2 : 3, rare: true }], '🗓️ Coffre des missions', drop);
+            });
+            box.append(btn);
+        }
+        body.append(box);
+    }
     for (const m of list) {
         const p = missionProgress(m);
         const item = el('div', `mission${p >= m.goal ? ' is-done' : ''}`);

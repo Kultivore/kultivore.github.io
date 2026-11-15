@@ -4969,3 +4969,10 @@ body.has-feedback .card-view.is-tf .question { margin-block: 0 auto; }
 /* 15/11 : revue du défi du jour, réponses des amis repliées au-delà de 4 amis */
 .review-friends.is-folded { cursor: pointer; color: var(--blue-ink, var(--ink)); }
 .review-friends.is-open { color: var(--muted); }
+
+/* 15/11 : missions de la semaine dernière encore à récupérer (en haut de la fenêtre des missions) */
+.missions-prev { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; margin-bottom: 12px; border-radius: 14px; background: var(--gold-tint, #fff4d6); }
+.missions-prev-title { flex: 1 1 100%; margin: 0 0 2px; font-size: 0.85rem; font-weight: 900; color: var(--gold-ink, #8a5a00); }
+.missions-prev .btn.missions-prev-btn { flex: 1 1 0; min-width: 0; padding-inline: 2px; white-space: nowrap; font-size: 0.8rem; overflow: hidden; }
+.missions-prev .btn.missions-prev-btn.is-chest { flex-basis: 100%; font-size: 0.9rem; }
+@media (max-width: 340px) { .missions-prev .btn.missions-prev-btn { font-size: 0.7rem; padding-inline: 1px; } }
