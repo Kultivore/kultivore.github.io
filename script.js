@@ -3495,12 +3495,7 @@ function showScreen(name) {
     $('topbar').hidden = !MAIN_SCREENS.includes(name);
     updateEventBanner();
 
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        const active = btn.dataset.screen === name;
-        btn.classList.toggle('is-active', active);
-        if (active) btn.setAttribute('aria-current', 'page');
-        else btn.removeAttribute('aria-current');
-    });
+    markNav(name);
 
     if (name === 'map') {
         renderMap();
@@ -9791,6 +9786,34 @@ function endTraining() {
 
 /* Onglet Défis : deux sous-pages, « 🏆 Défis » et « 🎯 Entraînement » */
 let challengesTab = 'defis';
+/* 15/11 (essai, bac à sable ; pour tous : true) : 6 onglets en bas — Parcours · S'entraîner · Défis · Amis · Boutique · Profil.
+   L'entraînement a son propre onglet (avant : sous-onglet de Défis, trop caché) ; « Classement » s'appelle « Amis »
+   (« Ligue » le jour où une ligue en ligne arrivera). */
+const NAV6 = BAC;
+function setupNav6() {
+    if (!NAV6) return;
+    document.body.classList.add('nav6');
+    const map = document.querySelector('.nav-btn[data-screen="map"]');
+    if (map && !document.querySelector('.nav-btn[data-screen="training"]')) {
+        const b = el('button', 'nav-btn');
+        b.type = 'button';
+        b.dataset.screen = 'training';
+        b.innerHTML = '<span class="nav-icon" aria-hidden="true">🎯</span>S’entraîner';
+        map.after(b);
+    }
+    const lg = document.querySelector('.nav-btn[data-screen="league"]');
+    if (lg) lg.innerHTML = '<span class="nav-icon" aria-hidden="true">🥇</span>Amis';
+}
+/** Allume l'onglet de l'écran affiché (avec 6 onglets : Défis ou S'entraîner selon la page de l'écran Défis). */
+function markNav(name = MAIN_SCREENS.find(n => $(`${n}Screen`) && !$(`${n}Screen`).hidden)) {
+    const key = NAV6 && name === 'challenges' && challengesTab === 'training' ? 'training' : name;
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        const active = btn.dataset.screen === key;
+        btn.classList.toggle('is-active', active);
+        if (active) btn.setAttribute('aria-current', 'page');
+        else btn.removeAttribute('aria-current');
+    });
+}
 function setChallengesTab(name) {
     if (name === 'training' && tourFlag === 'tipChallenges' && !$('tour').hidden) {   // tap direct sur l'onglet
         $('tour').hidden = true;
@@ -9806,6 +9829,7 @@ function setChallengesTab(name) {
     });
     $('defisPage').hidden = name !== 'defis';
     $('trainingPage').hidden = name !== 'training';
+    if (NAV6 && !$('challengesScreen').hidden) markNav('challenges');
     $('eventPage').hidden = name !== 'event';
     if (name === 'event') { renderEvent(); setTimeout(showEventPageTip, 400); }
     if (name === 'training') {
@@ -12202,6 +12226,16 @@ function bindEvents() {
 
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+            if (NAV6 && (btn.dataset.screen === 'training' || btn.dataset.screen === 'challenges')) {   // 15/11 : 6 onglets
+                const sub = btn.dataset.screen === 'training' ? 'training' : 'defis';
+                const notif = btn.hasAttribute('data-notif');
+                if ($('challengesScreen').hidden) showScreen('challenges');
+                setChallengesTab(sub);
+                markNav();
+                window.scrollTo(0, 0);
+                if (notif && sub === 'defis') goToNotif('challenges');
+                return;
+            }
             // Onglet Défis touché alors qu'on y est déjà : bascule entre « Défis » et « Entraînement »
             if (btn.dataset.screen === 'challenges' && !$('challengesScreen').hidden) {
                 setChallengesTab(challengesTab === 'defis' ? 'training' : 'defis');
@@ -12810,6 +12844,7 @@ window.addEventListener('popstate', onBackButton);
 
 function init() {
     armBackGuard();   // touche retour du téléphone gérée par l'appli
+    setupNav6();      // 15/11 : 6 onglets (bac à sable) — avant bindEvents, pour que le nouvel onglet réponde
     bindEvents();
     readInviteFromUrl();                                    // lien d'invitation « ?ami=pseudo »
     flushReports();                                         // signalements restés en attente

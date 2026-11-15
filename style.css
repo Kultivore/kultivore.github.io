@@ -4988,3 +4988,8 @@ body.has-feedback .card-view.is-tf .question { margin-block: 0 auto; }
 /* 15/11 (HINT_V3) : en-tête de l'indice sur une ligne : « 🅰️ Initiales » à gauche, « ✍️ Écrire autrement » à droite */
 .hint-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .hint-head .hint-switch-btn { align-self: center; width: auto; flex: none; margin: 0; padding: 4px 10px; font-size: 0.8rem; white-space: nowrap; }
+
+/* 15/11 (NAV6, bac à sable) : 6 onglets en bas ; les boutons « Défis / Entraînement » de la page deviennent inutiles */
+body.nav6 .challenges-tab[data-sub="defis"], body.nav6 .challenges-tab[data-sub="training"] { display: none; }
+body.nav6 .challenges-tabs:not(:has(.challenges-tab:not([hidden]):not([data-sub="defis"]):not([data-sub="training"]))) { display: none; }
+@media (max-width: 900px) { body.nav6 .nav-btn { font-size: 0.66rem; padding-inline: 0; min-width: 0; } }
