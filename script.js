@@ -12692,17 +12692,7 @@ function buildHalloweenExtras() {
 
 /** Bac à sable : pastille 🧪 toujours visible (menu : +1 000 🪙, recommencer, quitter) et quelques faux amis. */
 function initBac() {
-    if (!BAC) {   // 12/11 : entrée cachée DANS l'appli installée (même mémoire que le vrai jeu → la copie de la partie marche) : 5 taps rapides sur le logo
-        const logo = document.querySelector('.brand');
-        let taps = [];
-        logo?.addEventListener('click', async () => {
-            const now = Date.now();
-            taps = taps.filter(t => now - t < 2500).concat(now);
-            if (taps.length < 5) return;
-            taps = [];
-            if (await askConfirm({ title: '🧪 Bac à sable', text: 'Ouvrir le bac à sable ? C’est une copie de ta partie : rien n’y est envoyé en ligne et ton vrai jeu ne change pas.', yes: 'Ouvrir', no: 'Annuler' }))
-                location.href = `${location.pathname}?bac=1`;
-        });
+    if (!BAC) {   // 15/11 : l'entrée cachée (5 taps sur le logo) est RETIRÉE à la demande de l'utilisateur ; seul ?bac=1 reste
         return;
     }
     const pill = el('button', 'bac-pill');
@@ -12712,7 +12702,7 @@ function initBac() {
     pill.addEventListener('click', async () => {
         let realLv = 0;
         try { realLv = JSON.parse(localStorage.getItem('cultureG_v2') || 'null')?.unlocked || 0; } catch (e) { /* illisible */ }
-        const more = await askConfirm({ title: '🧪 Bac à sable', text: `Une copie de ta partie : tout ce que tu fais ici reste ici. Rien n’est envoyé en ligne, ton vrai jeu ne change pas. ${realLv ? `Copie : niveau ${Math.min(state.data.unlocked, MAX_LEVEL)} (vraie partie : niveau ${Math.min(realLv, MAX_LEVEL)}).` : 'Ta vraie partie n’est pas sur ce navigateur : ouvre le bac à sable depuis l’appli (5 taps sur le logo).'}`,
+        const more = await askConfirm({ title: '🧪 Bac à sable', text: `Une copie de ta partie : tout ce que tu fais ici reste ici. Rien n’est envoyé en ligne, ton vrai jeu ne change pas. ${realLv ? `Copie : niveau ${Math.min(state.data.unlocked, MAX_LEVEL)} (vraie partie : niveau ${Math.min(realLv, MAX_LEVEL)}).` : 'Ta vraie partie n’est pas sur ce navigateur : ouvre le bac à sable dans le navigateur où tu joues.'}`,
             yes: '+1 000 🪙 pour tester', no: 'Plus d’options' });
         if (more) { state.data.coins += 1000; saveData(); renderHeader(); if (!$('shopScreen').hidden) renderShop(); return; }
         // 13/11 : défi de Kulti « Vrai ou faux » tout de suite (pour voir la nouvelle mise en page)
