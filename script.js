@@ -11200,6 +11200,10 @@ function renderLeague() {
     left.title = 'XP gagnés depuis lundi · temps restant avant la fin de la semaine';
     head.append(h, left);
     rank.append(head);
+    // 15/11 : un testeur croyait voir une erreur (XP du Profil ≠ XP de la ligue) : on dit clairement ce qui est compté
+    const sub = el('p', 'league-week-note');
+    sub.textContent = 'XP gagnés cette semaine (depuis lundi). Le total est dans ton Profil.';
+    rank.append(sub);
 
     const top = rows.slice(0, 3);
     const podium = el('div', `league-podium count-${top.length}`);

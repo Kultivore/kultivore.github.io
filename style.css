@@ -4962,3 +4962,6 @@ body.has-feedback .card-view.is-tf .question { margin-block: 0 auto; }
     .stop-label { max-width: 44vw; text-align: center; }
     .stop-name { font-size: 1rem; }
 }
+
+/* 15/11 : sous-titre de la Ligue des amis (XP de la semaine ≠ XP total du Profil) */
+.league-week-note { margin: -4px 0 10px; color: var(--muted); font-size: 0.82rem; font-weight: 700; line-height: 1.35; }
