@@ -9839,6 +9839,10 @@ function showProfileTip() {
         target: () => firstVisible('.profile-tab[data-tab="cards"]', '.card-collection'),
         text: '🃏 Tes cartes, gagnées dans les coffres. Chaque exemplaire en plus te rapproche d’une carte brillante (1/3, 2/3…) : à 3, touche-la pour la transformer ✨. Au-delà, une carte en trop rapporte des pièces. 🔒 La carte Maître se gagne en réussissant le palier 10 de l’entraînement.'
     }];
+    if (ENC_ON) steps.push({   // 15/11 : l'encyclopédie manquait dans la présentation
+        target: () => firstVisible('.profile-tab[data-tab="themes"]', '[data-section="themes"]'),
+        text: '📚 Tes savoirs : chaque question réussie devient une fiche de ton encyclopédie, rangée par thème. Touche un livre pour l’ouvrir et découvrir son décor.'
+    });
     if (!cloudUser) steps.push({
         target: () => $('cloudBtn'),
         text: '☁️ Crée un compte pour sauvegarder ta progression en ligne et jouer avec tes amis.'
