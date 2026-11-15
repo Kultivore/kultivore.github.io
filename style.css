@@ -4976,3 +4976,12 @@ body.has-feedback .card-view.is-tf .question { margin-block: 0 auto; }
 .missions-prev .btn.missions-prev-btn { flex: 1 1 0; min-width: 0; padding-inline: 2px; white-space: nowrap; font-size: 0.8rem; overflow: hidden; }
 .missions-prev .btn.missions-prev-btn.is-chest { flex-basis: 100%; font-size: 0.9rem; }
 @media (max-width: 340px) { .missions-prev .btn.missions-prev-btn { font-size: 0.7rem; padding-inline: 1px; } }
+
+/* 15/11 (HINT_V2, bac à sable) : mots facultatifs en pointillés ; mots longs qui passent à la ligne au lieu de déborder */
+.hint-grid { max-width: 100%; }
+.hint-word { flex-wrap: wrap; max-width: 100%; row-gap: 4px; }
+.hint-word.is-opt .hint-cell { border-bottom-style: dashed; border-bottom-color: var(--muted); color: var(--muted); }
+.hint-word.is-opt .hint-cell.is-typed { color: var(--blue); }
+.hint-word.is-long { gap: 2px; }
+.hint-word.is-long .hint-cell { width: 13px; font-size: 0.85rem; }
+.hint-opt-note { font-size: 0.75rem; font-weight: 800; color: var(--muted); }
