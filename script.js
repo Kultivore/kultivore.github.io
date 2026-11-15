@@ -8824,6 +8824,7 @@ function openDuelPicker() {
 /* Listes longues (amis, duels) : 5 lignes au plus, puis « Voir tous (N) › » (2026-10-24, demande de l'utilisateur :
    sinon la carte devient immense). L'état ouvert / fermé est gardé pendant les mises à jour automatiques. */
 const LIST_MAX = 5;
+const DAILY_LIST_V2 = BAC;   // 15/11 : défi du jour, « Voir tous » + réponses des amis repliées (essai bac à sable ; pour tous : true)
 const LEAGUE_SHORT_FROM = 8;   // Ligue des amis : liste raccourcie au-delà de 8 joueurs (2026-10-30)
 const listsOpen = new Set();
 function capList(box, ul, key, max = LIST_MAX) {
@@ -10707,7 +10708,17 @@ function openDailyReview() {
         }
         if (friends.length) {
             const fr = el('div', 'review-friends');
-            fr.textContent = '👥 ' + friends.map(f => `${f.pseudo} ${f.grid[i] === '🟩' ? '✅' : '❌'}`).join(' · ');
+            const full = '👥 ' + friends.map(f => `${f.pseudo} ${f.grid[i] === '🟩' ? '✅' : '❌'}`).join(' · ');
+            if (DAILY_LIST_V2 && friends.length > 4) {   // 15/11 : beaucoup d'amis → résumé, détail au toucher (la carte ne grandit plus)
+                const okN = friends.filter(f => f.grid[i] === '🟩').length;
+                const short = `👥 ${okN} / ${friends.length} amis ont trouvé`;
+                fr.classList.add('is-folded');
+                fr.textContent = short + ' ›';
+                fr.addEventListener('click', () => {
+                    const open = fr.classList.toggle('is-open');
+                    fr.textContent = open ? full : short + ' ›';
+                });
+            } else fr.textContent = full;
             li.append(fr);
         }
         list.append(li);
@@ -10750,13 +10761,14 @@ function renderDailyFriends(result) {
     box.append(title);
     if (!done) return;
     const TOP = 5;
-    const shown = played.slice(0, TOP);
     const myPlace = played.findIndex(r => r.me);
-    if (myPlace >= TOP) shown.push(played[myPlace]);
+    const openAll = DAILY_LIST_V2 && listsOpen.has('daily');   // 15/11 : « Voir tous » déplie la liste entière
+    const shown = openAll ? played.slice() : played.slice(0, TOP);
+    if (!openAll && myPlace >= TOP) shown.push(played[myPlace]);
     const list = el('ol', 'daily-friends-list');
     shown.forEach(r => {
         const place = played.indexOf(r) + 1;
-        if (place > TOP && r.me) list.append(el('li', 'df-gap'));   // « … » avant ma ligne
+        if (place > TOP && r.me && !openAll) list.append(el('li', 'df-gap'));   // « … » avant ma ligne
         const li = el('li', r.me ? 'is-me' : 'is-link');
         if (r.friend) li.addEventListener('click', () => openFriendProfile(r.friend));   // profil de l'ami
         const pos = el('span', 'df-pos');
@@ -10771,6 +10783,16 @@ function renderDailyFriends(result) {
         list.append(li);
     });
     box.append(list);
+    if (DAILY_LIST_V2 && played.length > shown.length || (DAILY_LIST_V2 && openAll && played.length > TOP + 1)) {
+        const more = el('button', 'link-btn list-more');
+        more.type = 'button';
+        more.textContent = openAll ? 'Voir moins' : `Voir tous (${played.length}) ›`;
+        more.addEventListener('click', () => {
+            if (listsOpen.has('daily')) listsOpen.delete('daily'); else listsOpen.add('daily');
+            renderDailyFriends(result);
+        });
+        box.append(more);
+    }
 }
 
 /** Mise à jour automatique : toutes les 15 s sur l'onglet Classement, toutes les minutes ailleurs,

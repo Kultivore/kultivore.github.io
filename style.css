@@ -4965,3 +4965,7 @@ body.has-feedback .card-view.is-tf .question { margin-block: 0 auto; }
 
 /* 15/11 : sous-titre de la Ligue des amis (XP de la semaine ≠ XP total du Profil) */
 .league-week-note { margin: -4px 0 10px; color: var(--muted); font-size: 0.82rem; font-weight: 700; line-height: 1.35; }
+
+/* 15/11 : revue du défi du jour, réponses des amis repliées au-delà de 4 amis */
+.review-friends.is-folded { cursor: pointer; color: var(--blue-ink, var(--ink)); }
+.review-friends.is-open { color: var(--muted); }
