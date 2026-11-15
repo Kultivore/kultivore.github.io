@@ -781,7 +781,7 @@ function echoShort(raw, question) {
    2) « Quelle expression… ? » et rébus d'expressions : on compare sans les petits mots variables (le / son / sa / ses, se, en,
       quelqu'un, « c'est », « il »…) et sans les fins de verbes (tourner / tourne / tournez), pour accepter « casser du sucre sur
       son dos », « se mettre le doigt dans l'œil » / « mettre le doigt dans l'œil », « ça casse pas trois pattes à un canard »… */
-const EXPR_V2 = BAC;
+const EXPR_V2 = true;   // EN LIGNE POUR TOUS le 15/11
 const SENSE_KEYS = {
     21054: [['ne pas', 'pas', 'jamais', 'sans', 'manqu', 'rat', 'loup', 'oubli', 'absent', 'zapp', 'snob'], ['ven', 'all', 'rend', 'present', 'pointer', 'arriv', 'rdv', 'honor', 'rencontr']],   // poser un lapin
     21051: [['femme', 'fille', 'copine', 'nana', 'gonzesse', 'meuf']],
