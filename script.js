@@ -9789,7 +9789,7 @@ let challengesTab = 'defis';
 /* 15/11 (essai, bac à sable ; pour tous : true) : 6 onglets en bas — Parcours · S'entraîner · Défis · Amis · Boutique · Profil.
    L'entraînement a son propre onglet (avant : sous-onglet de Défis, trop caché) ; « Classement » s'appelle « Amis »
    (« Ligue » le jour où une ligue en ligne arrivera). */
-const NAV6 = BAC;
+const NAV6 = BAC || Date.now() >= new Date(2026, 10, 16, 0, 1).getTime();   // pour tous à partir du lundi 16/11 à 0 h 01 (demande de l'utilisateur)
 function setupNav6() {
     if (!NAV6) return;
     document.body.classList.add('nav6');
@@ -9855,8 +9855,8 @@ function showChallengesTip() {
         target: () => $('sprintDesc').closest('.card'),
         text: '⚡ Le sprint : un maximum de bonnes réponses en 60 secondes. Bats ton record !'
     }, {
-        target: () => document.querySelector('.challenges-tab[data-sub="training"]'),
-        text: '🎯 Nouveau : l’entraînement par thème ! Touche ici pour le découvrir.'
+        target: () => document.querySelector(NAV6 ? '.nav-btn[data-screen="training"]' : '.challenges-tab[data-sub="training"]'),
+        text: NAV6 ? '🎯 L’entraînement par thème a son propre onglet : touche-le pour le découvrir.' : '🎯 Nouveau : l’entraînement par thème ! Touche ici pour le découvrir.'
     }];
     tourFlag = 'tipChallenges';
     tourLastLabel = 'Voir l’entraînement';
@@ -12319,9 +12319,21 @@ function bindEvents() {
         const dy = t.clientY - y;
         // Un vrai balayage : rapide, assez long, et plus horizontal que vertical
         if (Date.now() - time > 600 || Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
-        const next = MAIN_SCREENS[MAIN_SCREENS.indexOf(screen) + (dx < 0 ? 1 : -1)];
-        if (!next) return;
-        showScreen(next);
+        let next;
+        if (NAV6) {   // 15/11 : 6 onglets — « S'entraîner » et « Défis » sont deux pages du même écran
+            const ORDER = ['map', 'training', 'challenges', 'league', 'shop', 'profile'];
+            const cur = screen === 'challenges' && challengesTab === 'training' ? 'training' : screen;
+            const key = ORDER[ORDER.indexOf(cur) + (dx < 0 ? 1 : -1)];
+            if (!key) return;
+            next = key === 'training' ? 'challenges' : key;
+            if (next !== screen) showScreen(next);
+            if (next === 'challenges') { setChallengesTab(key === 'training' ? 'training' : 'defis'); window.scrollTo(0, 0); }
+            markNav(next);
+        } else {
+            next = MAIN_SCREENS[MAIN_SCREENS.indexOf(screen) + (dx < 0 ? 1 : -1)];
+            if (!next) return;
+            showScreen(next);
+        }
         const page = $(`${next}Screen`);
         page.classList.remove('slide-from-left', 'slide-from-right');
         void page.offsetWidth;   // relance l'animation
