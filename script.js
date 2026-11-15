@@ -3128,6 +3128,11 @@ function questFrom(r, profs) {
     };
 }
 
+/** 15/11 (règle de l'utilisateur) : un compte créé cette semaine n'a pas de quête avant le lundi suivant. */
+function questNewAccount() {
+    const t = cloudUser?.created_at;
+    return !!t && dayKey(new Date(t)) >= weekStart();
+}
 async function questLoad(force = false) {
     if (BAC) {   // bac à sable : une fausse quête avec Léa (rien en ligne)
         const lea = league.friends[0];
@@ -3139,6 +3144,7 @@ async function questLoad(force = false) {
     }
     const c = cloudClient();
     if (!c || !cloudUser || !league?.pseudo || !navigator.onLine) { renderQuestRow(); return; }
+    if (questNewAccount()) { quest = null; questReady = false; renderQuestRow(); return; }   // 1re quête lundi prochain
     if (!force && Date.now() - questLastLoad < 60000) { renderQuestRow(); return; }
     questLastLoad = Date.now();
     try {
@@ -3174,6 +3180,7 @@ function renderQuestRow() {
     let sub;
     if (!cloudUser) sub = 'Crée un compte pour jouer à deux';
     else if (!league?.pseudo) sub = 'Choisis un pseudo pour jouer à deux';
+    else if (questNewAccount()) sub = '🗓️ Ta 1re quête commence lundi';
     else if (!questReady || !quest) { row.hidden = true; return; }
     else if (quest.waiting) sub = '🔎 Recherche d’un partenaire…';
     else {
@@ -3196,6 +3203,7 @@ function renderQuestRow() {
 function questClick() {
     if (!cloudUser) { openAuthModal(); return; }
     if (!league?.pseudo) { showScreen('league'); return; }
+    if (questNewAccount()) { showToast('🗓️ Ta 1re quête entre duo commence lundi : tu seras associé à un ami ou à un autre joueur pour la semaine.'); return; }
     openQuestModal();
 }
 
@@ -10503,7 +10511,9 @@ function profileSummary() {
         // Objectif de la quête en duo : semaine EN COURS comprise (2026-10-30), sinon un partenaire qui n'a pas rouvert le jeu
         // le lundi n'avait pas encore « la semaine dernière » dans son résumé
         // Semaines d'avant le 26/10 non envoyées (la remise à zéro du 20/10 laisse une semaine du 19 à moitié jouée)
-        weeks: Object.fromEntries([0, 7, 14, 21].map(k => shiftDays(weekStart(), -k)).filter(w => w >= QUEST_WEEKS_FROM).map(w => [w, weekXp(w)])),
+        // 15/11 : la semaine où le compte a été créé (incomplète) n'est pas envoyée non plus
+        weeks: Object.fromEntries([0, 7, 14, 21].map(k => shiftDays(weekStart(), -k)).filter(w => w >= QUEST_WEEKS_FROM)
+            .filter(w => !cloudUser?.created_at || w > weekStart(new Date(cloudUser.created_at))).map(w => [w, weekXp(w)])),
     };
 }
 
