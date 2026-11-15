@@ -5985,17 +5985,28 @@ function hintCells(q, level) {
         return { small, letters, shown };
     });
 }
-const hintBlankCount = (q, level) => hintCells(q, level).reduce((n, c) => n + (c.letters ? c.letters.length - c.shown : 0), 0);
+/** Les cases à partir du mot n° start (les mots d'avant sont laissés de côté), sans séparateur au début. */
+function hintCellsFrom(q, level, start = gridStartAt()) {
+    const cells = hintCells(q, level);
+    if (!start) return cells;
+    let wi = -1, from = cells.length;
+    for (let i = 0; i < cells.length; i++) if (cells[i].letters && ++wi === start) { from = i; break; }
+    return cells.slice(from);
+}
+const hintBlankCount = (q, level) => hintCellsFrom(q, level).reduce((n, c) => n + (c.letters ? c.letters.length - c.shown : 0), 0);
 /** La réponse complète : lettres montrées + lettres tapées (dans l'ordre des cases vides). */
 function hintComposed(q, level, typed) {
     const t = [...typed];
     let k = 0;
-    return hintCells(q, level).map(c => c.sep !== undefined ? c.sep
+    return hintCellsFrom(q, level).map(c => c.sep !== undefined ? c.sep
         : c.letters.map((ch, i) => (i < c.shown ? ch : (t[k++] || ''))).join('')).join('');
 }
 const hintLevelNow = () => Math.max(0, ...[...(state.hintUsed || [])].map(id => HINT_LEVEL[id] || 0));
-const HINT_V2 = BAC;   // 15/11 (essai, bac à sable) : grille = guide (on tape librement) + mots facultatifs en pointillés ; pour tous : true
-const gridTyping = () => !HINT_V2 && state.phase !== undefined && hintLevelNow() > 0 && state.gridFree !== true && !!state.current;
+// 15/11 (essai, bac à sable ; pour tous : true) : toucher un mot de la grille = commencer à taper là (les mots d'avant sont
+// laissés de côté : « Gogh » au lieu de « Vincent van Gogh ») ; bouton « ✍️ Écrire autrement » bien visible ; mots longs à la ligne
+const HINT_V3 = BAC;
+const gridStartAt = () => (HINT_V3 && state.gridStart) || 0;   // n° du mot (lettres) où l'on commence à taper
+const gridTyping = () => state.phase !== undefined && hintLevelNow() > 0 && state.gridFree !== true && !!state.current;
 /** Ce que le joueur répond : la grille remplie, ou ce qu'il a écrit. */
 const typedAnswer = () => (gridTyping() ? hintComposed(state.current.q, hintLevelNow(), $('userInput').value) : $('userInput').value);
 
@@ -6006,6 +6017,8 @@ function hintGrid(q, level, typed = null) {
     const words = parts.filter(t => /[\p{L}\p{N}]/u.test(t));
     const box = el('div', 'hint-grid');
     let word = null;
+    let wi = -1;
+    const start = gridStartAt();
     parts.forEach(part => {
         if (!/[\p{L}\p{N}]/u.test(part)) {
             // Séparateur : une espace coupe la ligne ; une apostrophe ou un tiret reste collé au mot
@@ -6017,13 +6030,18 @@ function hintGrid(q, level, typed = null) {
             return;
         }
         if (!word) { word = el('span', 'hint-word'); box.append(word); }
+        wi++;
         const small = words.length > 1 && HINT_SMALL_WORDS.has(part.toLowerCase());
         const letters = [...part];
+        if (HINT_V3 && letters.length > 12) word.classList.add('is-long');
         const shown = small ? letters.length : hintShown(letters.length, level);
+        const skipped = wi < start;
         letters.forEach((ch, i) => {
             const cell = el('span', small ? 'hint-cell is-small' : i < shown ? 'hint-cell is-shown' : 'hint-cell');
+            cell.dataset.wi = String(wi);
+            if (skipped) cell.classList.add('is-skipped');
             cell.textContent = i < shown ? ch.toUpperCase() : '';
-            if (typed && i >= shown) {   // case à remplir : la lettre tapée, et un repère sur la prochaine case vide
+            if (typed && i >= shown && !skipped) {   // case à remplir : la lettre tapée, et un repère sur la prochaine case vide
                 const t = typed.list[typed.k++];
                 if (t) { cell.textContent = t.toUpperCase(); cell.classList.add('is-typed'); }
                 else if (!typed.cursor) { cell.classList.add('is-next'); typed.cursor = true; }
@@ -6034,79 +6052,6 @@ function hintGrid(q, level, typed = null) {
     return box;
 }
 
-/* 15/11 (HINT_V2) : la grille ne fait que REFLÉTER ce qu'on tape dans la zone de réponse (sans dire si c'est juste :
-   sinon on pourrait deviner lettre par lettre) ; les premiers mots qu'on peut omettre (prénom, « musée de »…) sont en
-   pointillés « facultatif » : trouvés en demandant au correcteur quelle fin de la réponse suffit déjà. */
-const hintOptCache = new Map();
-function hintOptionalWords(q) {
-    if (hintOptCache.has(q.id)) return hintOptCache.get(q.id);
-    const answer = q.a[0].trim();
-    const starts = [];
-    const re = /[\p{L}\p{N}]+/gu;
-    let m;
-    while ((m = re.exec(answer))) starts.push(m.index);
-    let opt = 0;
-    for (let k = starts.length - 1; k >= 1; k--) {
-        const rest = answer.slice(starts[k]);
-        if (judge(rest, q.a, q.q) === 'exact') { opt = k; break; }
-    }
-    hintOptCache.set(q.id, opt);
-    return opt;
-}
-function renderHintGridV2(level) {
-    const q = state.current.q;
-    const list = $('hintList');
-    const li = el('li', 'hint-box');
-    const label = el('span', 'hint-label');
-    const item = SHOP.find(i => HINT_LEVEL[i.id] === level);
-    label.textContent = `${item.icon} ${item.short}`;
-    const input = $('userInput');
-    const answer = q.a[0].trim();
-    const parts = answer.match(/[\p{L}\p{N}]+|[^\p{L}\p{N}]+/gu) || [];
-    const words = parts.filter(isLetter);
-    const opt = hintOptionalWords(q);
-    // mots tapés, posés sur les mots de la grille : depuis le début, ou depuis la fin si on en a tapé moins
-    const typedWords = (input.value || '').split(/[^\p{L}\p{N}]+/u).filter(Boolean);
-    // vers la fin seulement s'il y a des mots facultatifs et que le 1er mot tapé ne commence pas comme le 1er de la réponse
-    // (on tape « van gogh » sans le prénom) ; sinon depuis le début (on est en train de taper la réponse entière)
-    const fold = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-    const startsSame = typedWords.length && fold(typedWords[0])[0] === fold(words[0])[0];
-    const offset = opt > 0 && !startsSame && typedWords.length < words.length ? Math.min(opt, words.length - typedWords.length) : 0;
-    const box = el('div', 'hint-grid');
-    let word = null, wi = -1;
-    parts.forEach(part => {
-        if (!isLetter(part)) {
-            if (/\s/.test(part)) { word = null; return; }
-            if (!word) { word = el('span', 'hint-word'); box.append(word); }
-            const sep = el('span', 'hint-sep');
-            sep.textContent = part.trim();
-            word.append(sep);
-            return;
-        }
-        wi++;
-        if (!word) { word = el('span', `hint-word${wi < opt ? ' is-opt' : ''}`); box.append(word); }
-        const letters = [...part];
-        if (letters.length > 12) word.classList.add('is-long');
-        const small = words.length > 1 && HINT_SMALL_WORDS.has(part.toLowerCase());
-        const shown = small ? letters.length : hintShown(letters.length, level);
-        const tw = wi >= offset ? [...(typedWords[wi - offset] || '')] : [];
-        letters.forEach((ch, i) => {
-            const cell = el('span', small ? 'hint-cell is-small' : i < shown ? 'hint-cell is-shown' : 'hint-cell');
-            if (tw[i]) { cell.textContent = tw[i].toUpperCase(); cell.classList.add('is-typed'); }
-            else cell.textContent = i < shown ? ch.toUpperCase() : '';
-            word.append(cell);
-        });
-    });
-    li.append(label, box);
-    if (opt > 0) {
-        const note = el('span', 'hint-opt-note');
-        note.textContent = `Les mots en pointillés sont facultatifs.`;
-        li.append(note);
-    }
-    list.append(li);
-    box.addEventListener('click', () => input.focus());
-}
-
 /** Affiche la grille avec le niveau le plus fort parmi les indices pris sur cette carte. */
 function renderHintGrid() {
     const level = Math.max(0, ...[...state.hintUsed].map(id => HINT_LEVEL[id] || 0));
@@ -6114,7 +6059,6 @@ function renderHintGrid() {
     list.replaceChildren();
     list.hidden = level === 0;
     if (!level) return;
-    if (HINT_V2) { renderHintGridV2(level); return; }
     const li = el('li', 'hint-box');
     const label = el('span', 'hint-label');
     const item = SHOP.find(i => HINT_LEVEL[i.id] === level);
@@ -6127,10 +6071,17 @@ function renderHintGrid() {
     li.append(label, grid);
     if (state.phase === 'answering') {
         grid.classList.toggle('is-typing', typing);
-        grid.addEventListener('click', () => input.focus());   // toucher la grille ouvre le clavier
-        const sw = el('button', 'link-btn hint-switch');
+        grid.addEventListener('click', e => {   // toucher la grille ouvre le clavier
+            const cell = e.target.closest('.hint-cell');
+            if (HINT_V3 && typing && cell && cell.dataset.wi !== undefined) {   // 15/11 : toucher un mot = taper à partir de lui
+                const w = Number(cell.dataset.wi);
+                if (w !== gridStartAt()) { state.gridStart = w; input.value = ''; renderHintGrid(); }
+            }
+            input.focus();
+        });
+        const sw = el('button', HINT_V3 ? 'btn btn-ghost btn-small hint-switch-btn' : 'link-btn hint-switch');
         sw.type = 'button';
-        sw.textContent = state.gridFree ? '🔤 Remplir la grille' : '⌨️ Écrire librement';
+        sw.textContent = state.gridFree ? '🔤 Remplir la grille' : HINT_V3 ? '✍️ Écrire autrement' : '⌨️ Écrire librement';
         sw.addEventListener('click', () => {
             state.gridFree = !state.gridFree;
             input.value = '';
@@ -7395,6 +7346,7 @@ function showCard() {
     state.hintUsed = new Set();
     state.gridFree = false;
     state.gridFinal = null;
+    state.gridStart = 0;
     $('userInput').classList.remove('is-grid-typing');
     $('hintList').replaceChildren();
     $('hintList').hidden = true;
@@ -12603,7 +12555,6 @@ function bindEvents() {
     $('userInput').addEventListener('input', () => {   // texte collé avec des retours à la ligne
         const input = $('userInput');
         if (/[\r\n]/.test(input.value)) input.value = input.value.replace(/[\r\n]+/g, ' ');
-        if (HINT_V2 && state.phase === 'answering' && hintLevelNow() > 0) renderHintGrid();   // la grille reflète la saisie
         if (gridTyping() && state.phase === 'answering') {   // saisie dans la grille : lettres seulement, une par case vide
             const max = hintBlankCount(state.current.q, hintLevelNow());
             const clean = [...input.value].filter(isLetter).slice(0, max).join('');
