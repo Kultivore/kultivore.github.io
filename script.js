@@ -773,6 +773,76 @@ function echoShort(raw, question) {
     if (w.length === 1 && (rest.length < 4 || (crossed && !caps.has(rest)))) return null;   // « fer » (masque de fer) : non ; « Catan » : oui
     return stripArticles(rest) || null;
 }
+/* ---------- 15/11 (essai, bac à sable ; pour tous : EXPR_V2 = true) : expressions et « Que veut dire… ? » plus tolérants ----------
+   1) « Que veut dire… ? » : on répond par une phrase libre. SENSE_KEYS donne, pour chaque question, des GROUPES d'idées : la
+      réponse est juste si elle contient au moins un mot de chaque groupe (début de mot, sans accents). Ex. « poser un lapin » :
+      [négation ou raté] + [venir / aller / se rendre / se présenter / rendez-vous]. Une négation ajoutée (« pas surpris ») n'est
+      acceptée que si une bonne réponse en contient déjà une.
+   2) « Quelle expression… ? » et rébus d'expressions : on compare sans les petits mots variables (le / son / sa / ses, se, en,
+      quelqu'un, « c'est », « il »…) et sans les fins de verbes (tourner / tourne / tournez), pour accepter « casser du sucre sur
+      son dos », « se mettre le doigt dans l'œil » / « mettre le doigt dans l'œil », « ça casse pas trois pattes à un canard »… */
+const EXPR_V2 = BAC;
+const SENSE_KEYS = {
+    21054: [['ne pas', 'pas', 'jamais', 'sans', 'manqu', 'rat', 'loup', 'oubli', 'absent', 'zapp', 'snob'], ['ven', 'all', 'rend', 'present', 'pointer', 'arriv', 'rdv', 'honor', 'rencontr']],   // poser un lapin
+    21051: [['femme', 'fille', 'copine', 'nana', 'gonzesse', 'meuf']],
+    21052: [['lourd', 'penible', 'embet', 'enerv', 'agac', 'chiant', 'casse pied', 'saoul', 'soul', 'insupport', 'gonfl', 'relou']],
+    21053: [['louche', 'bizar', 'etrange', 'suspect', 'pas net', 'zarb', 'chelou', 'curieux', 'drole', 'anormal']],
+    21061: [['parai', 'apparem', 'il semble', 'semble t il', 'on dit', 'selon', 'rumeur', 'ce qu on dit', 'il para', 'a ce qu on raconte', 'on raconte', 'visiblement']],
+    21064: [['elegan', 'chic', 'classe', 'endiman', 'beau', 'belle', 'pomponn', 'apprete', 'sape', 'tire a quatre', 'bien habill', 'bien s habill', 'habill bien', 'meilleurs habits', 'plus beaux', 'tenue de soiree', 'beaux habits', 'habits du dimanche', 'mettre sur son 31']],
+    21065: [['ment', 'mensong', 'histoire', 'bobard', 'sornette', 'baratin', 'craque', 'faux', 'fauss', 'pas vrai', 'invent', 'bluff', 'n importe quoi', 'betise', 'fadaise', 'des conneries', 'raconter des blagues', 'fake']],
+    21067: [['degout', 'frustr', 'enerv', 'decu', 'deception', 'rage', 'colere', 'agac', 'vener', 'jalou', 'amer', 'pas content', 'pas etre content', 'pas heureux', 'furieux', 'mecontent', 'deg', 'dig', 'triste', 'en avoir marre', 'boude']],
+    21074: [['echou', 'rate', 'rater', 'perd', 'rien obten', 'rien eu', 'pas reussi', 'pas reussir', 'sans resultat', 'bredouille', 'manqu', 'fiasco', 'echec', 'rien gagn', 'mains vides', 'rien trouv', 'en vain', 'pour rien']],
+    21101: [['fou', 'folle', 'dingue', 'barjo', 'cingl', 'tare', 'dingo', 'incroyable', 'ouf', 'malade', 'timbre']],
+    21102: [['enerv', 'colere', 'fach', 'agac', 'furieux', 'furax', 'irrit', 'vener', 'rage', 'pas content', 'remonte']],
+    21103: [['cher', 'couteux', 'fortune', 'hors de prix', 'ruineux', 'prix eleve', 'beaucoup d argent', 'un bras', 'onereux', 'exorbitant', 'trop d argent', 'prix fou']],
+    21104: [['frisson', 'froid', 'peur', 'herisse', 'poils', 'grelott', 'trembl', 'chair de poule']],
+    21108: [['enrou', 'voix', 'gorge', 'touss', 'rauque', 'aphone', 'racl']],
+    21109: [['fuir', 'fuy', 'enfui', 'sauv', 'cour', 'detal', 'deguerp', 'decamp', 'fil', 'partir vite', 'echapp', 'fuite', 'trac', 'barr', 'prendre ses jambes']],
+    21110: [['bien fait', 'tant pis pour', 'tu l as cherche', 'tu l as merite', 'bien merite', 'dans ta face', 'c est merite', 'ca t apprendra']],
+    21112: [['!repond', 'ignor', 'disparai', 'couper', '!nouvelles', 'silence', 'bloqu', '!parler', '!contact', 'faire le mort', 'lacher', 'abandonn', 'zapp', 'laisser tomber', 'snob', '!donner signe']],
+    21114: [['surpri', 'stupef', 'etonn', '!revenir', 'sidere', 'abasourd', 'ebahi', 'choqu', 'choc', 'bouche bee', 'scie', 'estomaqu', 'epat', 'tomber de haut', 'decontenanc', 'interloqu', 'medus', 'sans voix']],
+    21120: [['ambiti', 'arriv', 'carrier', 'reussir', 'avide', 'pouvoir', 'ambition', 'monter', 'grimper', 'aller loin', 'reussite', 'les crocs']],
+    23057: [['deuil', 'hommage', 'tristesse', 'mort', 'deces', 'commemor', 'recueill', 'funebre', 'chagrin', 'memoire']],
+    21332: [['cetera', 'caetera', 'reste', 'ainsi de suite', 'autre', 'tout ca', 'tout le reste']]
+};
+let senseByQ = null;
+function senseFor(question) {
+    if (!senseByQ) {
+        senseByQ = new Map();
+        const all = [...(typeof QUESTIONS !== 'undefined' ? QUESTIONS : []), ...(typeof TRAINING_QUESTIONS !== 'undefined' ? TRAINING_QUESTIONS : [])];
+        for (const q of all) if (SENSE_KEYS[q.id]) senseByQ.set(q.q, SENSE_KEYS[q.id]);
+    }
+    return senseByQ.get(question) || null;
+}
+const NEG_WORDS = new Set(['ne', 'n', 'pas', 'jamais', 'aucun', 'aucune']);   // ni « sans » (« disparaître sans prévenir »)   // « plus » seul n'en est pas une (« ses plus beaux habits »)
+function senseMatch(input, groups, rawAnswers) {
+    const words = normalize(input).split(' ').filter(Boolean);
+    if (!words.length || words.length > 14) return false;
+    const text = ` ${words.join(' ')} `;
+    const negTyped = words.some(w => NEG_WORDS.has(w));
+    const matched = [];
+    const has = alt => {
+        const needNeg = alt.startsWith('!');   // « !parler » : ne compte qu'avec une négation (« ne plus parler »)
+        const a = needNeg ? alt.slice(1) : alt;
+        const ok = a.includes(' ') ? text.includes(` ${a} `) || text.includes(` ${a}`) : words.some(w => w.startsWith(a));
+        if (ok && (!needNeg || negTyped)) { matched.push(needNeg ? `ne ${a}` : a); return true; }
+        return false;
+    };
+    if (!groups.every(g => g.some(has))) return false;
+    // négation ajoutée (« pas surpris ») : refusée, sauf si une bonne réponse en a une ou si le mot trouvé la contient (« pas content »)
+    const negOk = matched.some(a => a.split(' ').some(w => NEG_WORDS.has(w)));   // ex. « ne pas » (poser un lapin), « !revenir » (ne pas en revenir)
+    return !negTyped || negOk;
+}
+const EXPR_DROP = new Set(['le', 'la', 'les', 'l', 'un', 'une', 'des', 'du', 'de', 'd', 'son', 'sa', 'ses', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes',
+    'notre', 'nos', 'votre', 'vos', 'leur', 'leurs', 'se', 's', 'me', 'm', 'te', 't', 'en', 'y', 'lui', 'quelqu', 'quelquun', 'qqn', 'qqun', 'ne']);
+const EXPR_LEAD = new Set(['c', 'est', 'il', 'elle', 'on', 'ca', 'cela', 'je', 'j', 'tu', 'avoir', 'etre', 'ai', 'as', 'a', 'suis', 'es']);
+function exprKey(str) {
+    let w = normalize(String(str)).split(' ').filter(Boolean);
+    while (w.length > 1 && EXPR_LEAD.has(w[0])) w.shift();
+    w = w.filter(x => !EXPR_DROP.has(x));
+    return w.map(x => (x.length >= 5 ? x.replace(/(aient|erent|eront|ions|iez|ent|ons|ez|ait|ais|era|er|ir|re|es|e|s|t)$/, '') : x)).join(' ');
+}
+
 function judgeV2(input, rawAnswers, question = '') {
     // Réponse faite d'un seul « article » (la note « La », la lettre « D ») : on ne l'efface pas
     // Expressions (rébus ou « Quelle expression… ») : « avoir » / « être » au début ignorés (« la main verte » = « avoir la main verte »)
@@ -783,6 +853,14 @@ function judgeV2(input, rawAnswers, question = '') {
     if (!typed) return rawAnswers.some(r => String(r).trim() === String(input).trim()) ? 'exact' : 'wrong';   // « € »
     const listed = listMatch(input, rawAnswers, question);
     if (listed === 'exact') return 'exact';
+    if (EXPR_V2) {   // 15/11 : sens libre (groupes d'idées) et variantes d'expressions
+        const sense = senseFor(question);
+        if (sense && senseMatch(input, sense, rawAnswers)) return 'exact';
+        if (/expression/i.test(question) && !/complète le proverbe/i.test(question)) {
+            const k = exprKey(input);
+            if (k.length >= 4 && rawAnswers.some(r => exprKey(r) === k)) return 'exact';
+        }
+    }
     const typedFull = full(input);
     const numbersTyped = normalize(input).match(/\d+(?:\.\d+)?/g) || [];
     const questionWords = new Set(stripArticles(normalize(question)).split(' '));
