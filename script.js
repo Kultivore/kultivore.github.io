@@ -6068,7 +6068,8 @@ function renderHintGrid() {
     const letters = typing ? input.value : state.gridFinal;   // après « Vérifier » : les lettres qui avaient été tapées
     const typed = gridTyping() && letters !== undefined && letters !== null ? { list: [...letters], k: 0, cursor: !typing } : null;
     const grid = hintGrid(state.current.q, level, typed);
-    li.append(label, grid);
+    const head = HINT_V3 ? el('div', 'hint-head') : null;   // 15/11 : nom de l'indice et bouton sur la même ligne (moins de hauteur)
+    if (head) { head.append(label); li.append(head, grid); } else li.append(label, grid);
     if (state.phase === 'answering') {
         grid.classList.toggle('is-typing', typing);
         grid.addEventListener('click', e => {   // toucher la grille ouvre le clavier
@@ -6088,7 +6089,7 @@ function renderHintGrid() {
             applyGridTyping();
             input.focus();
         });
-        li.append(sw);
+        if (head) head.append(sw); else li.append(sw);
     }
     list.append(li);
     applyGridTyping(false);

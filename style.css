@@ -4984,3 +4984,7 @@ body.has-feedback .card-view.is-tf .question { margin-block: 0 auto; }
 .hint-word.is-long { gap: 2px; }
 .hint-word.is-long .hint-cell { width: 13px; font-size: 0.85rem; }
 .hint-switch-btn { align-self: flex-start; padding: 6px 12px; font-size: 0.85rem; }
+
+/* 15/11 (HINT_V3) : en-tête de l'indice sur une ligne : « 🅰️ Initiales » à gauche, « ✍️ Écrire autrement » à droite */
+.hint-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hint-head .hint-switch-btn { align-self: center; width: auto; flex: none; margin: 0; padding: 4px 10px; font-size: 0.8rem; white-space: nowrap; }
