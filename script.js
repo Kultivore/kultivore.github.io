@@ -8824,7 +8824,7 @@ function openDuelPicker() {
 /* Listes longues (amis, duels) : 5 lignes au plus, puis « Voir tous (N) › » (2026-10-24, demande de l'utilisateur :
    sinon la carte devient immense). L'état ouvert / fermé est gardé pendant les mises à jour automatiques. */
 const LIST_MAX = 5;
-const DAILY_LIST_V2 = BAC;   // 15/11 : défi du jour, « Voir tous » + réponses des amis repliées (essai bac à sable ; pour tous : true)
+const DAILY_LIST_V2 = true;   // 15/11 : défi du jour, « Voir tous » + réponses des amis repliées (EN LIGNE POUR TOUS)
 const LEAGUE_SHORT_FROM = 8;   // Ligue des amis : liste raccourcie au-delà de 8 joueurs (2026-10-30)
 const listsOpen = new Set();
 function capList(box, ul, key, max = LIST_MAX) {
