@@ -349,6 +349,16 @@ Propriétaire : francophone. Répondre en français, expliquer simplement, pas d
      Page `renderTour` (carte du monde carte-monde.js, traîneau, liste des étapes) ; écran de fin `tourEndBlock` (tampon du pays,
      « Joyeux Noël » dans la langue, anecdote, prochaine étape). Étiquette des questions `tourTag` (« 🛷 Japon · Vrai ou faux ? »).
   Aussi : plus d'indice sur un Vrai ou faux / Devine l'année ; doublon « Nouvel emoji d'avatar » retiré de la fin des événements.
+- 16/11 (v=20261116x, POUR TOUS) : ALLÈGEMENT DES REQUÊTES SUPABASE. Mesures du 14-16/11 : 7-9 joueurs/jour, Egress ~2-3,5 Mo/joueur/jour
+  (5 Go/mois gratuits ≈ 50-80 joueurs/jour), LOG INGESTION (nouveau compteur, 1 Go/mois gratuit, compté à partir de « début 2027 » ;
+  dépassement en gratuit = pas facturé mais avertissement puis RESTRICTIONS du service) ~1,5-3 Mo/joueur/jour ≈ 15-20 joueurs/jour max
+  → c'est le NOMBRE DE REQUÊTES qui limite. Changements : sauvegarde en ligne au plus toutes les 40 s (`CLOUD_PUSH_MS`, avant 5 s après
+  chaque sauvegarde) + tout de suite en fin de partie (`cloudSoon`) et en arrière-plan ; score de la semaine au plus toutes les 2 min ;
+  classement complet toutes les 60 s SEULEMENT sur l'onglet Amis ou la page Défis (avant 15 s / 60 s partout), ailleurs `duelsPeek`
+  toutes les 3 min (1 requête) ; après chaque partie `leagueAfterGame` (au plus toutes les 90 s) ; duels : seulement ceux qui ont changé
+  (`fetchDuelsDelta` : created_at / played_at > dernière date connue − 2 min ; filtre `or` entre guillemets, testé HTTP 200) ; cadeaux
+  toutes les 5 min (avant 30 s) ; quête toutes les 5 min (avant 1 min). Estimation : ~35 → ~8 requêtes/min en jouant, ~11 → ~0,5 au repos.
+  À REMESURER dans quelques jours (Usage → Egress et Log Ingestion + joueurs_du_jour).
 - À RECONTRÔLER AVEC L'UTILISATEUR (noté le 16/11, à lui rappeler) :
   1) FRISES : FRISE_V2 (5 cartes max + écart en valeur) est encore SEULEMENT dans le bac à sable → le mettre pour tous quand il l'a essayé,
      puis 1-2 semaines APRÈS, relancer la requête par type de niveau sur la vue « niveaux » (Frises / Paires / Défis / Questions, SQL

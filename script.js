@@ -3318,7 +3318,7 @@ async function questLoad(force = false) {
     const c = cloudClient();
     if (!c || !cloudUser || !league?.pseudo || !navigator.onLine) { renderQuestRow(); return; }
     if (questNewAccount()) { quest = null; questReady = false; renderQuestRow(); return; }   // 1re quête lundi prochain
-    if (!force && Date.now() - questLastLoad < 60000) { renderQuestRow(); return; }
+    if (!force && Date.now() - questLastLoad < 300000) { renderQuestRow(); return; }   // 16/11 : 5 min (avant 1 min)
     questLastLoad = Date.now();
     try {
         const { data, error } = await c.rpc('quest_join');
@@ -3622,7 +3622,7 @@ function showScreen(name) {
         if (state.data.onboarded && !state.data.tourDone) setTimeout(startTour, 500);
     }
     if (name === 'challenges') { window.scrollTo(0, 0); renderChallenges(); setChallengesTab(challengesTab); leagueLoad(); }
-    if (name === 'league') { window.scrollTo(0, 0); leagueMsg = null; renderLeague(); leagueLoad(); }
+    if (name === 'league') { window.scrollTo(0, 0); leagueMsg = null; renderLeague(); if (Date.now() - lastLeagueLoad > 20000) leagueLoad(); }
     if (name === 'shop') { window.scrollTo(0, 0); renderShop(); }
     if (name === 'profile') { window.scrollTo(0, 0); renderProfile(); }
 }
@@ -7925,6 +7925,7 @@ function stampSans() {
 let stampTimer = null;
 
 function setEnd({ emoji, face, title, text, extra = '', stats = [], primary, primaryClass, onPrimary, secondary, onSecondary, stamp = false }) {
+    leagueAfterGame();   // 16/11 : sauvegarde en ligne tout de suite, classement rafraîchi (au lieu de toutes les minutes)
     renderEndStats(stats);
     renderEndGoal();
     if (state.pendingTitle) { const t = state.pendingTitle; state.pendingTitle = null; celebrate(() => showTitleAnim(t)); }
@@ -9229,12 +9230,19 @@ function cloudClient() {
     return sbClient;
 }
 
-/** À chaque sauvegarde locale : on note qu'il y a du nouveau, et on l'envoie 5 s plus tard (une seule fois). */
+/** À chaque sauvegarde locale : on note qu'il y a du nouveau. 16/11 (trafic et journaux Supabase) : envoi au plus une fois toutes
+    les 40 s (avant : 5 s après CHAQUE sauvegarde, presque à chaque réponse, 3 requêtes à chaque fois) ; en fin de partie et quand
+    l'appli passe en arrière-plan, l'envoi est immédiat (`cloudSoon`, visibilitychange). */
+const CLOUD_PUSH_MS = 40000;
 function cloudChanged() {
     setCloudMeta({ dirty: true });
-    if (!cloudUser) return;
+    if (!cloudUser || cloudPushTimer) return;
+    cloudPushTimer = setTimeout(cloudPush, CLOUD_PUSH_MS);
+}
+function cloudSoon() {   // fin de partie : on envoie maintenant ce qui attend
+    if (!cloudUser || !cloudMeta().dirty) return;
     clearTimeout(cloudPushTimer);
-    cloudPushTimer = setTimeout(cloudPush, 5000);
+    cloudPushTimer = setTimeout(cloudPush, 1500);
 }
 
 /** Envoie la progression. Protection : l'XP ne baisse jamais en jouant ; si la sauvegarde en ligne a PLUS d'XP
@@ -9243,6 +9251,7 @@ function cloudChanged() {
 async function cloudPush(force = false) {
     const c = cloudClient();
     clearTimeout(cloudPushTimer);
+    cloudPushTimer = null;
     if (!c || !cloudUser || !navigator.onLine) return;
     const updatedAt = new Date().toISOString();
     try {
@@ -9272,7 +9281,7 @@ async function cloudPush(force = false) {
         if (!error) {
             setCloudMeta({ dirty: false, updatedAt });
             renderCloudCard();
-            leaguePushScore();   // XP de la semaine pour le classement entre amis
+            if (Date.now() - lastScorePush > 120000) leaguePushScore();   // XP de la semaine (16/11 : au plus toutes les 2 min)
         }
     } catch (err) { /* hors ligne : on réessaiera */ }
 }
@@ -10716,7 +10725,7 @@ async function leaguePushScore() {
 /** Cadeaux déposés depuis Supabase (table « gifts », supabase/cadeaux.sql) : on supprime la ligne
     PUIS on ajoute les pièces, pour ne jamais les compter deux fois. */
 let claimingGifts = 0;   // heure du début de la récupération en cours (0 = aucune)
-setInterval(() => { if (!document.hidden) claimGifts(); }, 30000);
+setInterval(() => { if (!document.hidden) claimGifts(); }, 300000);   // 16/11 : 5 min (avant 30 s) ; + lancement et retour dans l'appli
 async function claimGifts() {
     const c = cloudClient();
     if (!c || !cloudUser || !navigator.onLine) return;
@@ -11077,15 +11086,57 @@ function renderDailyFriends(result) {
     }
 }
 
-/** Mise à jour automatique : toutes les 15 s sur l'onglet Classement, toutes les minutes ailleurs,
-    et tout de suite quand on revient dans l'appli. */
+/** Mise à jour automatique. 16/11 (trafic et journaux Supabase : chaque rechargement complet = ~9 requêtes) : rechargement complet
+    toutes les 60 s SEULEMENT sur l'onglet Amis ou la page Défis (scores du défi du jour) ; ailleurs, toutes les 3 min, une seule
+    petite requête « un duel a-t-il changé ? » (`duelsPeek`) ; + au lancement, au retour dans l'appli et après une partie. */
 let lastLeagueLoad = 0;
+let lastDuelPeek = 0;
+const LEAGUE_WATCH_MS = 60000;
+const LEAGUE_IDLE_MS = 180000;
 function leagueTick() {
     if (!cloudUser || document.hidden || !navigator.onLine) return;
-    const watching = !$('leagueScreen').hidden || !$('challengesScreen').hidden;   // classement, ou scores du défi
-    const wait = watching ? 15000 : 60000;
-    if (Date.now() - lastLeagueLoad >= wait - 500) leagueLoad();
+    const watching = !$('leagueScreen').hidden || (!$('challengesScreen').hidden && challengesTab === 'defis');
+    if (watching && Date.now() - lastLeagueLoad >= LEAGUE_WATCH_MS - 500) leagueLoad();
+    else if (!watching && Date.now() - Math.max(lastLeagueLoad, lastDuelPeek) >= LEAGUE_IDLE_MS - 500) duelsPeek();
     else refreshLeagueView();
+}
+/** Après une partie : classement à jour (scores des amis, duels), au plus une fois toutes les 90 s. */
+function leagueAfterGame() {
+    cloudSoon();
+    if (cloudUser && navigator.onLine && Date.now() - lastLeagueLoad > 90000) setTimeout(leagueLoad, 2500);
+}
+/** Duels qui ont changé depuis la dernière fois (créés ou joués) : une seule requête, fusionnée avec ceux qu'on connaît. */
+async function fetchDuelsDelta(c) {
+    const known = league?.userId === cloudUser.id && Array.isArray(league.duels) ? league.duels : null;
+    if (!known || !known.length) {
+        const { data, error } = await c.from('duels').select('*').order('created_at', { ascending: false }).limit(100);
+        return error ? null : (data || []);
+    }
+    // repère = date la plus récente déjà connue (heure du serveur), moins 2 min de marge
+    const last = Math.max(...known.map(d => Math.max(new Date(d.created_at).getTime(), d.played_at ? new Date(d.played_at).getTime() : 0)));
+    const since = new Date(last - 120000).toISOString();   // entre guillemets dans le filtre : la date contient « : » et « . »
+    const { data, error } = await c.from('duels').select('*').or(`created_at.gt."${since}",played_at.gt."${since}"`).limit(100);
+    if (error) return null;
+    if (!data || !data.length) return known;
+    const byId = new Map(known.map(d => [d.id, d]));
+    data.forEach(d => byId.set(d.id, d));
+    return [...byId.values()].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 100);
+}
+async function duelsPeek() {
+    const c = cloudClient();
+    if (!c || !cloudUser || !league?.pseudo || league.userId !== cloudUser.id) return;
+    lastDuelPeek = Date.now();
+    try {
+        const duels = await fetchDuelsDelta(c);
+        if (!duels) return;
+        const changed = JSON.stringify(duels) !== JSON.stringify(league.duels || []);
+        league = { ...league, duels };
+        if (!changed) return;
+        leagueViewDirty = true;
+        saveLeagueCache();
+        updateNavNotifications();
+        refreshLeagueView();
+    } catch (err) { /* hors ligne */ }
 }
 setInterval(leagueTick, 15000);
 document.addEventListener('visibilitychange', () => {
@@ -11151,8 +11202,8 @@ async function leagueFetch() {
             fresh.friends.filter(f => waiting.has(f.id)).forEach(f => showToast(`✓ ${f.pseudo} a accepté ta demande !`));
         }
         // Duels (table de supabase/duels.sql ; si elle n'existe pas encore : liste vide, sans erreur)
-        const { data: duels, error: duelErr } = await c.from('duels').select('*').order('created_at', { ascending: false }).limit(100);
-        fresh.duels = duelErr ? (before?.duels || []) : (duels || []);
+        const duels = await fetchDuelsDelta(c);   // 16/11 : seulement ceux qui ont changé (avant : les 100 derniers à chaque fois)
+        fresh.duels = duels || before?.duels || [];
         if (Object.keys(state.data.duelStarted).length) setTimeout(flushStartedDuels, 0);
         league = { ...fresh, at: Date.now() };
         saveLeagueCache();
