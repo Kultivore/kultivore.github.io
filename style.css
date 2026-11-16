@@ -5230,3 +5230,16 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
 .noel-callout b { font-weight: 900; font-size: 0.98rem; }
 .noel-callout small { font-weight: 800; color: #ffe2a8; font-size: 0.82rem; }
 .noel-callout .row-arrow { background: #fff; color: #c81d25; }
+
+/* 16/11 : pastilles dorées lisibles en mode sombre (texte marron foncé sur fond doré assombri = presque invisible) :
+   « il t'en restera » du cœur de secours, prix d'un indice, pièces gagnées en fin de partie, missions de la semaine dernière… */
+:root[data-theme="dark"] .rescue-chip.is-warn, :root[data-theme="dark"] .hint-tag.is-price, :root[data-theme="dark"] .end-chip.is-coins,
+:root[data-theme="dark"] .enc-crow b, :root[data-theme="dark"] .missions-prev-title { color: #ffd77a; }
+:root[data-theme="dark"] .rescue-chip.is-warn, :root[data-theme="dark"] .hint-tag.is-price, :root[data-theme="dark"] .end-chip.is-coins {
+    background: color-mix(in srgb, #ffc800 22%, #1c2540); box-shadow: inset 0 0 0 1.5px rgba(255, 200, 0, 0.45); }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .rescue-chip.is-warn, :root:not([data-theme="light"]) .hint-tag.is-price, :root:not([data-theme="light"]) .end-chip.is-coins,
+    :root:not([data-theme="light"]) .enc-crow b, :root:not([data-theme="light"]) .missions-prev-title { color: #ffd77a; }
+    :root:not([data-theme="light"]) .rescue-chip.is-warn, :root:not([data-theme="light"]) .hint-tag.is-price, :root:not([data-theme="light"]) .end-chip.is-coins {
+        background: color-mix(in srgb, #ffc800 22%, #1c2540); box-shadow: inset 0 0 0 1.5px rgba(255, 200, 0, 0.45); }
+}
