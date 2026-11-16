@@ -191,7 +191,7 @@ const orderSize = level => level < 40 ? 4 : level < 85 ? 5 : 6;
 /* 16/11 (essai, bac à sable ; pour tous : FRISE_V2 = true) : les frises étaient réussies 27 fois sur 100 (questions 50, paires 73,
    défis 65 ; vue Supabase « niveaux ») → 5 cartes au plus (plus de 6), et des cartes toujours assez ÉCARTÉES EN VALEUR (pas seulement
    dans le classement : avant, deux dates à 3 ans d'écart pouvaient tomber ensemble). */
-const FRISE_V2 = BAC;
+const FRISE_V2 = true;   // 16/11 : en ligne pour tous (avant : bac à sable)
 function orderSizes(level) {
     const R = typeof levelRenumber === 'function' ? levelRenumber : n => n;
     if (level < R(36)) return [4, 4, 4];
@@ -8691,10 +8691,10 @@ async function flushReports() {
 
 /* ---------- Duels entre amis (2026-10-23, supabase/duels.sql) ---------- */
 // Le lanceur joue 10 questions (tirées avec une graine), son score est enregistré ; l'ami a 48 h pour jouer les
-// mêmes. Le plus de bonnes réponses gagne (égalité : le plus rapide). Gagnant : +20 🪙. Gratuit en gouttes.
+// mêmes. Le plus de bonnes réponses gagne (égalité : le plus rapide). Gagnant : +15 🪙 (20 avant le 16/11). Gratuit en gouttes.
 
 const DUEL_SIZE = 10;
-const DUEL_COINS = 20;        // gagnant
+const DUEL_COINS = 15;        // gagnant (16/11 : 20 → 15, demande de l'utilisateur)
 const DUEL_COINS_LOSE = 5;    // perdant : petite récompense de participation (2026-10-23)
 const DUEL_COINS_TIE = 10;    // égalité parfaite : chacun
 const duelPrize = res => (res > 0 ? DUEL_COINS : res < 0 ? DUEL_COINS_LOSE : DUEL_COINS_TIE);
@@ -10799,6 +10799,7 @@ function profileSummary() {
 }
 
 /** Profil d'un ami : série, stats, badges et cartes (d'après son résumé). */
+let friendTab = 'badges';   // 16/11 : onglet ouvert dans le profil d'un ami (gardé d'un ami à l'autre)
 function openFriendProfile(f) {
     const body = $('friendBody');
     body.replaceChildren();
@@ -10810,10 +10811,10 @@ function openFriendProfile(f) {
     sub.textContent = s ? `🎖️ ${s.title} · ${s.xp} XP` : 'Profil pas encore disponible';
     head.append(avatarEl(f.pseudo, f.look, 'is-big'), name, sub);
     body.append(head);
-    if (cloudUser && league?.pseudo && league.friends.some(x => x.id === f.id)) {
-        const duel = el('button', 'btn btn-violet btn-full friend-duel');
+    if (cloudUser && league?.pseudo && league.friends.some(x => x.id === f.id)) {   // 16/11 : bouton compact, sans le pseudo
+        const duel = el('button', 'btn btn-violet friend-duel');
         duel.type = 'button';
-        duel.textContent = `⚔️ Défier ${f.pseudo} en duel`;
+        duel.textContent = '⚔️ Défier en duel';
         duel.addEventListener('click', () => challengeFriend(f));
         body.append(duel);
     }
@@ -10826,11 +10827,11 @@ function openFriendProfile(f) {
         const nbsp = '\u00a0';
         const tiles = el('div', 'friend-tiles');
         [
-            ['🔥 Série', plural(s.streak, 'jour', 'jours').replace(' ', nbsp)],
-            ['✅ Réussite', s.rate === null ? '—' : `${s.rate}${nbsp}%`],
-            ['🗺️ Niveaux', `${s.levels}${nbsp}/${nbsp}${MAX_LEVEL}`],
-            ['🌋 Record', plural(s.bestStreak, 'jour', 'jours').replace(' ', nbsp)],
-            ['⚡ Sprint', String(s.sprint)],
+            ['🔥 Série', s.streak == null ? '—' : plural(s.streak, 'jour', 'jours').replace(' ', nbsp)],   // 16/11 : « — » si l'info manque
+            ['✅ Réussite', s.rate == null ? '—' : `${s.rate}${nbsp}%`],
+            ['🗺️ Niveaux', s.levels == null ? '—' : `${s.levels}${nbsp}/${nbsp}${MAX_LEVEL}`],
+            ['🌋 Record', s.bestStreak == null ? '—' : plural(s.bestStreak, 'jour', 'jours').replace(' ', nbsp)],
+            ['⚡ Sprint', s.sprint == null ? '—' : String(s.sprint)],
             ['📅 Semaine', `${friendWeekXp(f, weekStart())}${nbsp}XP`]
         ].forEach(([label, value]) => {
             const t = el('div', 'tile');
@@ -10843,23 +10844,67 @@ function openFriendProfile(f) {
         });
         body.append(tiles);
 
-        const badges = BADGES.concat(BADGES_NEW).filter(b => s.badges.includes(b.id));
-        const bh = el('h3', 'friend-section');
-        bh.textContent = `🎖️ Badges · ${badges.length}/${activeBadges().length}`;
-        const bl = el('div', 'friend-badges');
-        badges.forEach(b => {
-            const i = el('button', 'friend-badge');
-            i.type = 'button';
-            i.textContent = b.icon;
-            i.setAttribute('aria-label', `${b.name} : ${b.desc}`);
-            i.addEventListener('click', () => {
-                $('friendModal').hidden = true;
-                openBadgeView(b, () => { $('friendModal').hidden = false; });
+        // 16/11 (demande de l'utilisateur : on voyait mal ses badges) : deux onglets « Badges » et « Cartes » ; badges rangés par
+        // famille, avec leur nom court (comme dans mon profil), au lieu d'une rangée d'icônes seules
+        const allB = BADGES.concat(BADGES_NEW, BADGES_SECRET || []);
+        const badges = allB.filter(b => s.badges.includes(b.id));
+        const tabs = el('div', 'friend-tabs');
+        const pages = {};
+        const tabBtn = (key, label) => {
+            const t = el('button', 'friend-tab');
+            t.type = 'button';
+            t.textContent = label;
+            t.addEventListener('click', () => { friendTab = key; showTab(); });
+            tabs.append(t);
+            pages[key] = { btn: t, box: el('div', 'friend-page') };
+        };
+        tabBtn('badges', `🎖️ Badges · ${badges.length}`);
+        tabBtn('cards', `🃏 Cartes · ${CARDS.filter(c => s.cards.includes(c.id)).length}/${CARDS.length}`);
+        const showTab = () => Object.entries(pages).forEach(([k, p]) => { p.btn.classList.toggle('is-active', k === friendTab); p.box.hidden = k !== friendTab; });
+        body.append(tabs, pages.badges.box, pages.cards.box);
+        const bl = pages.badges.box;
+        const openB = b => { $('friendModal').hidden = true; openBadgeView(b, () => { $('friendModal').hidden = false; }); };
+        const placed = new Set();
+        if (BADGES_V2) BADGE_FAMS.forEach(([icon, fname, , list]) => {
+            const own = list.map(x => allB.find(b => b.id === x[0] && s.badges.includes(b.id)) && [allB.find(b => b.id === x[0]), x[1]]).filter(Boolean);
+            if (!own.length) return;
+            const fh = el('div', 'friend-fam');
+            fh.textContent = `${icon} ${fname} · ${own.length}/${list.length}`;
+            const row = el('div', 'friend-bgrid');
+            own.forEach(([b, short]) => {
+                placed.add(b.id);
+                const i = el('button', 'friend-bchip');
+                i.type = 'button';
+                const ic = el('span', 'friend-bicon');
+                ic.textContent = b.icon;
+                const nm = el('span', 'friend-bname');
+                nm.textContent = short || b.name;
+                i.append(ic, nm);
+                i.setAttribute('aria-label', `${b.name} : ${b.desc}`);
+                i.addEventListener('click', () => openB(b));
+                row.append(i);
             });
-            bl.append(i);
+            bl.append(fh, row);
         });
-        if (!badges.length) bl.textContent = 'Aucun badge pour l’instant.';
-        body.append(bh, bl);
+        const rest = badges.filter(b => !placed.has(b.id));
+        if (rest.length) {
+            const fh = el('div', 'friend-fam');
+            fh.textContent = BADGES_V2 ? '✨ Autres badges' : '🎖️ Badges';
+            const row = el('div', 'friend-bgrid');
+            rest.forEach(b => {
+                const i = el('button', 'friend-bchip');
+                i.type = 'button';
+                const ic = el('span', 'friend-bicon');
+                ic.textContent = b.icon;
+                const nm = el('span', 'friend-bname');
+                nm.textContent = b.name;
+                i.append(ic, nm);
+                i.addEventListener('click', () => openB(b));
+                row.append(i);
+            });
+            bl.append(fh, row);
+        }
+        if (!badges.length) { const p = el('p', 'muted'); p.textContent = 'Aucun badge pour l’instant.'; bl.append(p); }
 
         if (s.medals) {   // médailles d'entraînement (2026-10-29 ; ancien résumé : rien)
             const mh = el('h3', 'friend-section');
@@ -10873,15 +10918,13 @@ function openFriendProfile(f) {
                 ml.append(m);
             });
             if (!list.length) ml.textContent = 'Aucune médaille pour l’instant.';
-            body.append(mh, ml);
+            bl.prepend(mh, ml);   // 16/11 : en haut de l'onglet Badges
         }
 
         // Cartes rangées par thème, comme dans mon profil (2026-10-29) : les siennes, et « ? » pour celles qui lui manquent
         const order = Object.keys(CARD_RARITIES);
         const shiny = s.shiny || [];   // ancien résumé : pas d'info sur les cartes brillantes
         const has = c => s.cards.includes(c.id);
-        const ch = el('h3', 'friend-section');
-        ch.textContent = `🃏 Cartes · ${CARDS.filter(has).length}/${CARDS.length}`;
         const cl = el('div', 'friend-collection');
         const cardBtn = (card, isShinyCard) => {
             const btn = el('button', 'kcard-btn');
@@ -10921,7 +10964,8 @@ function openFriendProfile(f) {
             evCards.forEach(card => row.append(cardBtn(card, false)));
             cl.append(head, row);
         }
-        body.append(ch, cl);
+        pages.cards.box.append(cl);
+        showTab();
     }
 
     const remove = el('button', 'friend-remove');

@@ -349,6 +349,11 @@ Propriétaire : francophone. Répondre en français, expliquer simplement, pas d
      Page `renderTour` (carte du monde carte-monde.js, traîneau, liste des étapes) ; écran de fin `tourEndBlock` (tampon du pays,
      « Joyeux Noël » dans la langue, anecdote, prochaine étape). Étiquette des questions `tourTag` (« 🛷 Japon · Vrai ou faux ? »).
   Aussi : plus d'indice sur un Vrai ou faux / Devine l'année ; doublon « Nouvel emoji d'avatar » retiré de la fin des événements.
+- 16/11 (v=20261116y, POUR TOUS) : FRISES V2 EN LIGNE (FRISE_V2 = true : 5 cartes max, écart en valeur) → remesurer la vue « niveaux »
+  dans 1-2 semaines ; DUEL GAGNÉ = 15 🪙 (DUEL_COINS, avant 20) ; PROFIL D'UN AMI : bouton « ⚔️ Défier en duel » compact (sans le pseudo),
+  onglets « 🎖️ Badges · N » / « 🃏 Cartes · x/180 » (`friendTab`), badges rangés PAR FAMILLE (BADGE_FAMS) avec leur nom court en petites
+  cases (`.friend-bchip`), médailles d'entraînement en haut de l'onglet Badges ; les badges SECRETS des amis s'affichent enfin ; « — » si
+  une info manque dans un ancien résumé.
 - 16/11 (v=20261116x, POUR TOUS) : ALLÈGEMENT DES REQUÊTES SUPABASE. Mesures du 14-16/11 : 7-9 joueurs/jour, Egress ~2-3,5 Mo/joueur/jour
   (5 Go/mois gratuits ≈ 50-80 joueurs/jour), LOG INGESTION (nouveau compteur, 1 Go/mois gratuit, compté à partir de « début 2027 » ;
   dépassement en gratuit = pas facturé mais avertissement puis RESTRICTIONS du service) ~1,5-3 Mo/joueur/jour ≈ 15-20 joueurs/jour max

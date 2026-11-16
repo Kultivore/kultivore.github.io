@@ -2531,7 +2531,7 @@ button.podium-col { padding: 0; border: 0; background: none; color: inherit; fon
 .friend-head { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 12px; }
 .friend-head h2 { margin: 6px 0 0; }
 .modal-content p.friend-title { margin: 0; color: var(--ink); font-size: 0.95rem; }
-.friend-tiles { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 6px; }
+.friend-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 6px; }
 .friend-tiles .tile { justify-content: center; }
 .friend-tiles .tile-label { white-space: nowrap; }
 .friend-tiles .tile { padding: 8px 4px; gap: 2px; }
@@ -5243,3 +5243,19 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
     :root:not([data-theme="light"]) .rescue-chip.is-warn, :root:not([data-theme="light"]) .hint-tag.is-price, :root:not([data-theme="light"]) .end-chip.is-coins {
         background: color-mix(in srgb, #ffc800 22%, #1c2540); box-shadow: inset 0 0 0 1.5px rgba(255, 200, 0, 0.45); }
 }
+
+/* 16/11 : profil d'un ami — bouton de duel compact ; onglets Badges / Cartes ; badges par famille avec leur nom */
+.friend-duel { display: block; width: auto; margin: 2px auto 14px; padding: 10px 20px; font-size: 0.95rem; }
+.friend-tabs { display: flex; gap: 4px; padding: 4px; margin: 16px 0 10px; border-radius: 14px; background: var(--bg); }
+.friend-tab { flex: 1; padding: 8px 4px; border: 0; border-radius: 10px; background: transparent; font: inherit; font-weight: 900; font-size: 0.88rem;
+    color: var(--muted); cursor: pointer; white-space: nowrap; }
+.friend-tab.is-active { background: var(--surface); color: var(--ink); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); }
+.friend-page { text-align: left; }
+.friend-page > .friend-section:first-child { margin-top: 4px; }
+.friend-fam { margin: 12px 0 6px; font-size: 0.85rem; font-weight: 900; color: var(--muted); }
+.friend-bgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 6px; }
+.friend-bchip { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 4px 7px; border: 2px solid var(--line); border-radius: 14px;
+    background: var(--surface); font: inherit; cursor: pointer; min-width: 0; }
+.friend-bicon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 1.35rem;
+    background: color-mix(in srgb, var(--gold, #f3b400) 22%, var(--surface)); }
+.friend-bname { font-size: 0.7rem; font-weight: 800; color: var(--ink); line-height: 1.15; text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
