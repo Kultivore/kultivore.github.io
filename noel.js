@@ -4,14 +4,17 @@
    KULTIVO — Noël 2026 (16/11/2026, BAC À SABLE ; pour tous : NOEL_ON = true et retirer `bacOnly` de l'événement noel-2026)
    Chargé APRÈS script.js (il utilise ses fonctions ; tout est appelé après le chargement de la page).
    1) Décor de Noël tout décembre (neige, icônes, anecdotes : EVENT_BANKS.noelFacts dans evenements/noel.js).
-   2) Calendrier de l'Avent (1er → 24 décembre) : une case par jour, ouvrable SEULEMENT ce jour-là, après une partie qui
-      compte (de l'XP gagnée aujourd'hui). Case ratée = perdue. Le 24 : cadre « Étoile de l'Avent » + 20 🪙 pour qui l'ouvre.
+   2) Onglet « 🎄 Noël » dans Défis (à côté de « 🏆 Défis ») du 1er au 27 décembre : calendrier de l'Avent (1er → 24) et,
+      pendant la Semaine de Noël (21 → 27), la tournée du Père Noël au-dessus.
+      Calendrier : une case par jour, ouvrable SEULEMENT ce jour-là, après une partie qui compte (de l'XP gagnée aujourd'hui).
+      Case ratée = perdue. Le 24 : cadre « Étoile de l'Avent » + 20 🪙 pour qui l'ouvre. Le cadeau apparaît DANS la case
+      (pas de fenêtre, demande de l'utilisateur 16/11).
    3) ⚡ Pièces ×2 · 15 min : objet à gagner (jamais vendu), activé dans la boutique ; les pièces gagnées en répondant
-      comptent double (addXp, script.js).
+      comptent double (addXp, script.js) ; pendant le bonus, le rond des pièces porte « ×2 » en rose (pas de rond en plus).
    4) Rayon de Noël dans la boutique (tout décembre) : 3 objets d'avatar (cosmetiques.js, rayon: 'noel').
-   5) Tournée du Père Noël (Semaine de Noël, 21 → 27 décembre ; événement noel-2026 de script.js) : 11 étapes, 5 questions
-      trouvées par étape ; 3 pays ouverts au départ, +1 à chaque étape ; une question ratée attend 1 partie ; s'il manque
-      des questions, le pays suivant s'ouvre en avance ; en dernier recours, des questions déjà trouvées (sans cadeau).
+   5) Tournée du Père Noël (événement noel-2026 de script.js) : 11 étapes, 5 questions trouvées par étape ; 3 pays ouverts
+      au départ, +1 à chaque étape ; une question ratée attend 1 partie ; s'il manque des questions, le pays suivant s'ouvre
+      en avance ; en dernier recours, des questions déjà trouvées (sans cadeau).
    Bac à sable : menu 🧪 → « Noël » = choisir un faux jour de décembre (localStorage kultivo_bac_noelday, noelSimDay()).
    ============================================================ */
 
@@ -33,7 +36,7 @@ function showNoelFact(badge) {
     const top = r.bottom + 10 + bubble.offsetHeight < window.innerHeight - 90 ? r.bottom + 10 : r.top - 10 - bubble.offsetHeight;
     bubble.style.top = `${Math.max(70, top)}px`;
 }
-/** Neige qui tombe derrière le parcours et les leçons (rien si « réduire les animations »). */
+/** Neige qui tombe (rien si « réduire les animations »). */
 function noelSnow() {
     let box = document.getElementById('noelSnow');
     const on = document.body.classList.contains('deco-noel') && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -64,16 +67,17 @@ const ADVENT_GIFTS = {
     14: { inv: 'nudge' }, 15: { coins: 15 }, 16: { inv: 'hintLetter' }, 17: { coins: 15 }, 18: { boost: 1 }, 19: { coins: 15 },
     20: { card: 1, rare: true }, 21: { coins: 20 }, 22: { drops: 1 }, 23: { coins: 20 }, 24: { coins: 20, star: true }
 };
-const ADVENT_INV = { hintLetter: ['🅰️', 'Indice « initiales »'], freeze: ['🧊', 'Gel de série'], heart: ['💖', 'Cœur de secours'], nudge: ['👆', 'Coup de pouce'] };
+const ADVENT_INV = { hintLetter: ['🅰️', 'Indice', 'un indice « initiales » dans ton sac'], freeze: ['🧊', 'Gel', 'un gel de série dans ton sac'],
+    heart: ['💖', 'Cœur', 'un cœur de secours dans ton sac'], nudge: ['👆', 'Coup de pouce', 'un coup de pouce dans ton sac'] };
 /** Icône d'un cadeau : la pièce est dessinée par la police du jeu (pas d'image Twemoji). */
 const giftIcon = icon => { if (icon !== '🪙') return emojiImg(icon); const s = el('span', 'advent-coin'); s.textContent = '🪙'; return s; };
-function adventGiftInfo(g) {   // [icône, texte court, texte long]
-    if (g.star) return ['🌟', 'Cadre + 20 🪙', 'Le cadre « Étoile de l’Avent » et 20 🪙'];
+function adventGiftInfo(g) {   // [icône, texte court, ce que tu as reçu]
+    if (g.star) return ['🌟', 'Cadre', 'le cadre « Étoile de l’Avent » (dans « Mon avatar ») et 20 🪙'];
     if (g.coins) return ['🪙', `+${g.coins}`, `${g.coins} pièces`];
-    if (g.card) return ['🃏', 'Carte', g.rare ? 'Une carte rare ou mieux' : 'Une carte'];
-    if (g.boost) return ['⚡', '×2', '⚡ Pièces ×2 pendant 15 minutes (à activer dans la boutique)'];
-    if (g.drops) return ['💧', 'Gouttes', 'Toutes tes gouttes rechargées'];
-    if (g.inv) return [ADVENT_INV[g.inv][0], ADVENT_INV[g.inv][1].split(' ')[0], ADVENT_INV[g.inv][1]];
+    if (g.card) return ['🃏', 'Carte', g.rare ? 'une carte rare ou mieux' : 'une carte'];
+    if (g.boost) return ['⚡', '×2', 'un bonus ⚡ Pièces ×2 de 15 minutes, à activer dans la boutique quand tu veux'];
+    if (g.drops) return ['💧', 'Gouttes', 'toutes tes gouttes rechargées'];
+    if (g.inv) return [ADVENT_INV[g.inv][0], ADVENT_INV[g.inv][1], ADVENT_INV[g.inv][2]];
     return ['🎁', '', ''];
 }
 /** Jour du calendrier (1 à 24), ou 0 en dehors. */
@@ -84,83 +88,112 @@ function adventDay() {
     const d = Number(k.slice(8));
     return d >= 1 && d <= 24 ? d : 0;
 }
+/** Onglet « 🎄 Noël » de Défis sans événement en cours (du 1er au 20 décembre : seulement le calendrier). */
+const adventTabOn = () => adventDay() > 0;
 function adventData() {
     const d = state.data;
-    if (!d.advent || d.advent.y !== NOEL_YEAR) d.advent = { y: NOEL_YEAR, open: {}, star: false };
+    if (!d.advent || d.advent.y !== NOEL_YEAR) d.advent = { y: NOEL_YEAR, open: {}, star: false, cards: {} };
+    d.advent.cards = d.advent.cards || {};
     return d.advent;
 }
 const playedToday = () => (state.data.activeDays[todayKey()] || 0) > 0;   // une partie qui compte (de l'XP gagnée aujourd'hui)
 const adventCanOpen = () => { const day = adventDay(); return !!day && !adventData().open[day] && playedToday(); };
 const adventToOpen = () => (adventCanOpen() ? 1 : 0);
+function renderAdventRow() {}   // (16/11 : la ligne dans Défis est remplacée par l'onglet « 🎄 Noël »)
 
-/** Ligne « 🗓️ Calendrier de l'Avent » dans Défis, sous les missions (seulement du 1er au 24 décembre). */
-function renderAdventRow() {
-    const row = $('adventRow');
-    if (!row) return;
-    const day = adventDay();
-    row.hidden = !day;
-    if (!day) return;
-    const ad = adventData();
-    const opened = Object.keys(ad.open).length;
-    const bar = el('span', 'quest-row-bar');
-    const fill = el('i', 'is-me');
-    fill.style.width = `${Math.round((opened / 24) * 100)}%`;
-    bar.append(fill);
-    const sub = ad.open[day] ? `${opened} / 24 cases · à demain !` : playedToday() ? `${opened} / 24 cases · la case ${day} t’attend !` : `${opened} / 24 cases · joue une partie pour ouvrir la case ${day}`;
-    row.replaceChildren(twoLineRow('🗓️ Calendrier de l’Avent', bar, sub), rowArrow());
-    if (adventCanOpen()) row.setAttribute('data-notif', '1');
-    else row.removeAttribute('data-notif');
+/** Carte du calendrier : tirée comme dans un coffre, sans fenêtre (elle apparaît dans la case). */
+function adventDrawCard(rare) {
+    const d = state.data;
+    const card = drawCard(rare ? 'rare' : null, [], null);
+    const isNew = !d.cards[card.id];
+    if (isNew) { const ms = monthStat(); ms.cards++; if (['epic', 'legendary', 'master', 'event'].includes(card.rarity)) ms.bigCards++; }
+    d.cards[card.id] = (d.cards[card.id] || 0) + 1;
+    if (!isNew && d.cards[card.id] > SHINY_AT) d.coins += CARD_RARITIES[card.rarity].dupCoins;
+    return card;
 }
 
-function openAdventModal(msg = null) {
+/** Le calendrier (dans la page « 🎄 Noël »). */
+function adventSection() {
     const day = adventDay();
     const ad = adventData();
-    const grid = $('adventGrid');
-    grid.replaceChildren();
-    $('adventTitle').textContent = '🗓️ Calendrier de l’Avent';
-    $('adventSub').textContent = 'Une case par jour, à ouvrir le jour même après une partie.';
-    for (let n = 1; n <= 24; n++) {
-        const g = ADVENT_GIFTS[n];
-        const [icon, short] = adventGiftInfo(g);
-        const b = el('button', 'advent-door');
-        b.type = 'button';
-        b.style.setProperty('--i', n);
-        if (n === 24) b.classList.add('is-24');
-        if (ad.open[n]) {
-            b.classList.add('is-open');
-            b.innerHTML = `<s>${n}</s><em></em><small></small>`;
-            b.querySelector('em').append(giftIcon(icon));
-            b.querySelector('small').textContent = short;
-            b.addEventListener('click', () => adventTip(`Case ${n} : ${adventGiftInfo(g)[2]}.`));
-        } else if (n < day) {
-            b.classList.add('is-lost');
-            b.textContent = String(n);
-            b.addEventListener('click', () => adventTip(`Case ${n} ratée : chaque case ne s’ouvre que le jour même.`));
-        } else if (n === day) {
-            b.classList.add(playedToday() ? 'is-today' : 'is-wait');
-            b.textContent = n === 24 ? '🌟 24' : String(n);
-            b.addEventListener('click', () => (playedToday() ? adventOpenDoor(b) : adventTip(`Joue une partie (un niveau, un entraînement, un défi…) pour ouvrir la case ${n} !`)));
-        } else {
-            b.classList.add('is-later');
-            b.textContent = n === 24 ? '🌟 24' : String(n);
-            b.addEventListener('click', () => adventTip(n === 24 ? 'Le 24 décembre : le cadre « Étoile de l’Avent » et 20 🪙, si tu ouvres la case ce jour-là.' : `Patience : la case ${n} s’ouvre le ${n} décembre.`));
-        }
-        grid.append(b);
+    const card = el('article', 'card advent-card');
+    const hero = el('div', 'advent-hero');
+    const ht = el('div', 'advent-hero-text');
+    const h = el('h2');
+    h.textContent = 'Calendrier de l’Avent';
+    const sub = el('p');
+    sub.textContent = `${Object.keys(ad.open).length} / 24 cases ouvertes`;
+    ht.append(h, sub);
+    const kb = el('div', 'advent-kulti');
+    kb.append(kultiEl('content', 'kulti-blink', false, 'noel'));
+    hero.append(ht, kb);
+    const status = el('p', 'advent-status');
+    const setStatus = (text, tone = '') => { status.textContent = nbspPunct(text); status.className = `advent-status${tone ? ' is-' + tone : ''}`; };
+    if (ad.open[day]) setStatus(`✅ Case du ${day} ouverte : la suivante demain !`, 'done');
+    else if (playedToday()) setStatus(`🎁 La case du ${day} t’attend : touche-la !`, 'go');
+    else setStatus(`🎮 Joue une partie (niveau, entraînement, défi…) pour ouvrir la case du ${day}.`);
+    const grid = el('div', 'advent-board');
+    for (let n = 1; n <= 24; n++) grid.append(adventDoor(n, day, ad, setStatus));
+    const foot = el('p', 'advent-foot');
+    foot.textContent = nbspPunct('Chaque case ne s’ouvre que le jour même : une case ratée est perdue. Le 24 : le cadre « Étoile de l’Avent » !');
+    card.append(hero, status, grid, foot);
+    return card;
+}
+function adventDoor(n, day, ad, setStatus) {
+    const g = ADVENT_GIFTS[n];
+    const b = el('button', 'advent-door');
+    b.type = 'button';
+    b.dataset.n = String(n);
+    b.classList.add(['is-red', 'is-green', 'is-night'][n % 3]);
+    if (n === 24) b.classList.add('is-24');
+    if (ad.open[n]) {
+        adventFillOpen(b, n, ad);
+        b.addEventListener('click', () => {
+            const c = ad.cards[n] && CARDS.find(x => x.id === ad.cards[n]);
+            if (c) openCardView(c);
+            else setStatus(`Case du ${n} : ${adventGiftInfo(g)[2]}.`);
+        });
+        return b;
     }
-    adventTip(msg || (day && ad.open[day] ? `Case ${day} ouverte : reviens demain pour la suivante !` : ''));
-    $('adventModal').hidden = false;
+    const num = el('span', 'advent-num');
+    num.textContent = String(n);
+    b.append(el('i', 'advent-ribbon'), num);
+    if (n < day) {
+        b.classList.add('is-lost');
+        b.addEventListener('click', () => setStatus(`Case du ${n} ratée : chaque case ne s’ouvre que le jour même.`, 'lost'));
+    } else if (n === day) {
+        b.classList.add(playedToday() ? 'is-today' : 'is-wait');
+        b.addEventListener('click', () => (playedToday() ? adventOpenDoor(b, setStatus)
+            : setStatus(`🎮 Joue une partie pour ouvrir la case du ${n} !`)));
+    } else {
+        b.classList.add('is-later');
+        b.addEventListener('click', () => setStatus(n === 24 ? 'Le 24 décembre : le cadre « Étoile de l’Avent » et 20 🪙, si tu ouvres la case ce jour-là.'
+            : `Patience : la case du ${n} s’ouvre le ${n} décembre.`));
+    }
+    return b;
 }
-function adventTip(text) {
-    const t = $('adventTip');
-    t.textContent = text || '';
-    t.hidden = !text;
+/** Case ouverte : le cadeau dedans (la carte tirée, s'il y en a une). */
+function adventFillOpen(b, n, ad) {
+    const g = ADVENT_GIFTS[n];
+    const [icon, short] = adventGiftInfo(g);
+    b.className = `advent-door is-open${n === 24 ? ' is-24' : ''}`;
+    b.replaceChildren();
+    const num = el('span', 'advent-open-num');
+    num.textContent = String(n);
+    const art = el('span', 'advent-gift');
+    const c = ad.cards[n] && CARDS.find(x => x.id === ad.cards[n]);
+    if (c) { art.classList.add('is-card', `r-${c.rarity}`); art.append(cardImg(c)); }
+    else art.append(giftIcon(icon));
+    const lab = el('span', 'advent-lab');
+    lab.textContent = c ? CARD_RARITIES[c.rarity].name : short;
+    b.append(num, art, lab);
 }
 
-/** Ouvre la case du jour : la porte tourne, le cadeau est donné. */
-function adventOpenDoor(btn) {
+/** Ouvre la case du jour : le ruban se défait, la case se retourne, le cadeau apparaît dedans. */
+function adventOpenDoor(btn, setStatus) {
     const day = adventDay();
     const ad = adventData();
-    if (!day || ad.open[day] || !playedToday()) return;
+    if (!day || ad.open[day] || !playedToday() || btn.classList.contains('is-opening')) return;
     const g = ADVENT_GIFTS[day];
     const d = state.data;
     ad.open[day] = todayKey();
@@ -169,23 +202,23 @@ function adventOpenDoor(btn) {
     if (g.boost) d.inv.boost = (d.inv.boost || 0) + 1;
     if (g.drops) { syncDrops(); addDrops(DROPS_MAX); }
     if (g.star) ad.star = true;
+    let card = null;
+    if (g.card) { card = adventDrawCard(!!g.rare); ad.cards[day] = card.id; }
     saveData();
-    renderHeader();
-    updateNavNotifications();
-    renderAdventRow();
     playSound('unlock');
-    const [icon, , long] = adventGiftInfo(g);
-    btn.classList.remove('is-today');
     btn.classList.add('is-opening');
+    const reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     setTimeout(() => {
-        btn.className = 'advent-door is-open is-new' + (day === 24 ? ' is-24' : '');
-        btn.innerHTML = `<s>${day}</s><em></em><small></small>`;
-        btn.querySelector('em').append(giftIcon(icon));
-        btn.querySelector('small').textContent = adventGiftInfo(g)[1];
-        adventTip(`🎁 Case ${day} : ${long} !${g.boost ? ' Active-le quand tu veux dans la boutique.' : ''}${g.star ? ' Le cadre est dans « Mon avatar ».' : ''}`);
+        adventFillOpen(btn, day, ad);
+        btn.classList.add('is-new');
+        const got = card ? `la carte « ${card.name} » (${CARD_RARITIES[card.rarity].name.toLowerCase()}), touche-la pour la voir` : adventGiftInfo(g)[2];
+        setStatus(`🎁 Case du ${day} : ${got} !`, 'done');
+        const sub = btn.closest('.advent-card')?.querySelector('.advent-hero-text p');
+        if (sub) sub.textContent = `${Object.keys(ad.open).length} / 24 cases ouvertes`;
         if (g.star) { avCheck(); launchConfetti(); }
-        if (g.card) setTimeout(() => { $('adventModal').hidden = true; openCardBoxes([{ size: 1, rare: !!g.rare }], `🗓️ Case ${day} du calendrier`); }, 900);
-    }, 450);
+        renderHeader();
+        updateNavNotifications();
+    }, reduced ? 0 : 650);
 }
 
 /* ---------- 3) ⚡ Pièces ×2 ---------- */
@@ -198,7 +231,6 @@ function activateBoost() {
     d.boostUntil = Date.now() + BOOST_MS;
     saveData();
     playSound('unlock');
-    showToast('⚡ Pièces ×2 pendant 15 minutes : à toi de jouer !');
     renderBoostChip();
     if (!$('shopScreen').hidden) renderShop();
 }
@@ -212,20 +244,16 @@ function boostShopLine(line, mkBtn) {
         [mkBtn(boostOn() ? `En cours · ${left} min` : 'Activer', 'btn-violet', boostOn() || !have, activateBoost)],
         { text: `🎒 ${have} en stock`, zero: !have });
 }
-/** Pastille « ⚡ 14:32 » à côté des pièces pendant le bonus. */
+/** Pendant le bonus : le rond des pièces porte « ×2 » en rose et le temps qui reste (sans changer de largeur). */
 function renderBoostChip() {
-    let chip = document.getElementById('boostChip');
-    if (!boostOn()) { if (chip) chip.remove(); return; }
-    if (!chip) {
-        chip = el('span', 'boost-chip');
-        chip.id = 'boostChip';
-        chip.title = 'Pièces ×2';
-        $('coinChip').after(chip);
-    }
+    const chip = $('coinChip');
+    const on = boostOn();
+    chip.classList.toggle('is-boost', on);
+    if (!on) { chip.removeAttribute('data-boost'); return; }
     const s = Math.max(0, Math.round(((state.data.boostUntil || 0) - Date.now()) / 1000));
-    chip.textContent = `⚡×2 ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    chip.dataset.boost = `×2 · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
-setInterval(() => { if (document.getElementById('boostChip') || boostOn()) renderBoostChip(); }, 1000);
+setInterval(() => { if (boostOn() || $('coinChip').classList.contains('is-boost')) renderBoostChip(); }, 1000);
 
 /* ---------- 4) Rayon de Noël ---------- */
 function noelRayonCard() {
@@ -305,7 +333,7 @@ function tourPick(ev) {
     for (let extra = t.extra; ; extra++) {
         const open = Math.min(NOEL_TOUR.length, stage + TOUR_OPEN + extra);
         const inOpen = q => stopIndex(q.stop) < open;
-        // nouvelles : 5 au plus du pays en cours (en premier), puis celles des autres pays ouverts, mélangées
+        // nouvelles : 5 au plus du pays en cours (en premier), puis celles des autres pays ouverts
         const freshAll = bank.filter(q => inOpen(q) && !ed.found[q.id] && !t.asked[q.id]);
         const here = shuffle(freshAll.filter(q => stopIndex(q.stop) === stage));
         const others = shuffle(freshAll.filter(q => stopIndex(q.stop) !== stage)).sort((a, b) => stopIndex(a.stop) - stopIndex(b.stop));
@@ -330,7 +358,6 @@ function tourAfterSession(ev, ids, right) {
         t.asked[id] = 1;
         if (!right.includes(id) && !ed.found[id]) t.missAt[id] = t.sessions;
     });
-    // les pays ouverts en avance restent ouverts, mais on ne compte plus l'avance une fois le traîneau arrivé
     const stage = Math.min(tourStage(ev), NOEL_TOUR.length - 1);
     t.extra = Math.max(0, Math.min(t.extra, NOEL_TOUR.length - stage - TOUR_OPEN));
 }
@@ -341,6 +368,7 @@ function tourTag(q) {
     return `🛷 ${s ? s[2] : 'Tournée'}${kind}`;
 }
 const flagImgOf = cc => { const i = el('img', 'tour-flag'); i.src = `flags/${cc}.svg`; i.alt = ''; return i; };
+const stopDone = name => `${name} livré${name === 'Philippines' ? 'es' : ['Australie', 'Suède', 'Allemagne', 'Italie', 'France', 'Laponie'].includes(name) ? 'e' : ''}`;
 
 /** Écran de fin : étape(s) livrée(s) pendant la partie → carte d'arrivée (tampon du pays, anecdote, prochaine étape). */
 function tourEndBlock(ev, before, total) {
@@ -352,7 +380,7 @@ function tourEndBlock(ev, before, total) {
         const stamp = el('div', 'tour-stamp');
         stamp.append(flagImgOf(done[1]));
         const sn = el('span');
-        sn.textContent = `${done[2]} livré${done[2] === 'Philippines' ? 'es' : ['Australie', 'Suède', 'Allemagne', 'Italie', 'France', 'Laponie'].includes(done[2]) ? 'e' : ''}`;
+        sn.textContent = stopDone(done[2]);
         stamp.append(sn);
         const tx = el('div', 'tour-arrive-text');
         const h = el('b');
@@ -392,14 +420,22 @@ function tourCenter(code) {   // centre de la plus grande partie d'un pays (Fran
 }
 function tourMap(stage) {
     const svg = document.createElementNS(SVGNS, 'svg');
-    svg.setAttribute('viewBox', `0 0 ${WORLD_MAP.w} ${WORLD_MAP.h}`);
+    svg.setAttribute('viewBox', `0 20 ${WORLD_MAP.w} ${WORLD_MAP.h - 40}`);   // sans l'Antarctique
     svg.setAttribute('class', 'tour-map');
+    // étoiles du ciel de la nuit de Noël
+    for (let i = 0; i < 40; i++) {
+        const s = document.createElementNS(SVGNS, 'circle');
+        s.setAttribute('cx', (i * 263) % WORLD_MAP.w); s.setAttribute('cy', 25 + ((i * 151) % (WORLD_MAP.h - 60)));
+        s.setAttribute('r', i % 4 ? 1.4 : 2.4);
+        s.setAttribute('class', `star${i % 5 ? '' : ' is-twinkle'}`);
+        svg.append(s);
+    }
     for (const [c, d] of WORLD_MAP.countries) {
         if (c === 'AQ') continue;
         const i = stopIndex(c);
         const p = document.createElementNS(SVGNS, 'path');
         p.setAttribute('d', d);
-        p.setAttribute('class', `land${i < 0 ? '' : i < stage ? ' is-done' : ' is-stop'}`);
+        p.setAttribute('class', `land${i < 0 ? '' : i < stage ? ' is-done' : i === stage ? ' is-cur' : ' is-stop'}`);
         svg.append(p);
     }
     const pts = NOEL_TOUR.map(s => tourCenter(s[0]) || { x: 0, y: 0 });
@@ -416,34 +452,37 @@ function tourMap(stage) {
         pl.setAttribute('class', cls);
         svg.append(pl);
     };
+    const cur = Math.min(stage, NOEL_TOUR.length - 1);
     path(0, NOEL_TOUR.length - 1, 'route');
-    path(0, Math.min(stage, NOEL_TOUR.length - 1), 'route is-done');
+    path(0, cur, 'route is-done');
     pts.forEach((p, i) => {
-        if (i === stage) return;
         const c = document.createElementNS(SVGNS, 'circle');
-        c.setAttribute('cx', p.x); c.setAttribute('cy', p.y); c.setAttribute('r', 9);
-        c.setAttribute('class', `dot${i < stage ? ' is-done' : ''}${i === NOEL_TOUR.length - 1 ? ' is-final' : ''}`);
+        c.setAttribute('cx', p.x); c.setAttribute('cy', p.y); c.setAttribute('r', i === cur ? 16 : 8);
+        c.setAttribute('class', `dot${i < stage ? ' is-done' : i === cur ? ' is-cur' : ''}${i === NOEL_TOUR.length - 1 ? ' is-final' : ''}`);
         svg.append(c);
     });
-    const cur = pts[Math.min(stage, NOEL_TOUR.length - 1)];
     const sled = document.createElementNS(SVGNS, 'image');
     sled.setAttribute('href', 'emoji/1f6f7.svg');
-    sled.setAttribute('x', cur.x - 26); sled.setAttribute('y', cur.y - 30);
-    sled.setAttribute('width', 52); sled.setAttribute('height', 52);
+    sled.setAttribute('x', pts[cur].x - 34); sled.setAttribute('y', pts[cur].y - 58);
+    sled.setAttribute('width', 68); sled.setAttribute('height', 68);
+    sled.setAttribute('class', 'sled');
     svg.append(sled);
     return svg;
 }
 
-/** Page de la tournée (Défis → 🎅 Noël). */
+/** Tournée (en haut de la page « Noël » pendant la Semaine de Noël). */
 function renderTour(ev, page) {
     const ed = eventData(ev);
     if (ed.won && !state.data.cards[ev.card.id]) setTimeout(() => openCardBoxes([{ fixed: [ev.card] }], `${ev.icon} Carte ${ev.name} !`), 300);
     const found = Math.min(tourFound(ev), ev.goal);
     const stage = tourStage(ev);
-    const card = el('article', 'card event-card tour-card');
+    const inStop = stage >= NOEL_TOUR.length ? TOUR_PER_STOP : found - stage * TOUR_PER_STOP;
+    const card = el('article', 'card tour-card');
+    // Bandeau de nuit : titre, carte du monde, étape en cours et ses 5 cadeaux
+    const hero = el('div', 'tour-hero');
     const top = el('div', 'tour-top');
     const h = el('h2');
-    h.textContent = '🛷 Tournée du Père Noël';
+    h.textContent = 'Tournée du Père Noël';
     const when = el('span', 'tour-when');
     when.textContent = `jusqu’au ${shortDate(ev.end)}`;
     top.append(h, when);
@@ -451,58 +490,72 @@ function renderTour(ev, page) {
     if (window.WORLD_MAP) mapBox.append(tourMap(stage));
     else encLoad('carte-monde.js').then(() => { if (challengesTab === 'event' && !$('challengesScreen').hidden) renderEvent(); }).catch(() => {});
     const leg = el('div', 'tour-leg');
-    const legT = el('span');
+    const legT = el('span', 'tour-leg-name');
     if (stage >= NOEL_TOUR.length) legT.textContent = '🏠 Tournée terminée !';
     else {
-        const s = NOEL_TOUR[stage];
-        legT.append(flagImgOf(s[1]));
-        legT.append(document.createTextNode(` Étape ${stage + 1} / ${NOEL_TOUR.length} · ${s[2]}`));
+        legT.append(flagImgOf(NOEL_TOUR[stage][1]));
+        const b = el('b');
+        b.textContent = NOEL_TOUR[stage][2];
+        const sm = el('small');
+        sm.textContent = `Étape ${stage + 1} / ${NOEL_TOUR.length}`;
+        const txt = el('span');
+        txt.append(b, sm);
+        legT.append(txt);
     }
     const gifts = el('span', 'tour-gifts');
-    const inStop = stage >= NOEL_TOUR.length ? TOUR_PER_STOP : found - stage * TOUR_PER_STOP;
     for (let i = 0; i < TOUR_PER_STOP; i++) { const g = el('i', i < inStop ? 'is-on' : ''); if (i < inStop) g.append(emojiImg('🎁')); gifts.append(g); }
     leg.append(legT, gifts);
-    const p = el('p', 'tour-blurb');
-    p.textContent = `${found} / ${ev.goal} cadeaux livrés. Chaque question trouvée = un cadeau ; tous les ${TOUR_PER_STOP} cadeaux, le traîneau change de pays. Sans gouttes 💧 ni cœurs.`;
+    hero.append(top, mapBox, leg);
+    const count = el('p', 'tour-count');
+    count.innerHTML = '';
+    const cb = el('b');
+    cb.textContent = `${found} / ${ev.goal}`;
+    count.append(cb, document.createTextNode(` cadeaux livrés · un par question trouvée, ${TOUR_PER_STOP} par pays · sans gouttes ni cœurs`));
     const actions = el('div', 'card-actions');
     const btn = el('button', 'btn btn-red');
     btn.type = 'button';
     btn.textContent = ed.won ? '🛷 Rejouer pour le plaisir' : '🛷 Livrer des cadeaux';
     btn.addEventListener('click', openEventStart);
     actions.append(btn);
-    // Étapes : toutes, avec les emojis d'avatar gagnés en route (15, 30, 45, 55 questions = étapes 3, 6, 9, 11)
-    const list = el('div', 'tour-stops');
+    // Carnet de route : un tampon par pays (doré = livré, bleu = en cours, gris = à venir), emojis gagnés en route
+    const book = el('div', 'tour-book');
+    const bh = el('p', 'tour-book-title');
+    bh.textContent = '🗺️ Carnet de route';
+    const stamps = el('div', 'tour-stamps');
     NOEL_TOUR.forEach((s, i) => {
-        const st = i < stage ? 'is-done' : i === stage ? 'is-cur' : 'is-lock';
-        const r = el('div', `tour-stop ${st}`);
-        const n = el('span', 'tour-n');
-        n.textContent = String(i + 1);
-        const tx = el('span', 'tour-name');
-        const b = el('b');
-        b.textContent = s[2];
-        const sm = el('small');
-        sm.textContent = s[3];
-        tx.append(b, sm);
-        const right = el('span', 'tour-r');
-        right.textContent = i < stage ? '5 / 5 ✓' : i === stage ? `${inStop} / 5` : '🔒';
+        const st = el('div', `tour-stp ${i < stage ? 'is-done' : i === stage ? 'is-cur' : 'is-lock'}`);
+        const ring = el('span', 'tour-stp-ring');
+        ring.append(flagImgOf(s[1]));
+        if (i < stage) { const ok = el('span', 'tour-stp-ok'); ok.textContent = '✓'; ring.append(ok); }
         const reward = (ev.rewards || []).find(x => x.at === (i + 1) * TOUR_PER_STOP);
-        if (reward) right.append(emojiImg(reward.emoji));
-        r.append(n, flagImgOf(s[1]), tx, right);
-        list.append(r);
+        if (reward) { const rw = el('span', `tour-stp-rw${state.data.avatarExtra.includes(reward.emoji) ? ' is-got' : ''}`); rw.append(emojiImg(reward.emoji)); ring.append(rw); }
+        const nm = el('b');
+        nm.textContent = s[2];
+        const sub = el('small');
+        sub.textContent = i < stage ? 'livré' : i === stage ? `${inStop} / ${TOUR_PER_STOP}` : `étape ${i + 1}`;
+        st.append(ring, nm, sub);
+        stamps.append(st);
     });
-    const reward = el('div', 'event-reward');
+    book.append(bh, stamps);
+    const reward = el('div', 'tour-prize');
     const rtext = el('p');
-    rtext.textContent = ed.won ? `✅ Carte gagnée ! Elle est dans ta collection, et le badge dans ton profil.`
-        : `🎄 Au bout de la tournée (${ev.goal} cadeaux) : la carte « ${ev.card.name} »${evBadgeText(ev)} et l’emoji 🌟.`;
+    rtext.textContent = nbspPunct(ed.won ? 'Carte gagnée ! Elle est dans ta collection, et le badge dans ton profil.'
+        : `Au bout de la tournée : la carte « ${ev.card.name} », le badge Noël 2026 et l’emoji 🌟. Des emojis 🎁 🎅 🍪 sont à gagner en route !`);
     reward.append(cardFace(ev.card, false, false), rtext);
     const left = pumpkinsLeft(ev);
-    const hidden = el('p', 'event-pumpkins');
-    hidden.textContent = left ? `🎁 Cadeaux cachés du jour : ${PUMPKINS_PER_DAY - left}/${PUMPKINS_PER_DAY} · dans les onglets du jeu (+${PUMPKIN_COINS} 🪙 chacun)`
-        : `🎁 Cadeaux cachés du jour : ${PUMPKINS_PER_DAY}/${PUMPKINS_PER_DAY} · reviens demain !`;
-    card.append(top, mapBox, leg, p, actions, list, reward, hidden);
+    const hidden = el('p', 'tour-hidden');
+    hidden.textContent = left ? `🎁 Cadeaux cachés dans les onglets : ${PUMPKINS_PER_DAY - left} / ${PUMPKINS_PER_DAY} aujourd’hui (+${PUMPKIN_COINS} 🪙 chacun)`
+        : `🎁 Cadeaux cachés : ${PUMPKINS_PER_DAY} / ${PUMPKINS_PER_DAY} aujourd’hui, reviens demain !`;
+    card.append(hero, count, actions, book, reward, hidden);
     page.append(card);
     const friends = renderEventFriends(ev, found);
     if (friends) page.append(friends);
+}
+
+/** Page de l'onglet « 🎄 Noël » de Défis : la tournée (21 → 27 décembre) puis le calendrier (1er → 24). */
+function renderNoelPage(ev, page) {
+    if (ev && ev.tour) renderTour(ev, page);
+    if (adventDay()) page.append(adventSection());
 }
 
 /* ---------- Bac à sable : choisir un faux jour de décembre ---------- */
@@ -547,11 +600,14 @@ function openNoelBacMenu() {
     adventTip(noelSimDay() ? `Jour simulé : ${shortDate(noelSimDay())}.` : 'Aucun jour simulé : le vrai jour.');
     $('adventModal').hidden = false;
 }
+function adventTip(text) {
+    const t = $('adventTip');
+    t.textContent = text || '';
+    t.hidden = !text;
+}
 
 /* ---------- Branchements (après le chargement de la page) ---------- */
 document.addEventListener('DOMContentLoaded', () => {
-    const row = $('adventRow');
-    if (row) row.addEventListener('click', () => openAdventModal());
     $('closeAdventBtn').addEventListener('click', () => { $('adventModal').hidden = true; });
     $('adventModal').addEventListener('click', e => { if (e.target === $('adventModal')) $('adventModal').hidden = true; });
     setTimeout(() => { noelSnow(); renderBoostChip(); }, 500);

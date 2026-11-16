@@ -874,10 +874,11 @@ body.keyboard-open #skipBtn { box-shadow: 0 3px 0 var(--line); }
 .btn-violet { --btn: var(--violet); --btn-deep: var(--violet-deep); --btn-ink: #ffffff; }
 
 .btn-ghost {
-    background: transparent;
-    color: var(--muted);
-    box-shadow: none;
-    border: 2px solid var(--line);   /* contour fin : on voit que c'est un bouton (tous les boutons secondaires) */
+    /* 16/11 (demande de l'utilisateur : « Retour » presque invisible) : fond, contour plus marqué et petite ombre en bas */
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--muted) 45%, transparent);
+    border: 2px solid color-mix(in srgb, var(--muted) 45%, transparent);
     padding-block: 13px;             /* même hauteur totale que les autres boutons malgré le contour */
 }
 .btn-ghost:hover  { color: var(--ink); }
@@ -4995,20 +4996,25 @@ body.nav6 .challenges-tabs:not(:has(.challenges-tab:not([hidden]):not([data-sub=
 @media (max-width: 900px) { body.nav6 .nav-btn { font-size: 0.66rem; padding-inline: 0; min-width: 0; } }
 
 /* ============================================================
-   Noël 2026 (16/11, bac à sable) : décor de décembre, calendrier de l'Avent, ⚡ Pièces ×2, rayon de Noël,
-   tournée du Père Noël (noel.js), objets d'avatar de Noël (cosmetiques.js)
+   Noël 2026 (16/11, bac à sable) : décor de décembre, onglet « 🎄 Noël » (calendrier de l'Avent, tournée du Père Noël),
+   ⚡ Pièces ×2 (sur le rond des pièces), rayon de Noël, objets d'avatar de Noël
    ============================================================ */
 body.deco-noel main,
 body.deco-noel .lesson { background: linear-gradient(180deg, rgba(61, 139, 255, 0.10), rgba(224, 36, 47, 0.05) 60%, rgba(31, 138, 76, 0.07)); }
 body.deco-noel .decor-badge { filter: drop-shadow(0 4px 10px rgba(224, 36, 47, 0.25)); }
 body.event-noel .event-banner { background: linear-gradient(90deg, #b3121c, #e0242f); color: #fff; box-shadow: 0 4px 0 #7d0d14, 0 6px 16px rgba(0, 0, 0, 0.2); }
 body.event-noel .topbar { box-shadow: inset 0 -3px 0 #e0242f; }
-body.event-noel .nav-btn.is-active { box-shadow: inset 0 -3px 0 #e0242f; }
 .noel-snow { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
 .noel-snow i { position: absolute; top: -12px; color: #fff; font-style: normal; text-shadow: 0 0 3px rgba(60, 100, 170, 0.55); animation: noelFall linear infinite; }
 @keyframes noelFall { to { transform: translate(24px, 105vh) rotate(200deg); } }
 body:has(.modal-overlay:not([hidden])) .noel-snow { display: none; }
 @media (prefers-reduced-motion: reduce) { .noel-snow { display: none; } }
+
+/* Onglets de Défis avec 6 onglets en bas : quand un onglet d'événement / Noël existe, « 🏆 Défis » revient à côté pour y retourner */
+body.nav6 .challenges-tabs:has(#eventTab:not([hidden])) .challenges-tab[data-sub="defis"] { display: inline-flex; align-items: center; justify-content: center; }
+.challenges-tab { position: relative; }
+.challenges-tab[data-notif]::after { content: attr(data-notif); position: absolute; top: -6px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 9px; background: var(--red); color: #fff; font-size: 0.68rem; font-weight: 900; display: grid; place-items: center; }
 
 /* Objets d'avatar de Noël */
 .fr-garland::before { background: repeating-conic-gradient(#e0242f 0 20deg, #ffd34d 20deg 40deg, #1f8a4c 40deg 60deg, #3d8bff 60deg 80deg); animation: avSpin 9s linear infinite; }
@@ -5017,82 +5023,149 @@ body:has(.modal-overlay:not([hidden])) .noel-snow { display: none; }
 .fr-advent-2026::after { background-image: url(emoji/1f31f.svg); }
 .league-avatar.bg-sweater { background: radial-gradient(circle at 25% 50%, #fff 1.4px, transparent 2px) 0 0 / 9px 9px, repeating-linear-gradient(0deg, #b3121c 0 22%, #ffffff 22% 26%, #1f8a4c 26% 48%, #ffffff 48% 52%); }
 
-/* Calendrier de l'Avent */
-.advent-row .quest-row-bar .is-me { background: #e0242f; }
-.advent-sheet { max-width: 460px; }
-.advent-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
-.advent-sheet h2 { font-size: 1.3rem; margin-bottom: 4px; }
-.advent-sheet #adventSub { margin: 0; font-size: 0.85rem; }
-.advent-door { min-width: 0; overflow: hidden; }
-.advent-coin { font-size: 1.05rem; line-height: 1; display: block; text-align: center; }
-.advent-door { position: relative; aspect-ratio: 1 / 1; border: 0; border-radius: 12px; font: inherit; font-weight: 900; font-size: 1rem; color: #fff;
-    background: #e0242f; box-shadow: 0 3px 0 #a8141d; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px; }
-.advent-door:nth-child(odd) { background: #1f8a4c; box-shadow: 0 3px 0 #13643a; }
-.advent-door.is-later { opacity: 0.55; }
-.advent-door.is-wait { background: #f3b400; box-shadow: 0 3px 0 #c99400; opacity: 0.8; }
-.advent-door.is-today { background: #f3b400; box-shadow: 0 3px 0 #c99400, 0 0 0 4px rgba(243, 180, 0, 0.35); animation: adventGlow 1.6s ease-in-out infinite; }
-@keyframes adventGlow { 50% { box-shadow: 0 3px 0 #c99400, 0 0 0 8px rgba(243, 180, 0, 0.12); } }
-.advent-door.is-lost { background: var(--line) !important; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.12) !important; color: var(--muted); }
-.advent-door.is-open { background: var(--surface) !important; color: var(--ink); box-shadow: 0 3px 0 var(--line) !important; border: 2px solid var(--line); font-size: 0.6rem; line-height: 1.1; }
-.advent-door.is-open s { position: absolute; top: 2px; left: 5px; text-decoration: none; font-size: 0.58rem; color: var(--muted); }
-.advent-door.is-open em { width: 46%; height: 46%; display: block; }
-.advent-door.is-open em .emoji-img { width: 100%; height: 100%; }
-.advent-door.is-open small { font-size: 0.56rem; font-weight: 800; white-space: nowrap; overflow: hidden; max-width: 100%; }
-.advent-door.is-24:not(.is-open):not(.is-lost) { background: linear-gradient(135deg, #ffc800, #ff8a00); box-shadow: 0 3px 0 #c99400; }
-.advent-door.is-opening { animation: adventFlip 0.45s ease-in forwards; }
-@keyframes adventFlip { to { transform: perspective(300px) rotateY(90deg); } }
-.advent-door.is-new { animation: adventPop 0.4s ease-out; }
-@keyframes adventPop { from { transform: perspective(300px) rotateY(-90deg); } to { transform: none; } }
-.advent-tip { margin: 14px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--gold-tint, #fff4d6); color: var(--ink); font-weight: 800; font-size: 0.9rem; line-height: 1.4; text-align: center; }
-.advent-bac-btn { grid-column: span 3; font-size: 0.85rem; padding: 10px 6px; }
+/* ---------- Calendrier de l'Avent (page « 🎄 Noël ») ---------- */
+.advent-card { padding: 0; overflow: hidden; }
+.advent-hero { position: relative; display: flex; align-items: center; gap: 10px; padding: 16px 16px 14px; color: #fff;
+    background: radial-gradient(circle at 15% 30%, rgba(255, 255, 255, 0.18) 1.5px, transparent 2px) 0 0 / 22px 22px,
+                radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.12) 1px, transparent 1.5px) 0 0 / 17px 17px,
+                linear-gradient(135deg, #c81d25, #8e0f17); }
+.advent-hero-text { flex: 1; min-width: 0; }
+.advent-hero h2 { margin: 0; color: #fff; font-size: 1.35rem; line-height: 1.15; }
+.advent-hero p { margin: 4px 0 0; font-weight: 800; font-size: 0.88rem; color: #ffe2a8; }
+.advent-kulti { flex: none; width: 66px; height: 66px; margin-top: 6px; }
+.advent-status { margin: 14px 14px 0; padding: 10px 12px; border-radius: 14px; font-weight: 800; font-size: 0.92rem; line-height: 1.35; text-align: center;
+    background: var(--bg-soft, rgba(61, 139, 255, 0.08)); color: var(--ink); }
+.advent-status.is-go { background: #fff4d6; color: #7a4d00; box-shadow: inset 0 0 0 2px #ffd34d; }
+.advent-status.is-done { background: rgba(79, 199, 44, 0.14); color: var(--ok-ink, #2a6b14); }
+.advent-status.is-lost { background: rgba(0, 0, 0, 0.05); color: var(--muted); }
+.advent-board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; padding: 14px; }
+.advent-foot { margin: 0 14px 16px; color: var(--muted); font-size: 0.8rem; line-height: 1.4; text-align: center; }
+
+/* Case fermée : un petit paquet cadeau (ruban doré en croix, numéro dans une étiquette ronde) */
+.advent-door { position: relative; aspect-ratio: 1 / 1; min-width: 0; border: 0; border-radius: 14px; padding: 0; cursor: pointer; overflow: hidden;
+    font: inherit; color: #fff; --c: #d62839; --c-deep: #9b1520; background: var(--c); box-shadow: 0 4px 0 var(--c-deep), inset 0 0 0 2px rgba(255, 255, 255, 0.12); }
+.advent-door.is-green { --c: #1f8a4c; --c-deep: #13643a; }
+.advent-door.is-night { --c: #2b4a8c; --c-deep: #1a2f5c; }
+.advent-door.is-24 { --c: #f0a500; --c-deep: #b87a00; }
+.advent-ribbon, .advent-ribbon::after { position: absolute; background: linear-gradient(90deg, #f7c948, #ffe28a 50%, #e6b12e); }
+.advent-ribbon { left: calc(50% - 6px); top: 0; bottom: 0; width: 12px; }
+.advent-ribbon::after { content: ''; left: calc(-50vw); right: calc(-50vw); top: calc(50% - 6px); height: 12px; }
+.advent-num { position: absolute; left: 50%; top: 50%; width: 46%; aspect-ratio: 1 / 1; transform: translate(-50%, -50%); border-radius: 50%;
+    background: #fff; color: var(--c-deep); display: grid; place-items: center; font-weight: 900; font-size: 1.15rem; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18); }
+.advent-door.is-24 .advent-num { width: 54%; font-size: 1.3rem; }
+.advent-door.is-later { filter: saturate(0.75); }
+.advent-door.is-wait .advent-num { box-shadow: 0 0 0 3px #ffd34d; }
+.advent-door.is-today { animation: adventWiggle 2.4s ease-in-out infinite; box-shadow: 0 4px 0 var(--c-deep), 0 0 0 4px #ffd34d, 0 0 18px rgba(255, 211, 77, 0.8); }
+@keyframes adventWiggle { 0%, 80%, 100% { transform: rotate(0); } 84% { transform: rotate(-4deg); } 88% { transform: rotate(4deg); } 92% { transform: rotate(-3deg); } 96% { transform: rotate(2deg); } }
+.advent-door.is-lost { filter: grayscale(1); opacity: 0.38; }
+/* Ouverture : le ruban se défait, la case se retourne */
+.advent-door.is-opening { animation: adventOpen 0.65s ease-in forwards; }
+.advent-door.is-opening .advent-ribbon { transition: transform 0.3s ease-in; transform: scaleY(0); }
+.advent-door.is-opening .advent-ribbon::after { transition: transform 0.3s ease-in; transform: scaleX(0); }
+@keyframes adventOpen { 0% { transform: scale(1); } 45% { transform: scale(1.12) rotate(-4deg); } 100% { transform: perspective(400px) rotateY(90deg) scale(1.05); } }
+.advent-door.is-new { animation: adventReveal 0.45s ease-out; }
+@keyframes adventReveal { from { transform: perspective(400px) rotateY(-90deg) scale(1.05); } to { transform: none; } }
+/* Case ouverte : le cadeau dedans */
+.advent-door.is-open { background: #fffaf0; color: var(--ink); box-shadow: 0 3px 0 #ead9b3, inset 0 0 0 2px #f2dfb4; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.advent-door.is-open.is-24 { background: linear-gradient(160deg, #fff6d6, #ffe08a); box-shadow: 0 3px 0 #d9a520, inset 0 0 0 2px #f0c040; }
+.advent-open-num { position: absolute; top: 4px; left: 7px; font-size: 0.66rem; font-weight: 900; color: #b0894a; }
+.advent-gift { width: 46%; aspect-ratio: 1 / 1; display: grid; place-items: center; }
+.advent-gift .emoji-img { width: 100%; height: 100%; }
+.advent-gift.is-card { width: 44%; aspect-ratio: 3 / 4; border-radius: 6px; padding: 3px; background: var(--r, #9aa6bd); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18); }
+.advent-gift.is-card.r-rare { --r: #1899d6; } .advent-gift.is-card.r-epic { --r: #8b5cf6; } .advent-gift.is-card.r-legendary { --r: #ffc800; }
+.advent-coin { font-size: 1.6rem; line-height: 1; }
+.advent-lab { font-size: 0.64rem; font-weight: 900; color: #8a5a00; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 92%; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .advent-door.is-open { background: #2e2a1f; box-shadow: 0 3px 0 #4a4026, inset 0 0 0 2px #5c4f2c; }
+    :root:not([data-theme="light"]) .advent-lab { color: #f2c76a; }
+    :root:not([data-theme="light"]) .advent-status.is-go { background: #3a3014; color: #ffe08a; }
+}
+:root[data-theme="dark"] .advent-door.is-open { background: #2e2a1f; box-shadow: 0 3px 0 #4a4026, inset 0 0 0 2px #5c4f2c; }
+:root[data-theme="dark"] .advent-lab { color: #f2c76a; }
+:root[data-theme="dark"] .advent-status.is-go { background: #3a3014; color: #ffe08a; }
 @media (prefers-reduced-motion: reduce) { .advent-door { animation: none !important; } }
 
-/* ⚡ Pièces ×2 */
-.boost-chip { display: inline-flex; align-items: center; padding: 3px 8px; margin-left: 4px; border-radius: 999px; background: #8b5cf6; color: #fff; font-weight: 900; font-size: 0.78rem; white-space: nowrap; animation: avPulse 1.6s ease-in-out infinite; }
+/* Fenêtre du bac à sable (choix du jour) */
+.advent-sheet { max-width: 460px; }
+.advent-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+.advent-tip { margin: 14px 0 0; padding: 10px 12px; border-radius: 12px; background: #fff4d6; color: #5a3b00; font-weight: 800; font-size: 0.9rem; line-height: 1.4; text-align: center; }
+.advent-bac-btn { grid-column: span 3; font-size: 0.85rem; padding: 10px 6px; }
 
-/* Rayon de Noël */
+/* ---------- ⚡ Pièces ×2 : sur le rond des pièces (contour rose + « ×2 · 12:34 » en rose dessous, sans élargir la barre) ---------- */
+.chip-coins.is-boost { position: relative; box-shadow: inset 0 0 0 2px #ff4b8b; overflow: visible; }
+.chip-coins.is-boost::after { content: attr(data-boost); position: absolute; left: 50%; top: calc(100% - 7px); transform: translateX(-50%);
+    padding: 1px 6px; border-radius: 8px; background: #ff4b8b; color: #fff; font-size: 0.6rem; font-weight: 900; line-height: 1.35; white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18); pointer-events: none; z-index: 2; }
+
+/* ---------- Rayon de Noël ---------- */
 .vitrine.is-rayon { border-color: #f3a6aa; background: linear-gradient(170deg, rgba(224, 36, 47, 0.07), transparent 55%), var(--surface); }
-.vitrine.is-rayon .vitrine-row { grid-template-columns: repeat(3, 1fr); gap: 10px 6px; }
+.vitrine.is-rayon .vitrine-row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 6px; }
 .vitrine.is-rayon .vit-cell { padding: 16px 4px 10px; }
 .vitrine.is-rayon .vit-cell .btn { padding-left: 6px; padding-right: 6px; width: 100%; }
 
-/* Tournée du Père Noël */
-.tour-card { overflow: hidden; }
-.tour-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-.tour-top h2 { margin: 0; }
-.tour-when { color: var(--muted); font-size: 0.8rem; font-weight: 800; white-space: nowrap; }
-.tour-map-box { margin: 10px -4px 6px; border-radius: 16px; background: linear-gradient(170deg, #1f3c78, #14254a); padding: 6px 4px; min-height: 60px; }
-.tour-map { display: block; width: 100%; height: auto; }
-.tour-map .land { fill: #2f4f8f; stroke: #24407a; stroke-width: 0.6; }
-.tour-map .land.is-stop { fill: #4a6fbd; }
-.tour-map .land.is-done { fill: #a07d1c; }
-.tour-map .route { fill: none; stroke: rgba(255, 255, 255, 0.55); stroke-width: 3; stroke-dasharray: 1 9; stroke-linecap: round; }
-.tour-map .route.is-done { stroke: #ffd34d; stroke-dasharray: none; stroke-width: 3.4; }
-.tour-map .dot { fill: #fff; stroke: #14254a; stroke-width: 2; }
+/* ---------- Tournée du Père Noël ---------- */
+.tour-card { padding: 0; overflow: hidden; }
+.tour-hero { padding: 14px 12px 12px; color: #fff; background: linear-gradient(175deg, #0d1a3a, #1f3c78 70%, #2a4f96); }
+.tour-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 0 4px; }
+.tour-top h2 { margin: 0; color: #fff; font-size: 1.3rem; }
+.tour-when { color: #ffd34d; font-size: 0.78rem; font-weight: 800; white-space: nowrap; }
+.tour-map-box { margin: 8px 0 10px; min-height: 60px; }
+.tour-map { display: block; width: 100%; height: auto; overflow: visible; }
+.tour-map .star { fill: #fff; opacity: 0.55; }
+.tour-map .star.is-twinkle { animation: tourTwinkle 2.6s ease-in-out infinite; }
+@keyframes tourTwinkle { 50% { opacity: 0.1; } }
+.tour-map .land { fill: #33528f; stroke: #26437a; stroke-width: 0.6; }
+.tour-map .land.is-stop { fill: #4f73bf; }
+.tour-map .land.is-cur { fill: #7fa4ff; }
+.tour-map .land.is-done { fill: #c9a02c; }
+.tour-map .route { fill: none; stroke: rgba(255, 255, 255, 0.5); stroke-width: 3; stroke-dasharray: 1 10; stroke-linecap: round; }
+.tour-map .route.is-done { stroke: #ffd34d; stroke-dasharray: none; stroke-width: 4; filter: drop-shadow(0 0 3px rgba(255, 211, 77, 0.8)); }
+.tour-map .dot { fill: #fff; stroke: #14254a; stroke-width: 2.5; }
 .tour-map .dot.is-done { fill: #ffd34d; }
 .tour-map .dot.is-final { fill: #ff5a5a; }
-.tour-flag { width: 24px; height: 16px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1); flex: none; vertical-align: -3px; }
-.tour-leg { display: flex; align-items: center; gap: 8px; font-weight: 900; }
-.tour-leg > span:first-child { display: inline-flex; align-items: center; gap: 6px; }
-.tour-gifts { display: flex; gap: 3px; margin-left: auto; }
-.tour-gifts i { width: 24px; height: 24px; border-radius: 7px; background: var(--line); display: grid; place-items: center; }
-.tour-gifts i.is-on { background: #ffd34d; }
-.tour-gifts .emoji-img { width: 16px; height: 16px; }
-.tour-blurb { color: var(--muted); font-size: 0.88rem; line-height: 1.4; margin: 10px 0 4px; }
-.tour-stops { display: flex; flex-direction: column; gap: 5px; margin: 14px 0 6px; }
-.tour-stop { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 12px; border: 2px solid var(--line); font-size: 0.85rem; }
-.tour-stop.is-done { background: var(--gold-tint, #fff4d6); border-color: #f2d98a; }
-.tour-stop.is-cur { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(61, 139, 255, 0.18); }
-.tour-stop.is-lock { opacity: 0.6; }
-.tour-n { width: 18px; text-align: center; color: var(--muted); font-weight: 900; }
-.tour-name { display: flex; flex-direction: column; min-width: 0; }
-.tour-name b { font-weight: 900; }
-.tour-name small { color: var(--muted); font-size: 0.72rem; font-weight: 700; }
-.tour-r { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-weight: 900; font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
-.tour-stop.is-done .tour-r { color: var(--gold-ink, #8a5a00); }
-.tour-r .emoji-img { width: 18px; height: 18px; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tour-stop.is-done { background: #3a3014; border-color: #6b5a22; } }
-:root[data-theme="dark"] .tour-stop.is-done { background: #3a3014; border-color: #6b5a22; }
+.tour-map .dot.is-cur { fill: rgba(255, 211, 77, 0.25); stroke: #ffd34d; stroke-width: 3; animation: tourPulse 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes tourPulse { 50% { transform: scale(1.35); opacity: 0.6; } }
+.tour-map .sled { filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5)); }
+.tour-flag { width: 24px; height: 16px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12); flex: none; }
+.tour-leg { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 14px; background: rgba(255, 255, 255, 0.1); }
+.tour-leg-name { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.tour-leg-name .tour-flag { width: 30px; height: 20px; }
+.tour-leg-name > span { display: flex; flex-direction: column; line-height: 1.15; }
+.tour-leg-name b { font-weight: 900; font-size: 1rem; }
+.tour-leg-name small { font-weight: 800; font-size: 0.72rem; color: #c9d6f5; }
+.tour-gifts { display: flex; gap: 4px; margin-left: auto; }
+.tour-gifts i { width: 26px; height: 26px; border-radius: 8px; background: rgba(255, 255, 255, 0.14); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.25); display: grid; place-items: center; }
+.tour-gifts i.is-on { background: #ffd34d; box-shadow: 0 2px 0 #c99400; }
+.tour-gifts .emoji-img { width: 17px; height: 17px; }
+.tour-count { margin: 12px 14px 0; color: var(--muted); font-size: 0.86rem; line-height: 1.4; text-align: center; }
+.tour-count b { color: var(--ink); font-weight: 900; font-size: 1.05rem; }
+.tour-card .card-actions { padding: 0 14px; }
+.tour-book { margin: 16px 14px 0; padding: 12px 8px 10px; border-radius: 16px; background: rgba(61, 139, 255, 0.07); }
+.tour-book-title { margin: 0 0 10px; text-align: center; font-weight: 900; }
+.tour-stamps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 4px; }
+.tour-stp { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; min-width: 0; }
+.tour-stp-ring { position: relative; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--surface);
+    box-shadow: inset 0 0 0 2.5px var(--line); }
+.tour-stp-ring .tour-flag { width: 30px; height: 20px; }
+.tour-stp b { font-size: 0.72rem; font-weight: 900; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tour-stp small { font-size: 0.64rem; font-weight: 800; color: var(--muted); }
+.tour-stp.is-done .tour-stp-ring { background: #fff4d6; box-shadow: inset 0 0 0 3px #e0b43a; transform: rotate(-8deg); }
+.tour-stp.is-done small { color: #a07510; }
+.tour-stp.is-cur .tour-stp-ring { box-shadow: inset 0 0 0 3px var(--blue), 0 0 0 4px rgba(61, 139, 255, 0.2); }
+.tour-stp.is-cur small { color: var(--blue); font-weight: 900; }
+.tour-stp.is-lock .tour-stp-ring .tour-flag { filter: grayscale(1); opacity: 0.45; }
+.tour-stp.is-lock b { color: var(--muted); }
+.tour-stp-ok { position: absolute; right: -3px; bottom: -3px; width: 20px; height: 20px; border-radius: 50%; background: #e0b43a; color: #fff; font-size: 0.7rem; font-weight: 900; display: grid; place-items: center; box-shadow: 0 0 0 2px var(--surface); }
+.tour-stp-rw { position: absolute; left: -5px; top: -5px; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
+.tour-stp-rw .emoji-img { width: 15px; height: 15px; }
+.tour-stp-rw:not(.is-got) .emoji-img { filter: grayscale(1); opacity: 0.6; }
+.tour-prize { display: flex; align-items: center; gap: 12px; margin: 14px; padding: 10px; border-radius: 16px; border: 2px dashed #f3a6aa; }
+.tour-prize .kcard { flex: none; width: 64px; }
+.tour-prize p { margin: 0; font-size: 0.86rem; line-height: 1.4; font-weight: 700; }
+.tour-hidden { margin: 0 14px 16px; text-align: center; color: var(--muted); font-size: 0.82rem; font-weight: 700; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tour-stp.is-done .tour-stp-ring { background: #3a3014; } }
+:root[data-theme="dark"] .tour-stp.is-done .tour-stp-ring { background: #3a3014; }
+@media (prefers-reduced-motion: reduce) { .tour-map .dot.is-cur, .tour-map .star.is-twinkle { animation: none; } }
 
 /* Étape livrée (écran de fin) */
 .tour-arrive { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; border-radius: 16px; background: linear-gradient(160deg, #1f3c78, #14254a); color: #fff; text-align: left; }
@@ -5103,7 +5176,5 @@ body:has(.modal-overlay:not([hidden])) .noel-snow { display: none; }
 @keyframes tourStamp { from { transform: rotate(-12deg) scale(2.2); opacity: 0; } to { transform: rotate(-12deg) scale(1); opacity: 1; } }
 .tour-arrive-text b { display: block; font-size: 1.1rem; font-weight: 900; }
 .tour-arrive-text p { margin: 3px 0 4px; font-size: 0.84rem; line-height: 1.35; color: #fff; opacity: 0.92; }
-.tour-card h2 { color: #c81d25; }
-.event-card.tour-card { border-color: #f3a6aa; }
 .tour-arrive-text small { font-size: 0.76rem; font-weight: 800; color: #ffd34d; }
 @media (prefers-reduced-motion: reduce) { .tour-stamp { animation: none; } }

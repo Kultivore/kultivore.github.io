@@ -2656,6 +2656,7 @@ function noelSimDay() {
     try { return localStorage.getItem('kultivo_bac_noelday') || null; } catch (err) { return null; }
 }
 const noelDayKey = () => noelSimDay() || todayKey();
+const noelTabOn = () => typeof adventTabOn === 'function' && adventTabOn();   // onglet « 🎄 Noël » de Défis sans événement (noel.js)
 function currentEvent() {
     let demo = null;
     try { demo = new URLSearchParams(location.search).get('demo'); } catch (err) { /* sans adresse */ }
@@ -2812,8 +2813,9 @@ function applyEventLook() {
     EVENTS.forEach(e => document.body.classList.toggle(e.cls, !!ev && ev.id === e.id));
     document.body.classList.toggle('deco-baby', babyDecorOn());
     document.body.classList.toggle('deco-noel', typeof noelDecorOn === 'function' && (noelDecorOn() || ev?.bank === 'noel'));   // 16/11 : neige
-    $('eventTab').hidden = !ev;
-    if (ev) $('eventTab').textContent = `${ev.icon} ${ev.name}`;
+    $('eventTab').hidden = !ev && !noelTabOn();
+    if (ev) $('eventTab').textContent = ev.tour ? '🎄 Noël' : `${ev.icon} ${ev.name}`;
+    else if (noelTabOn()) $('eventTab').textContent = '🎄 Noël';   // 16/11 : calendrier de l'Avent (1er → 24 décembre)
 }
 
 function updateEventBanner() {
@@ -2866,8 +2868,9 @@ function renderEvent() {
     const page = $('eventPage');
     page.replaceChildren();
     const ev = currentEvent();
+    // 16/11 : onglet « 🎄 Noël » (calendrier de l'Avent du 1er au 24 décembre, tournée du Père Noël du 21 au 27)
+    if ((!ev && noelTabOn()) || (ev && ev.tour && typeof renderNoelPage === 'function')) { renderNoelPage(ev, page); return; }
     if (!ev) return;
-    if (ev.tour && typeof renderTour === 'function') { renderTour(ev, page); return; }   // 16/11 : tournée du Père Noël
     const ed = eventData(ev);
     // Carte gagnée mais pas reçue (appli fermée pendant l'animation de fin) : on la donne maintenant
     if (ed.won && !state.data.cards[ev.card.id]) setTimeout(() => openCardBoxes([{ fixed: [ev.card] }], `${ev.icon} Carte ${ev.name} !`), 300);
@@ -3004,8 +3007,9 @@ function endEvent() {
     checkBadges();
     setEnd({
         emoji: won ? '🏆' : ev.icon,
-        title: won ? 'Carte gagnée !' : `${ev.icon} ${ev.name}`,
+        title: won ? 'Carte gagnée !' : ev.tour ? '🛷 Tournée du Père Noël' : `${ev.icon} ${ev.name}`,
         text: won ? `Tu as gagné la carte « ${ev.card.name} »${evBadgeText(ev)} !`
+            : ev.tour ? `${right.length} bonnes réponses sur ${state.total} · ${plural(total - before, 'cadeau livré', 'cadeaux livrés')} · ${Math.min(total, ev.goal)} / ${ev.goal} pour finir la tournée`
             : `${right.length} trouvées sur ${state.total}${total > before ? ` (+${total - before} nouvelles)` : ''} · ${Math.min(total, ev.goal)} / ${ev.goal} questions trouvées pour la carte`,
         stats: [statXp(), statAccuracy(), statTime()],
         extra: [drawingsText, rewardSummary()].filter(Boolean).join('\n'),
@@ -3648,7 +3652,9 @@ function updateNavNotifications() {
         unclaimedGoals = 1;
     }
     
-    unclaimedGoals += missionsToClaim() + questsToClaim() + (typeof adventToOpen === 'function' ? adventToOpen() : 0);
+    const adventReady = typeof adventToOpen === 'function' ? adventToOpen() : 0;   // 16/11 : case du jour à ouvrir
+    unclaimedGoals += missionsToClaim() + questsToClaim() + adventReady;
+    if (adventReady) $('eventTab').setAttribute('data-notif', '1'); else $('eventTab').removeAttribute('data-notif');
     const challengesBtn = document.querySelector('.nav-btn[data-screen="challenges"]');
     if (unclaimedGoals > 0) challengesBtn.setAttribute('data-notif', unclaimedGoals);
     else challengesBtn.removeAttribute('data-notif');
@@ -5832,7 +5838,6 @@ function renderChallenges() {
         : 'Modifiable tant que tu n’as pas joué aujourd’hui.';
     renderMissionsRow();
     questLoad();
-    if (typeof renderAdventRow === 'function') renderAdventRow();   // 16/11 : calendrier de l'Avent (décembre)
 
     // Défi du jour
     const result = data.daily[today];
@@ -9935,7 +9940,7 @@ function setChallengesTab(name) {
         state.data.tipChallenges = true;
         saveData();
     }
-    if (name === 'event' && !currentEvent()) name = 'defis';   // événement terminé
+    if (name === 'event' && !currentEvent() && !noelTabOn()) name = 'defis';   // événement terminé
     challengesTab = name;
     document.querySelectorAll('.challenges-tab').forEach(t => {
         const on = t.dataset.sub === name;
