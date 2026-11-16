@@ -10,7 +10,7 @@
    Si tu ajoutes un nouveau fichier au jeu, ajoute-le dans FILES.
    ============================================================ */
 
-const CACHE = 'kultivo-v249';
+const CACHE = 'kultivo-v250';
 const FILES = [
     './',
     './index.html',

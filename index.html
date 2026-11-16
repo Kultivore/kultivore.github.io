@@ -72,12 +72,12 @@
             setTimeout(function () { var x = document.getElementById('splash'); if (x) x.remove(); }, 8000);
         })();
     </script>
-    <script src="kulti.js?v=20261116y"></script>
+    <script src="kulti.js?v=20261116z"></script>
     <script>document.getElementById('splashRider').append(kultiEl('content', 'kulti-blink'));</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20261116y">
+    <link rel="stylesheet" href="style.css?v=20261116z">
 
     <!-- BARRE DU HAUT (visible hors leçon) -->
     <header class="topbar" id="topbar">
@@ -267,6 +267,7 @@
                 </article>
             </div>
             <p class="credits">Emojis et cerveau du logo : Twemoji (CC BY 4.0) · Drapeaux : flagcdn.com · Photos des monuments : Wikimedia Commons (auteurs et licences sous chaque photo)</p>
+            <p class="legal-links" id="legalLinks" hidden><a href="confidentialite.html" target="_blank" rel="noopener">Confidentialité</a> · <button type="button" id="legalDeleteBtn" class="link-btn">Supprimer mon compte</button></p>
         </section>
 
         <!-- PREMIER LANCEMENT : accueil en quelques écrans (niveau, objectif, test de placement) -->
@@ -467,6 +468,7 @@
                 </div>
                 <p class="auth-error" id="authError" role="alert"></p>
                 <button type="submit" id="authSubmit" class="btn btn-green btn-full">Créer mon compte</button>
+                <p class="auth-legal" id="authLegal" hidden>En créant un compte, tu acceptes la <a href="confidentialite.html" target="_blank" rel="noopener">politique de confidentialité</a>.</p>
             </form>
             <button type="button" id="authSwitch" class="auth-link"></button>
             <button type="button" id="authForgot" class="auth-link" hidden>Mot de passe oublié ?</button>
@@ -481,6 +483,10 @@
             <p>Connecté : <b id="accountEmail"></b></p>
             <p id="accountStatus"></p>
             <button type="button" id="cloudLogoutBtn" class="btn btn-ghost btn-full">Se déconnecter</button>
+            <div class="account-legal" id="accountLegal" hidden>
+                <a href="confidentialite.html" target="_blank" rel="noopener">🔒 Politique de confidentialité</a>
+                <button type="button" id="deleteAccountBtn" class="link-btn danger-link">Supprimer mon compte</button>
+            </div>
         </div>
     </div>
 
@@ -663,36 +669,36 @@
     <div class="toasts" id="toasts" aria-live="polite"></div>
 
     <!-- L'ordre compte : les questions d'abord, puis la logique -->
-    <script src="questions.js?v=20261116y"></script>
-    <script src="pairs.js?v=20261116y"></script>
-    <script src="order.js?v=20261116y"></script>
-    <script src="facts.js?v=20261116y"></script>
-    <script src="entrainement/banque.js?v=20261116y"></script>
-    <script src="entrainement/histoire.js?v=20261116y"></script>
-    <script src="entrainement/sciences.js?v=20261116y"></script>
-    <script src="entrainement/geographie.js?v=20261116y"></script>
-    <script src="entrainement/technologie.js?v=20261116y"></script>
-    <script src="entrainement/musique.js?v=20261116y"></script>
-    <script src="entrainement/litterature.js?v=20261116y"></script>
-    <script src="entrainement/jeux.js?v=20261116y"></script>
-    <script src="entrainement/cinema.js?v=20261116y"></script>
-    <script src="entrainement/gastronomie.js?v=20261116y"></script>
-    <script src="entrainement/sport.js?v=20261116y"></script>
-    <script src="entrainement/arts.js?v=20261116y"></script>
-    <script src="entrainement/langue-francaise.js?v=20261116y"></script>
-    <script src="entrainement/mythologie.js?v=20261116y"></script>
-    <script src="entrainement/drapeaux.js?v=20261116y"></script>
-    <script src="entrainement/monuments.js?v=20261116y"></script>
-    <script src="cards.js?v=20261116y"></script>
-    <script src="cosmetiques.js?v=20261116y"></script>
-    <script src="levels.js?v=20261116y"></script>
-    <script src="vendor/supabase.min.js?v=20261116y"></script>
-    <script src="evenements/halloween.js?v=20261116y"></script>
-    <script src="evenements/maghreb.js?v=20261116y"></script>
-    <script src="evenements/noel.js?v=20261116y"></script>
-    <script src="kulti-defis.js?v=20261116y"></script>
-    <script src="chapitres.js?v=20261116y"></script>
-    <script src="script.js?v=20261116y"></script>
-    <script src="noel.js?v=20261116y"></script>
+    <script src="questions.js?v=20261116z"></script>
+    <script src="pairs.js?v=20261116z"></script>
+    <script src="order.js?v=20261116z"></script>
+    <script src="facts.js?v=20261116z"></script>
+    <script src="entrainement/banque.js?v=20261116z"></script>
+    <script src="entrainement/histoire.js?v=20261116z"></script>
+    <script src="entrainement/sciences.js?v=20261116z"></script>
+    <script src="entrainement/geographie.js?v=20261116z"></script>
+    <script src="entrainement/technologie.js?v=20261116z"></script>
+    <script src="entrainement/musique.js?v=20261116z"></script>
+    <script src="entrainement/litterature.js?v=20261116z"></script>
+    <script src="entrainement/jeux.js?v=20261116z"></script>
+    <script src="entrainement/cinema.js?v=20261116z"></script>
+    <script src="entrainement/gastronomie.js?v=20261116z"></script>
+    <script src="entrainement/sport.js?v=20261116z"></script>
+    <script src="entrainement/arts.js?v=20261116z"></script>
+    <script src="entrainement/langue-francaise.js?v=20261116z"></script>
+    <script src="entrainement/mythologie.js?v=20261116z"></script>
+    <script src="entrainement/drapeaux.js?v=20261116z"></script>
+    <script src="entrainement/monuments.js?v=20261116z"></script>
+    <script src="cards.js?v=20261116z"></script>
+    <script src="cosmetiques.js?v=20261116z"></script>
+    <script src="levels.js?v=20261116z"></script>
+    <script src="vendor/supabase.min.js?v=20261116z"></script>
+    <script src="evenements/halloween.js?v=20261116z"></script>
+    <script src="evenements/maghreb.js?v=20261116z"></script>
+    <script src="evenements/noel.js?v=20261116z"></script>
+    <script src="kulti-defis.js?v=20261116z"></script>
+    <script src="chapitres.js?v=20261116z"></script>
+    <script src="script.js?v=20261116z"></script>
+    <script src="noel.js?v=20261116z"></script>
 </body>
 </html>

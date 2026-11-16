@@ -349,6 +349,15 @@ Propriétaire : francophone. Répondre en français, expliquer simplement, pas d
      Page `renderTour` (carte du monde carte-monde.js, traîneau, liste des étapes) ; écran de fin `tourEndBlock` (tampon du pays,
      « Joyeux Noël » dans la langue, anecdote, prochaine étape). Étiquette des questions `tourTag` (« 🛷 Japon · Vrai ou faux ? »).
   Aussi : plus d'indice sur un Vrai ou faux / Devine l'année ; doublon « Nouvel emoji d'avatar » retiré de la fin des événements.
+- 16/11 (BAC À SABLE, v=20261116z, ACCOUNT_V2 = BAC ; pour tous : true) : AVANT DE PUBLIER — SUPPRIMER SON COMPTE + CONFIDENTIALITÉ.
+  « Supprimer mon compte » : Profil → ☁️ Mon compte (sous « Se déconnecter », avec « 🔒 Politique de confidentialité ») + petit lien en bas
+  du Profil (« Confidentialité · Supprimer mon compte ») ; 2 confirmations (cases niveau / XP / cartes / amis) → rpc delete_my_account()
+  (supabase/supprimer-compte.sql, À LANCER PAR L'UTILISATEUR : efface auth.users → tout part en cascade ; la quête du partenaire continue
+  avec Kulti) → appareil remis à zéro (`localWipeAndRestart`) + message. Sans compte : proposition d'effacer la partie de l'appareil.
+  Bac à sable : simulation (rien d'effacé). Création de compte : « En créant un compte, tu acceptes la politique de confidentialité ».
+  Pages web : confidentialite.html, supprimer-compte.html (exigées par Google) avec [NOM DU RESPONSABLE] et [ADRESSE E-MAIL DE CONTACT]
+  À COMPLÉTER (adresse Gmail « Kultivo » à créer). Le pseudo et l'avatar sont lisibles par tous les joueurs connectés (règle « Lire les
+  pseudos »), le reste seulement par les amis : la page le dit.
 - 16/11 (v=20261116y, POUR TOUS) : FRISES V2 EN LIGNE (FRISE_V2 = true : 5 cartes max, écart en valeur) → remesurer la vue « niveaux »
   dans 1-2 semaines ; DUEL GAGNÉ = 15 🪙 (DUEL_COINS, avant 20) ; PROFIL D'UN AMI : bouton « ⚔️ Défier en duel » compact (sans le pseudo),
   onglets « 🎖️ Badges · N » / « 🃏 Cartes · x/180 » (`friendTab`), badges rangés PAR FAMILLE (BADGE_FAMS) avec leur nom court en petites

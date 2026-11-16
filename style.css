@@ -5259,3 +5259,13 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
 .friend-bicon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 1.35rem;
     background: color-mix(in srgb, var(--gold, #f3b400) 22%, var(--surface)); }
 .friend-bname { font-size: 0.7rem; font-weight: 800; color: var(--ink); line-height: 1.15; text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+
+/* 16/11 : confidentialité et suppression du compte (bac à sable) */
+.account-legal { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.account-legal a { color: var(--blue); font-weight: 800; font-size: 0.92rem; text-decoration: none; }
+.link-btn.danger-link { color: var(--red); font-weight: 800; font-size: 0.88rem; text-decoration: underline; }
+.auth-legal { margin: 10px 0 0; font-size: 0.8rem; color: var(--muted); text-align: center; line-height: 1.4; }
+.auth-legal a { color: var(--blue); }
+.legal-links { margin: 6px 0 0; text-align: center; font-size: 0.8rem; color: var(--muted); }
+.legal-links a, .legal-links .link-btn { color: var(--muted); font-size: 0.8rem; text-decoration: underline; }
+.legal-links .link-btn { display: inline; width: auto; margin: 0; padding: 0; border: 0; background: none; font: inherit; font-size: 0.8rem; cursor: pointer; }

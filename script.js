@@ -9485,6 +9485,71 @@ async function askNewPassword() {
 
 /** Déconnexion : la partie appartient au compte. On l'envoie une dernière fois, puis l'appareil repart de zéro
     (nouveau joueur sans compte) ; elle revient en se reconnectant. */
+/* ---------- 16/11 (bac à sable ; pour tous : ACCOUNT_V2 = true) : supprimer son compte (exigé par Google Play) ----------
+   Profil → ☁️ Mon compte → « Supprimer mon compte » (et lien en bas du Profil) : 2 confirmations, puis la fonction SQL
+   delete_my_account() (supabase/supprimer-compte.sql, À LANCER) efface le compte et, en cascade, tout ce qui lui appartient ;
+   l'appareil repart de zéro. Sans compte : on propose d'effacer la partie de cet appareil. Pages web : confidentialite.html,
+   supprimer-compte.html (adresse de contact à compléter). */
+const ACCOUNT_V2 = BAC;
+async function deleteAccount() {
+    const d = state.data;
+    if (!cloudUser && !BAC) {   // pas de compte : rien en ligne ; on peut seulement effacer la partie de cet appareil
+        const wipe = await askConfirm({ title: 'Tu n’as pas de compte', danger: true,
+            text: 'Ta partie est seulement sur cet appareil : rien n’est enregistré en ligne. Tu peux effacer la partie de cet appareil (définitif).',
+            yes: 'Effacer ma partie', no: 'Annuler' });
+        if (!wipe) return;
+        if (!await askConfirm({ title: 'Vraiment tout effacer ?', text: 'Niveaux, pièces, cartes, badges : tout repart de zéro sur cet appareil.', yes: 'Tout effacer', danger: true })) return;
+        localWipeAndRestart();
+        return;
+    }
+    const friends = league?.friends?.length || 0;
+    const ok1 = await askConfirm({ title: 'Supprimer ton compte ?', danger: true,
+        info: [{ big: `${Math.min(d.unlocked, MAX_LEVEL)}`, label: 'niveau' }, { big: fmtNum(d.xp || 0), label: 'XP' },
+            { big: String(CARDS.filter(c => d.cards[c.id]).length), label: 'cartes' }, friends ? { big: String(friends), label: friends > 1 ? 'amis' : 'ami' } : null],
+        text: 'Tout sera effacé définitivement : ta partie, ton pseudo, tes amis, tes duels, tes scores. Impossible de revenir en arrière.',
+        yes: 'Continuer', no: 'Annuler' });
+    if (!ok1) return;
+    const ok2 = await askConfirm({ title: 'Dernière confirmation', danger: true,
+        text: `Le compte ${cloudUser?.email || ''} sera supprimé tout de suite, avec toute ta progression.`,
+        yes: 'Supprimer définitivement', no: 'Garder mon compte' });
+    if (!ok2) return;
+    if (BAC && !cloudUser) { showToast('🧪 Bac à sable : le compte aurait été supprimé (rien n’est effacé ici).'); return; }
+    if (!navigator.onLine) { showToast('📶 Il faut internet pour supprimer ton compte.'); return; }
+    try {
+        const { error } = await cloudClient().rpc('delete_my_account');
+        if (error) throw error;
+    } catch (err) {
+        showToast('⚠️ La suppression n’a pas marché. Réessaie plus tard (ou voir la page « Supprimer son compte »).');
+        return;
+    }
+    try { await cloudClient().auth.signOut(); } catch (err) { /* compte déjà supprimé */ }
+    cloudUser = null;
+    try { sessionStorage.setItem('kultivo_deleted', '1'); } catch (err) { /* tant pis */ }
+    localWipeAndRestart();
+}
+/** L'appareil repart de zéro (nouveau joueur), comme après une déconnexion, mais sans rien envoyer. */
+function localWipeAndRestart() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeData(defaultData())));
+        localStorage.removeItem(BACKUP_KEY);
+        localStorage.removeItem(CLOUD_META_KEY);
+        localStorage.removeItem(LEAGUE_KEY);
+        localStorage.removeItem('kultivo_auth');
+    } catch (err) { /* tant pis */ }
+    location.reload();
+}
+function initAccountLegal() {
+    if (!ACCOUNT_V2) return;
+    $('accountLegal').hidden = false;
+    $('authLegal').hidden = false;
+    $('legalLinks').hidden = false;
+    $('deleteAccountBtn').addEventListener('click', () => { $('accountModal').hidden = true; deleteAccount(); });
+    $('legalDeleteBtn').addEventListener('click', deleteAccount);
+    try {
+        if (sessionStorage.getItem('kultivo_deleted')) { sessionStorage.removeItem('kultivo_deleted'); setTimeout(() => showToast('✓ Ton compte et tes données ont été supprimés.'), 1500); }
+    } catch (err) { /* tant pis */ }
+}
+
 async function cloudLogout() {
     if (!await askConfirm({
         title: 'Se déconnecter ?',
@@ -13176,6 +13241,7 @@ function hideSplash() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', initAccountLegal);   // 16/11 : confidentialité, supprimer son compte
 
 // Application installable : le service worker garde une copie du jeu pour jouer hors connexion
 // (ne marche qu'en https ou sur localhost, pas en ouvrant le fichier directement)
