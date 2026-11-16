@@ -2637,7 +2637,7 @@ const EVENTS = [{
     // 16/11 (bac à sable, `bacOnly` ; pour tous : retirer bacOnly) : « La tournée du Père Noël » (aperçu apercu-tournee.html).
     // Parties de 10 questions comme Halloween, mais habillées en voyage : 11 étapes (NOEL_TOUR, noel.js), 5 questions trouvées
     // = étape suivante ; 3 pays ouverts au départ, +1 par étape ; une question ratée attend 1 partie (tourPick, noel.js).
-    id: 'noel-2026', bank: 'noel', name: 'Noël', title: 'Tournée du Père Noël', icon: '🎅', bacOnly: true, tour: true,
+    id: 'noel-2026', bank: 'noel', name: 'Noël', title: 'Tournée du Père Noël', icon: '🎅', tour: true,   // 16/11 : en ligne pour tous (bacOnly retiré)
     start: '2026-12-21', end: '2026-12-27', goal: 55, cls: 'event-noel', tip: 'tipEventNoel2026',
     intro: 'C’est la tournée du Père Noël !', blurb: 'Aide le Père Noël à livrer ses cadeaux dans 11 pays, 10 questions à la fois.',
     rewards: [{ at: 15, emoji: '🎁' }, { at: 30, emoji: '🎅' }, { at: 45, emoji: '🍪' }, { at: 55, emoji: '🌟' }], badge: true,

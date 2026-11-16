@@ -18,7 +18,7 @@
    Bac à sable : menu 🧪 → « Noël » = choisir un faux jour de décembre (localStorage kultivo_bac_noelday, noelSimDay()).
    ============================================================ */
 
-const NOEL_ON = BAC;
+const NOEL_ON = true;   // 16/11 : EN LIGNE POUR TOUS (s'allume seul le 1er décembre ; avant : BAC)
 const NOEL_YEAR = 2026;
 const inNoelMonth = () => NOEL_ON && noelDayKey().startsWith(`${NOEL_YEAR}-12-`);
 
