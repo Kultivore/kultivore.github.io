@@ -188,12 +188,16 @@ const orderSize = level => level < 40 ? 4 : level < 85 ? 5 : 6;
 /* Cartes de chacune des 3 frises (2026-10-25, demande de l'utilisateur : le niveau 86 passait d'un coup à 3 frises de 6) :
    on ajoute une carte à une frise à la fois. 6-26 : 4·4·4 ; 36 : 4·4·5 ; 46 : 4·5·5 ; 56-66 : 5·5·5 ; 76 : 5·5·6 ;
    ancien 86 : 5·6·6 ; ancien 96 et plus : 6·6·6 (anciens numéros : levelRenumber suit les niveaux insérés, 2026-11-03). */
+/* 16/11 (essai, bac à sable ; pour tous : FRISE_V2 = true) : les frises étaient réussies 27 fois sur 100 (questions 50, paires 73,
+   défis 65 ; vue Supabase « niveaux ») → 5 cartes au plus (plus de 6), et des cartes toujours assez ÉCARTÉES EN VALEUR (pas seulement
+   dans le classement : avant, deux dates à 3 ans d'écart pouvaient tomber ensemble). */
+const FRISE_V2 = BAC;
 function orderSizes(level) {
     const R = typeof levelRenumber === 'function' ? levelRenumber : n => n;
     if (level < R(36)) return [4, 4, 4];
     if (level < R(46)) return [4, 4, 5];
     if (level < R(56)) return [4, 5, 5];
-    if (level < R(76)) return [5, 5, 5];
+    if (FRISE_V2 || level < R(76)) return [5, 5, 5];
     if (level < R(86)) return [5, 5, 6];
     if (level < R(96)) return [5, 6, 6];
     return [6, 6, 6];
@@ -8221,6 +8225,20 @@ function recordOrderCard(key, ok) {
     state.data.orderStats[key] = entry;
 }
 
+/** Place de chaque carte d'une famille entre 0 (la plus petite) et 1 (la plus grande), selon sa valeur. */
+const orderPosCache = new Map();
+function orderPositions(family) {
+    if (orderPosCache.has(family)) return orderPosCache.get(family);
+    const vals = family.items.map(it => it[1]);
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const useLog = lo > 0 && hi / lo > 20;
+    const f = v => (useLog ? Math.log(v) : v);
+    const a = f(lo), b = f(hi);
+    const map = new Map(family.items.map(it => [it, b > a ? (f(it[1]) - a) / (b - a) : 0]));
+    orderPosCache.set(family, map);
+    return map;
+}
+
 /** Cartes proches de la difficulté visée. Au début, on exige qu'elles soient bien espacées
     dans le classement (faciles à départager) ; plus loin, elles peuvent être voisines.
     Les cartes déjà mal placées reviennent (2 au plus par frise), les cartes bien sues passent derrière. */
@@ -8235,18 +8253,30 @@ function pickOrderItems(family, t, n, progress) {
         })
         .sort((a, b) => a.key - b.key)
         .map(x => x.it)
-        .slice(0, Math.max(n + 4, Math.ceil(family.items.length * 0.7)));
+        .slice(0, FRISE_V2 ? Math.max(n + 6, Math.ceil(family.items.length * 0.9)) : Math.max(n + 4, Math.ceil(family.items.length * 0.7)));   // 16/11 : plus de choix pour bien écarter
     const must = family.items
         .filter(it => orderMiss(orderKey(family, it[0])) > 0 && it[3] <= t + 1.2)
         .sort((a, b) => orderMiss(orderKey(family, b[0])) - orderMiss(orderKey(family, a[0])) || Math.random() - 0.5)
         .slice(0, Math.min(2, n - 1));
     const rest = pool.filter(it => !must.includes(it));
     const minGap = Math.max(1, Math.round((1 - progress) * 3));   // 3 rangs d'écart au début, 1 à la fin
+    // 16/11 (FRISE_V2) : écart en VALEUR, sur une échelle de 0 à 1 (échelle « logarithmique » si les valeurs vont de 1 à plus de
+    // 20 fois plus : hauteurs, distances, populations…). Au moins 18 % de l'étendue de la famille au début, 8 % à la fin.
+    const pos = orderPositions(family);
+    const minVal = 0.18 - 0.10 * progress;
+    const valGap = pick => { const v = pick.map(it => pos.get(it)).sort((a, b) => a - b); return Math.min(...v.slice(1).map((x, i) => x - v[i])); };
     let best = null;
-    for (let attempt = 0; attempt < 60; attempt++) {
+    for (let attempt = 0; attempt < (FRISE_V2 ? 250 : 60); attempt++) {
         const pick = shuffle([...must, ...shuffle(rest).slice(0, n - must.length)]);
         const ranks = pick.map(it => rank.get(it)).sort((a, b) => a - b);
         const gap = Math.min(...ranks.slice(1).map((r, i) => r - ranks[i]));
+        if (FRISE_V2) {
+            const vg = valGap(pick);
+            const score = Math.min(gap / minGap, 1) + Math.min(vg / minVal, 1) * 2;   // l'écart en valeur compte double
+            if (!best || score > best.score) best = { pick, gap, score };
+            if (gap >= minGap && vg >= minVal) break;
+            continue;
+        }
         if (!best || gap > best.gap) best = { pick, gap };
         if (gap >= minGap) break;
     }
