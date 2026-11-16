@@ -7,7 +7,7 @@ TRAINING_QUESTIONS.push(
     { id: 20004, theme: "Arts", d: 1.0, q: "Quelle couleur obtient-on en mélangeant du bleu et du jaune ?", a: ["Le vert", "Vert"], exp: "Le vert est une couleur dite « secondaire »." },
     { id: 20005, theme: "Arts", d: 1.0, q: "Quel outil à poils sert au peintre à étaler ses couleurs ?", a: ["Le pinceau", "Pinceau", "La brosse", "Brosse"], exp: "Les poils peuvent être naturels ou synthétiques." },
     { id: 20006, theme: "Arts", d: 1.2, q: "Comment appelle-t-on une peinture qui représente une personne ?", a: ["Un portrait", "Portrait"], exp: "S’il représente le peintre lui-même : un autoportrait." },
-    { id: 20007, theme: "Arts", d: 1.4, q: "Sur quel support à trois pieds le peintre pose-t-il sa toile ?", a: ["Le chevalet", "Chevalet"], exp: "Son nom vient de « cheval », pour sa forme." },
+    { id: 20007, theme: "Arts", d: 1.4, q: "Sur quel support en bois le peintre pose-t-il sa toile pour peindre ?", a: ["Le chevalet", "Chevalet"], exp: "Son nom vient de « cheval », pour sa forme." },
     { id: 20008, theme: "Arts", d: 1.4, q: "Quel art japonais consiste à plier du papier pour créer des formes ?", a: ["L’origami", "Origami"], exp: "La grue en papier est son modèle le plus célèbre." },
     { id: 20009, theme: "Arts", d: 1.6, q: "Quelle statue grecque sans bras est exposée au Louvre ?", a: ["La Vénus de Milo", "Vénus de Milo", "Venus de Milo"], exp: "Découverte en 1820 sur l’île grecque de Milos." },
     { id: 20010, theme: "Arts", d: 1.6, q: "Quel artiste de rue anonyme a peint « La Petite Fille au ballon » ?", a: ["Banksy"], exp: "Une de ses toiles s’est autodétruite juste après sa vente aux enchères en 2018." },

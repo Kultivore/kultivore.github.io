@@ -46,7 +46,7 @@ TRAINING_QUESTIONS.push(
     { id: 24037, theme: "Monuments", d: 3.0, q: "Quel architecte a conçu la pyramide de verre du Louvre ?", a: ["Ieoh Ming Pei", "Pei", "I. M. Pei", "Ming Pei"], exp: "Inaugurée en 1989, très critiquée au début." },
     { id: 24038, theme: "Monuments", d: 3.0, q: "Combien de mètres mesure environ la tour Eiffel, antennes comprises ?", a: ["330", "Environ 330", "330 m"], exp: "Elle a gagné quelques mètres au fil des antennes ajoutées." },
     { id: 24039, theme: "Monuments", d: 3.0, q: "Quel parc de Barcelone, œuvre de Gaudí, est célèbre pour son lézard en mosaïque ?", a: ["Güell", "Le parc Güell", "Parc Güell", "Parc Guell", "Guell"], exp: "Un projet de cité-jardin devenu jardin public." },
-    { id: 24040, theme: "Monuments", d: 3.0, q: "Quel temple romain est couvert d’un dôme percé d’une ouverture ronde ?", a: ["Le Panthéon", "Panthéon", "Pantheon"], exp: "Son dôme de béton reste le plus grand non armé du monde." },
+    { id: 24040, theme: "Monuments", d: 3.0, q: "Quel temple romain est couvert d’un dôme percé d’une ouverture ronde ?", a: ["Le Panthéon", "Panthéon", "Pantheon", "Le Panthéon de Rome", "Panthéon de Rome"], exp: "Son dôme de béton reste le plus grand non armé du monde." },
     { id: 24041, theme: "Monuments", d: 3.2, q: "En quelle année la statue de la Liberté a-t-elle été inaugurée ?", a: ["1886"], exp: "Elle a été livrée en pièces détachées dans 214 caisses." },
 
     // Palier 5

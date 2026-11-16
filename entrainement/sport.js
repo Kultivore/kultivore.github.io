@@ -40,7 +40,7 @@ TRAINING_QUESTIONS.push(
     { id: 19031, theme: "Sport", d: 2.4, q: "Quel boxeur américain était surnommé « Iron Mike » ?", a: ["Tyson", "Mike Tyson"], exp: "Champion du monde des lourds à 20 ans, un record." },
     { id: 19032, theme: "Sport", d: 2.6, q: "Quelle joueuse américaine a remporté 23 titres du Grand Chelem en simple ?", a: ["Serena Williams", "Williams"], exp: "Sa sœur Venus est aussi une grande championne." },
     { id: 19033, theme: "Sport", d: 2.6, q: "Quel nom porte le Tour d’Italie cycliste ?", a: ["Le Giro", "Giro", "Giro d’Italia"], exp: "Son leader porte le maillot rose." },
-    { id: 19034, theme: "Sport", d: 2.6, q: "Quel club anglais est surnommé « les Red Devils » ?", a: ["Manchester United", "Man United", "Manchester Utd"], exp: "Il joue à Old Trafford." },
+    { id: 19034, theme: "Sport", d: 2.6, q: "Quel club anglais est surnommé « les Red Devils » ?", a: ["Manchester United", "Man United", "Manchester Utd", "Man U", "Man Utd", "MU", "ManU"], exp: "Il joue à Old Trafford." },
     { id: 19035, theme: "Sport", d: 2.8, q: "Quelle course à la voile en solitaire autour du monde part des Sables-d’Olonne ?", a: ["Le Vendée Globe", "Vendée Globe", "Vendee Globe"], exp: "Sans escale ni assistance, tous les quatre ans." },
     { id: 19036, theme: "Sport", d: 2.8, q: "Quel sprinteur américain a gagné quatre médailles d’or à Berlin en 1936 ?", a: ["Jesse Owens", "Owens"], exp: "Un camouflet pour la propagande nazie." },
     { id: 19037, theme: "Sport", d: 3.0, q: "Quelle nageuse française a été championne olympique du 400 m en 2004 ?", a: ["Laure Manaudou", "Manaudou"], exp: "À Athènes, à seulement 17 ans." },

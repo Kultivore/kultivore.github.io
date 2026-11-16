@@ -9587,8 +9587,13 @@ const TRAIN_CATCHUP = 3;   // rattrapage : questions jamais vues des paliers val
 const TRAIN_TIER_NAMES = ['Découverte', 'Curieux', 'Initié', 'Amateur', 'Confirmé', 'Averti', 'Expert', 'Érudit', 'Virtuose', 'Maître'];
 const XP_TRAINING = 2;
 
+/* 16/11 : difficulté RÉELLE de 72 questions d'entraînement beaucoup plus ratées que leur note (stats Supabase question_stats du 16/11 :
+   réussite du 1er coup comparée à la moyenne de leur note ; nouvelle note tempérée selon le nombre de réponses). Sert SEULEMENT à ranger
+   les paliers : `d` d'origine gardé ailleurs (duels et défi du jour piochent selon `d` : les changer mélangerait les duels en cours). */
+const TRAIN_D = { 10108: 2.7, 11087: 3.9, 11096: 4, 11124: 3.3, 11136: 3.9, 12067: 3.1, 12263: 3.6, 12277: 4.2, 13042: 3.9, 14038: 3.8, 14091: 3.9, 14095: 3.9, 14098: 4.2, 15030: 3.7, 15127: 3.5, 15132: 3.7, 16038: 3.6, 16061: 3, 16077: 3.3, 16078: 3.4, 16085: 3.5, 16142: 4.1, 17013: 3.1, 17055: 2.8, 17080: 3.4, 17083: 3.5, 17085: 3.5, 17091: 4, 17094: 3.8, 17107: 3.2, 17109: 2.8, 17113: 3, 17132: 3.8, 19034: 3.5, 19095: 3.8, 19108: 3, 19113: 3, 19134: 3.9, 20007: 2.8, 20014: 3.4, 20022: 3.4, 20029: 3.7, 20056: 2.6, 20057: 3, 20058: 2.6, 20059: 2.9, 20060: 2.8, 20063: 2.9, 20064: 2.9, 20066: 3.1, 20069: 3.5, 20070: 3.3, 20072: 3.2, 20074: 3.3, 20076: 3.3, 20095: 4, 20105: 3.6, 20106: 2.8, 20107: 2.8, 20108: 2.9, 20115: 3.5, 20117: 3.3, 20119: 3.5, 22063: 2.9, 22096: 4.1, 22112: 3.1, 22126: 3.5, 22131: 3.6, 23093: 4, 23114: 3.4, 23118: 3.7, 24040: 3.6 };
+const trainD = q => TRAIN_D[q.id] || q.d;
 const trainingBank = theme => (typeof TRAINING_QUESTIONS === 'undefined' ? [] : TRAINING_QUESTIONS)
-    .filter(q => q.theme === theme).sort((a, b) => a.d - b.d || a.id - b.id);
+    .filter(q => q.theme === theme).sort((a, b) => trainD(a) - trainD(b) || a.id - b.id);
 
 /** Les 10 paliers d'un thème (du plus facile au plus dur). */
 function trainingTiers(theme) {

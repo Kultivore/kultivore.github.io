@@ -140,7 +140,7 @@ TRAINING_QUESTIONS.push(
     { id: 22123, theme: "Mythologie", d: 2.4, q: "Quel renard magique à plusieurs queues est une créature du folklore japonais ?", a: ["Le kitsune", "Kitsune"], exp: "Il peut prendre forme humaine." },
     { id: 22124, theme: "Mythologie", d: 2.5, q: "Quelle déesse égyptienne à tête de vache est la déesse de l’amour et de la musique ?", a: ["Hathor"], exp: "On l’associait à la Voie lactée, comme du lait céleste." },
     { id: 22125, theme: "Mythologie", d: 2.5, q: "Quel insecte sacré poussait le soleil chaque matin, selon les Égyptiens ?", a: ["Le scarabée", "Scarabée", "Scarabee", "Khépri"], exp: "Comme il roule sa boule de bouse." },
-    { id: 22126, theme: "Mythologie", d: 2.6, q: "Quelle île légendaire est le dernier refuge du roi Arthur blessé ?", a: ["Avalon"], exp: "L’île aux pommes, gouvernée par Morgane." },
+    { id: 22126, theme: "Mythologie", d: 2.6, q: "Quelle île légendaire est le dernier refuge du roi Arthur blessé ?", a: ["Avalon", "L’île d’Avalon", "Île d’Avalon"], exp: "L’île aux pommes, gouvernée par Morgane." },
     { id: 22127, theme: "Mythologie", d: 2.6, q: "Quel dieu nordique a perdu une main dans la gueule du loup Fenrir ?", a: ["Tyr", "Týr"], exp: "Il a donné son nom au mardi, « Tuesday »." },
     { id: 22128, theme: "Mythologie", d: 2.7, q: "Quel jeune homme d’une grande beauté, aimé d’Aphrodite, a été tué par un sanglier ?", a: ["Adonis"], exp: "Son nom désigne aujourd’hui un très bel homme." },
     { id: 22129, theme: "Mythologie", d: 2.7, q: "Quelle princesse de Thèbes enterre son frère malgré l’interdiction du roi ?", a: ["Antigone"], exp: "Une tragédie de Sophocle, reprise par Anouilh." },
