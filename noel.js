@@ -573,7 +573,7 @@ function renderTour(ev, page) {
     count.innerHTML = '';
     const cb = el('b');
     cb.textContent = `${found} / ${ev.goal}`;
-    count.append(cb, document.createTextNode(` cadeaux livrés. 1 bonne réponse = 1 cadeau (quel que soit le pays de la question) ; tous les ${TOUR_PER_STOP} cadeaux, le traîneau passe au pays suivant. Sans gouttes ni cœurs.`));
+    count.append(cb, document.createTextNode(' cadeaux livrés. 1 bonne réponse = 1 cadeau livré. Sans gouttes ni cœurs.'));
     const actions = el('div', 'card-actions');
     const btn = el('button', 'btn btn-red');
     btn.type = 'button';
