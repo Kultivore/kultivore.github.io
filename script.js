@@ -2656,7 +2656,8 @@ function noelSimDay() {
     try { return localStorage.getItem('kultivo_bac_noelday') || null; } catch (err) { return null; }
 }
 const noelDayKey = () => noelSimDay() || todayKey();
-const noelTabOn = () => typeof adventTabOn === 'function' && adventTabOn();   // onglet « 🎄 Noël » de Défis sans événement (noel.js)
+const noelTabOn = () => typeof adventTabOn === 'function' && adventTabOn();
+const noelHat = () => typeof noelDecorOn === 'function' && noelDecorOn();   // 16/11 : Kulti en bonnet de Noël tout le mois de décembre   // onglet « 🎄 Noël » de Défis sans événement (noel.js)
 function currentEvent() {
     let demo = null;
     try { demo = new URLSearchParams(location.search).get('demo'); } catch (err) { /* sans adresse */ }
@@ -3985,7 +3986,7 @@ function placeMapKulti() {
     btn.type = 'button';
     btn.setAttribute('aria-label', 'Kulti, la mascotte');
     // chapeau : celui de l'événement en cours, sinon la couronne du sommet (dernier niveau réussi, 10/11)
-    btn.append(kultiEl(sleepy ? 'dort' : 'content', sleepy ? '' : 'kulti-blink kulti-float', false, ev ? ev.bank : state.data.summitDone ? 'crown' : null));
+    btn.append(kultiEl(sleepy ? 'dort' : 'content', sleepy ? '' : 'kulti-blink kulti-float', false, ev ? ev.bank : noelHat() ? 'noel' : state.data.summitDone ? 'crown' : null));   // 16/11 : bonnet tout décembre
     if (sleepy) {
         const z = el('span', 'map-kulti-zzz');
         z.innerHTML = '<i>Z</i><i>z</i><i>z</i>';
@@ -4048,7 +4049,7 @@ async function playKultiHop(from, to) {
     fromStop.style.zIndex = '6';   // Kulti passe devant les niveaux du dessus pendant les sauts
     const start = kb.getBoundingClientRect();
     const dx = target.left - start.left, dy = target.top - start.top;
-    const face = mood => kb.firstElementChild.replaceWith(kultiEl(mood, 'kulti-blink', false, currentEvent()?.bank || null));
+    const face = mood => kb.firstElementChild.replaceWith(kultiEl(mood, 'kulti-blink', false, currentEvent()?.bank || (noelHat() ? 'noel' : null)));
     face('content');
     let done = false;
     const finish = () => {
