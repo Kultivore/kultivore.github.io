@@ -5207,7 +5207,8 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
 .advent-pop-box.is-untied .advent-num { transform: translate(-50%, -50%) scale(1.15); }
 .advent-pop-back { transform: rotateY(180deg); background: #fffaf0; box-shadow: 0 8px 0 #e3cf9f, 0 0 50px rgba(255, 214, 102, 0.55), inset 0 0 0 3px #f2dfb4; }
 .advent-pop-back.is-card { background: none; box-shadow: none; }
-.advent-pop-back.is-card .kcard { transform: scale(0.82); }
+/* la grande carte (230 px) est plus large que la boîte (190 px) : centrée de force (sinon elle dépasse à droite) */
+.advent-pop-back.is-card .kcard { position: absolute; left: 50%; top: 50%; margin: 0; transform: translate(-50%, -50%) scale(0.82); }
 .advent-pop-gift { width: 58%; aspect-ratio: 1 / 1; display: grid; place-items: center; }
 .advent-pop-gift .emoji-img { width: 100%; height: 100%; }
 .advent-pop-gift .advent-coin { font-size: 5.5rem; }
