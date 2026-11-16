@@ -9949,6 +9949,7 @@ function setChallengesTab(name) {
     });
     $('defisPage').hidden = name !== 'defis';
     $('trainingPage').hidden = name !== 'training';
+    $('challengesScreen').dataset.sub = name;   // 16/11 : avec 6 onglets, pas d'onglets « Défis / Noël » en haut de S'entraîner
     if (NAV6 && !$('challengesScreen').hidden) markNav('challenges');
     $('eventPage').hidden = name !== 'event';
     if (name === 'event') { renderEvent(); setTimeout(showEventPageTip, 400); }
@@ -12938,6 +12939,8 @@ function closeTopOverlay() {
     if (open('dropsModal')) { closeDropsModal(); return true; }
     if (open('missionsModal')) { $('missionsModal').hidden = true; return true; }
     if (open('adventModal')) { $('adventModal').hidden = true; return true; }   // 16/11 : calendrier de l'Avent
+    const advPop = document.querySelector('.advent-pop.is-done');   // case du calendrier ouverte : retour = « Récupérer »
+    if (advPop) { advPop.querySelector('.advent-pop-btn').click(); return true; }
     if (open('questModal')) { $('questModal').hidden = true; return true; }
     if (open('patchModal')) { closePatchNotes(); return true; }
     if (open('avatarModal')) { closeAvatarModal(); return true; }

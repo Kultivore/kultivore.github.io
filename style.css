@@ -5012,6 +5012,7 @@ body:has(.modal-overlay:not([hidden])) .noel-snow { display: none; }
 
 /* Onglets de Défis avec 6 onglets en bas : quand un onglet d'événement / Noël existe, « 🏆 Défis » revient à côté pour y retourner */
 body.nav6 .challenges-tabs:has(#eventTab:not([hidden])) .challenges-tab[data-sub="defis"] { display: inline-flex; align-items: center; justify-content: center; }
+body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: none; }
 .challenges-tab { position: relative; }
 .challenges-tab[data-notif]::after { content: attr(data-notif); position: absolute; top: -6px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px;
     border-radius: 9px; background: var(--red); color: #fff; font-size: 0.68rem; font-weight: 900; display: grid; place-items: center; }
@@ -5178,3 +5179,53 @@ body.nav6 .challenges-tabs:has(#eventTab:not([hidden])) .challenges-tab[data-sub
 .tour-arrive-text p { margin: 3px 0 4px; font-size: 0.84rem; line-height: 1.35; color: #fff; opacity: 0.92; }
 .tour-arrive-text small { font-size: 0.76rem; font-weight: 800; color: #ffd34d; }
 @media (prefers-reduced-motion: reduce) { .tour-stamp { animation: none; } }
+
+/* Ouverture d'une case du calendrier (16/11) : la case sort, grossit au milieu, tremble, se retourne ; « Récupérer » */
+.advent-pop { position: fixed; inset: 0; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    padding: 24px 20px; background: rgba(8, 14, 32, 0); transition: background 0.4s ease; overflow: hidden; text-align: center; }
+.advent-pop.is-in { background: rgba(6, 10, 26, 0.93); }
+.advent-pop-rays { position: absolute; left: 50%; top: 44%; width: 640px; height: 640px; margin: -320px 0 0 -320px; border-radius: 50%; pointer-events: none;
+    background: repeating-conic-gradient(rgba(255, 214, 102, 0.13) 0 9deg, transparent 9deg 20deg); opacity: 0; transform: scale(0.4); transition: opacity 0.5s, transform 0.6s; }
+.advent-pop.is-done .advent-pop-rays { opacity: 1; transform: scale(1); animation: adventRays 16s linear infinite; }
+@keyframes adventRays { to { transform: rotate(360deg); } }
+.advent-pop-head { position: relative; margin: 0; color: #ffd34d; font-weight: 900; font-size: 1rem; opacity: 0; transition: opacity 0.4s 0.2s; }
+.advent-pop.is-in .advent-pop-head { opacity: 1; }
+.advent-pop-stage { position: relative; width: 190px; height: 190px; perspective: 700px; }
+.advent-pop-stage.has-card { height: 236px; margin: 8px 0; }
+.advent-pop-stage.has-card .advent-pop-box { top: 23px; bottom: 23px; }
+.advent-pop-box { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15); --c: #d62839; --c-deep: #9b1520; }
+.advent-pop-box.is-green { --c: #1f8a4c; --c-deep: #13643a; }
+.advent-pop-box.is-night { --c: #2b4a8c; --c-deep: #1a2f5c; }
+.advent-pop-box.is-24 { --c: #f0a500; --c-deep: #b87a00; }
+.advent-pop-front, .advent-pop-back { position: absolute; inset: 0; border-radius: 26px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: grid; place-items: center; }
+.advent-pop-front { overflow: hidden; background: var(--c); box-shadow: 0 8px 0 var(--c-deep), 0 16px 40px rgba(0, 0, 0, 0.45), inset 0 0 0 3px rgba(255, 255, 255, 0.15); }
+.advent-pop-front .advent-ribbon { left: calc(50% - 14px); width: 28px; transition: transform 0.3s ease-in; }
+.advent-pop-front .advent-ribbon::after { top: calc(50% - 14px); height: 28px; transition: transform 0.3s ease-in; }
+.advent-pop-front .advent-num { width: 44%; font-size: 2.4rem; transition: transform 0.3s; }
+.advent-pop-box.is-untied .advent-ribbon { transform: scaleY(0); }
+.advent-pop-box.is-untied .advent-ribbon::after { transform: scaleX(0); }
+.advent-pop-box.is-untied .advent-num { transform: translate(-50%, -50%) scale(1.15); }
+.advent-pop-back { transform: rotateY(180deg); background: #fffaf0; box-shadow: 0 8px 0 #e3cf9f, 0 0 50px rgba(255, 214, 102, 0.55), inset 0 0 0 3px #f2dfb4; }
+.advent-pop-back.is-card { background: none; box-shadow: none; }
+.advent-pop-back.is-card .kcard { transform: scale(0.82); }
+.advent-pop-gift { width: 58%; aspect-ratio: 1 / 1; display: grid; place-items: center; }
+.advent-pop-gift .emoji-img { width: 100%; height: 100%; }
+.advent-pop-gift .advent-coin { font-size: 5.5rem; }
+.advent-pop-box.is-shake { animation: adventPopShake 0.8s ease-in-out; }
+@keyframes adventPopShake { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(-7deg) scale(1.04); } 30% { transform: rotate(7deg) scale(1.06); } 45% { transform: rotate(-6deg) scale(1.08); } 60% { transform: rotate(6deg) scale(1.08); } 80% { transform: rotate(-3deg) scale(1.05); } }
+.advent-pop-box.is-flipped { transform: rotateY(180deg) !important; }
+.advent-pop-info { position: relative; color: #fff; opacity: 0; transform: translateY(10px); transition: opacity 0.35s, transform 0.35s; max-width: 320px; margin-top: 12px; }
+.advent-pop-info b { display: block; font-size: 1.45rem; font-weight: 900; line-height: 1.2; }
+.advent-pop-info p { margin: 6px 0 0; font-size: 0.92rem; line-height: 1.4; color: #dfe7ff; }
+.advent-pop-btn { position: relative; width: min(280px, 100%); opacity: 0; pointer-events: none; transition: opacity 0.35s 0.15s; }
+.advent-pop.is-done .advent-pop-info { opacity: 1; transform: none; }
+.advent-pop.is-done .advent-pop-btn { opacity: 1; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) { .advent-pop-box, .advent-pop-rays { transition: none !important; animation: none !important; } }
+
+/* Du 21 au 24 : rappel du calendrier en haut de l'onglet Noël, tant que la case du jour n'est pas ouverte */
+.noel-callout { grid-column: 1 / -1; justify-self: stretch; box-sizing: border-box; min-width: 0; display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 14px; border: 0; border-radius: 16px; cursor: pointer; font: inherit; text-align: left;
+    color: #fff; background: linear-gradient(135deg, #c81d25, #8e0f17); box-shadow: 0 4px 0 #6d0b12; }
+.noel-callout-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.noel-callout b { font-weight: 900; font-size: 0.98rem; }
+.noel-callout small { font-weight: 800; color: #ffe2a8; font-size: 0.82rem; }
+.noel-callout .row-arrow { background: #fff; color: #c81d25; }

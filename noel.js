@@ -135,7 +135,7 @@ function adventSection() {
     const grid = el('div', 'advent-board');
     for (let n = 1; n <= 24; n++) grid.append(adventDoor(n, day, ad, setStatus));
     const foot = el('p', 'advent-foot');
-    foot.textContent = nbspPunct('Chaque case ne s’ouvre que le jour même : une case ratée est perdue. Le 24 : le cadre « Étoile de l’Avent » !');
+    foot.textContent = nbspPunct('Chaque case ne s’ouvre que le jour même : une case ratée est perdue.');   // 16/11 : on ne dit pas d'avance ce qu'il y a le 24
     card.append(hero, status, grid, foot);
     return card;
 }
@@ -167,8 +167,7 @@ function adventDoor(n, day, ad, setStatus) {
             : setStatus(`🎮 Joue une partie pour ouvrir la case du ${n} !`)));
     } else {
         b.classList.add('is-later');
-        b.addEventListener('click', () => setStatus(n === 24 ? 'Le 24 décembre : le cadre « Étoile de l’Avent » et 20 🪙, si tu ouvres la case ce jour-là.'
-            : `Patience : la case du ${n} s’ouvre le ${n} décembre.`));
+        b.addEventListener('click', () => setStatus(`Patience : la case du ${n} s’ouvre le ${n} décembre.`));
     }
     return b;
 }
@@ -205,20 +204,84 @@ function adventOpenDoor(btn, setStatus) {
     let card = null;
     if (g.card) { card = adventDrawCard(!!g.rare); ad.cards[day] = card.id; }
     saveData();
-    playSound('unlock');
-    btn.classList.add('is-opening');
-    const reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setTimeout(() => {
+    adventReveal(btn, day, g, card, () => {
         adventFillOpen(btn, day, ad);
         btn.classList.add('is-new');
-        const got = card ? `la carte « ${card.name} » (${CARD_RARITIES[card.rarity].name.toLowerCase()}), touche-la pour la voir` : adventGiftInfo(g)[2];
-        setStatus(`🎁 Case du ${day} : ${got} !`, 'done');
+        const got = card ? `la carte « ${card.name} », touche-la pour la revoir` : adventGiftInfo(g)[2];
+        setStatus(`✅ Case du ${day} : ${got}. La suivante demain !`, 'done');
         const sub = btn.closest('.advent-card')?.querySelector('.advent-hero-text p');
         if (sub) sub.textContent = `${Object.keys(ad.open).length} / 24 cases ouvertes`;
-        if (g.star) { avCheck(); launchConfetti(); }
+        const top = document.querySelector('.noel-callout');
+        if (top) top.remove();
+        if (g.star) avCheck();
         renderHeader();
         updateNavNotifications();
-    }, reduced ? 0 : 650);
+    });
+}
+
+const ADVENT_INV_NAME = { hintLetter: 'Indice « initiales »', freeze: 'Gel de série', heart: 'Cœur de secours', nudge: 'Coup de pouce' };
+/* Ouverture d'une case, façon coffre (16/11, demande de l'utilisateur) : la case sort de la grille et vient grossir au
+   milieu de l'écran, tremble, son ruban se défait, elle se retourne et montre le cadeau en grand ; « Récupérer » referme.
+   Un tap pendant l'animation la termine tout de suite. */
+function adventReveal(fromBtn, day, g, card, onDone) {
+    const reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ov = el('div', 'advent-pop');
+    const rays = el('div', 'advent-pop-rays');
+    const stage = el('div', 'advent-pop-stage');
+    const color = [...fromBtn.classList].find(c => /^is-(red|green|night)$/.test(c)) || 'is-red';
+    const box = el('div', `advent-pop-box ${color}${day === 24 ? ' is-24' : ''}`);
+    const front = el('div', 'advent-pop-front');
+    const num = el('span', 'advent-num');
+    num.textContent = String(day);
+    front.append(el('i', 'advent-ribbon'), num);
+    const back = el('div', 'advent-pop-back');
+    if (card) { back.classList.add('is-card'); back.append(cardFace(card, true, false)); stage.classList.add('has-card'); }
+    else { const a = el('span', 'advent-pop-gift'); a.append(giftIcon(adventGiftInfo(g)[0])); back.append(a); }
+    box.append(front, back);
+    stage.append(box);
+    const info = el('div', 'advent-pop-info');
+    const t = el('b');
+    const p = el('p');
+    if (card) { t.textContent = card.name; p.textContent = `Carte ${CARD_RARITIES[card.rarity].name.toLowerCase()} · ajoutée à ta collection`; }
+    else if (g.star) { t.textContent = 'Le cadre « Étoile de l’Avent » !'; p.textContent = 'Et 20 🪙. Le cadre t’attend dans « Mon avatar ». Joyeux Noël !'; }
+    else if (g.coins) { t.textContent = `+${g.coins} 🪙`; p.textContent = 'Ajoutées à tes pièces.'; }
+    else if (g.boost) { t.textContent = '⚡ Pièces ×2 · 15 min'; p.textContent = 'Dans ton sac : active-le dans la boutique quand tu veux.'; }
+    else if (g.drops) { t.textContent = '💧 Gouttes rechargées'; p.textContent = 'Toutes tes gouttes sont pleines.'; }
+    else if (g.inv) { t.textContent = `${ADVENT_INV[g.inv][0]} ${ADVENT_INV_NAME[g.inv]}`; p.textContent = 'Ajouté à ton sac (boutique → Objets utiles).'; }
+    const head = el('p', 'advent-pop-head');
+    head.textContent = `🗓️ Case du ${day} décembre`;
+    info.append(t, p);
+    const ok = el('button', 'btn btn-green advent-pop-btn');
+    ok.type = 'button';
+    ok.textContent = 'Récupérer';
+    ov.append(rays, head, stage, info, ok);
+    document.body.append(ov);
+    // départ : exactement à la place de la case, puis vers le milieu de l'écran
+    const r0 = fromBtn.getBoundingClientRect();
+    const r1 = box.getBoundingClientRect();
+    box.style.transform = `translate(${r0.left + r0.width / 2 - (r1.left + r1.width / 2)}px, ${r0.top + r0.height / 2 - (r1.top + r1.height / 2)}px) scale(${(r0.width / r1.width).toFixed(3)})`;
+    fromBtn.style.visibility = 'hidden';
+    const timers = [];
+    const at = (ms, fn) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const finish = () => {
+        timers.forEach(clearTimeout);
+        box.style.transform = '';
+        box.classList.remove('is-shake');
+        box.classList.add('is-flipped', 'is-untied');
+        ov.classList.add('is-in', 'is-done');
+    };
+    requestAnimationFrame(() => requestAnimationFrame(() => { ov.classList.add('is-in'); box.style.transform = ''; }));
+    playSound('hop');
+    at(600, () => { box.classList.add('is-shake'); playSound('rattle'); });
+    at(1400, () => { box.classList.remove('is-shake'); box.classList.add('is-untied'); });
+    at(1700, () => { box.classList.add('is-flipped'); playSound('unlock'); });
+    at(2200, () => { ov.classList.add('is-done'); if (g.star || (card && ['epic', 'legendary'].includes(card.rarity))) launchConfetti(); });
+    ov.addEventListener('click', e => { if (!ov.classList.contains('is-done') && e.target !== ok) finish(); });
+    ok.addEventListener('click', () => {
+        fromBtn.style.visibility = '';
+        ov.remove();
+        onDone();
+    });
 }
 
 /* ---------- 3) ⚡ Pièces ×2 ---------- */
@@ -514,7 +577,7 @@ function renderTour(ev, page) {
     const actions = el('div', 'card-actions');
     const btn = el('button', 'btn btn-red');
     btn.type = 'button';
-    btn.textContent = ed.won ? '🛷 Rejouer pour le plaisir' : '🛷 Livrer des cadeaux';
+    btn.textContent = ed.won ? 'Rejouer pour le plaisir' : '🛷 Jouer · 10 questions';
     btn.addEventListener('click', openEventStart);
     actions.append(btn);
     // Carnet de route : un tampon par pays (doré = livré, bleu = en cours, gris = à venir), emojis gagnés en route
@@ -554,8 +617,28 @@ function renderTour(ev, page) {
 
 /** Page de l'onglet « 🎄 Noël » de Défis : la tournée (21 → 27 décembre) puis le calendrier (1er → 24). */
 function renderNoelPage(ev, page) {
+    const day = adventDay();
+    if (ev && ev.tour && day && !adventData().open[day]) {   // 16/11 : du 21 au 24, sinon le calendrier (tout en bas) serait oublié
+        const c = el('button', 'noel-callout');
+        c.type = 'button';
+        const tx = el('span', 'noel-callout-text');
+        const b = el('b');
+        b.textContent = `🗓️ Calendrier : case du ${day}`;
+        const sm = el('small');
+        sm.textContent = playedToday() ? 'Elle t’attend : touche ici !' : 'Joue une partie pour l’ouvrir.';
+        tx.append(b, sm);
+        c.append(tx, rowArrow());
+        c.addEventListener('click', () => {
+            const cal = document.querySelector('.advent-card');
+            if (!cal) return;
+            cal.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const door = cal.querySelector('.advent-door.is-today, .advent-door.is-wait');
+            if (door) { door.classList.remove('notif-flash'); void door.offsetWidth; door.classList.add('notif-flash'); }
+        });
+        page.append(c);
+    }
     if (ev && ev.tour) renderTour(ev, page);
-    if (adventDay()) page.append(adventSection());
+    if (day) page.append(adventSection());
 }
 
 /* ---------- Bac à sable : choisir un faux jour de décembre ---------- */
