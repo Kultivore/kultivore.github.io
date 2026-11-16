@@ -148,7 +148,17 @@ const AV_ITEMS = [
     { id: 'pic-snowman',   type: 'pic', kind: 'shop', name: 'Bonhomme de neige', emoji: '⛄', price: 300, season: 'hiver' },
     { id: 'bg-fireworks',  type: 'bg',  kind: 'shop', name: 'Feu d’artifice', price: 600, season: 'nouvelan' },
     { id: 'pic-champagne', type: 'pic', kind: 'shop', name: 'Coupes', emoji: '🥂', price: 300, season: 'nouvelan' },
-    { id: 'pic-envelope',  type: 'pic', kind: 'shop', name: 'Enveloppe rouge', emoji: '🧧', price: 300, season: 'chine' }
+    { id: 'pic-envelope',  type: 'pic', kind: 'shop', name: 'Enveloppe rouge', emoji: '🧧', price: 300, season: 'chine' },
+
+    // ---------- 16/11 (bac à sable) : Noël ----------
+    // Rayon de Noël : vendu tout décembre, à part de la vitrine (rayon: 'noel'). 3 objets cette année (choix de l'utilisateur :
+    // en garder pour les années suivantes : Sucre d'orge, Nuit étoilée, Clochette). season: 'noel' = jamais dans les coffres.
+    { id: 'fr-garland',  type: 'frame', kind: 'shop', name: 'Guirlande',    price: 600, season: 'noel', rayon: 'noel' },
+    { id: 'bg-sweater',  type: 'bg',    kind: 'shop', name: 'Pull de Noël', price: 600, season: 'noel', rayon: 'noel' },
+    { id: 'pic-sock',    type: 'pic',   kind: 'shop', name: 'Chaussette', emoji: '🧦', price: 300, season: 'noel', rayon: 'noel' },
+    // Cadre du calendrier de l'Avent : pour ceux qui ouvrent la case du 24 décembre (jamais vendu)
+    { id: 'fr-advent-2026', type: 'frame', kind: 'earn', name: 'Étoile de l’Avent', fx: 'tag', event: 'advent-2026',
+      how: 'Ouvre la case du 24 décembre du calendrier de l’Avent 2026', test: s => !!s.advent24 }
 ];
 
 // Collections (2026-10-25, choix de l'utilisateur) : chaque semaine, la vitrine montre UNE collection complète

@@ -1385,8 +1385,9 @@ function addXp(amount) {
 
     // 1 pièce pour COIN_RATE XP : le reste est gardé (sinon 4 XP arrondis donnaient 0 pièce à chaque réponse)
     data.coinRest += amount;
-    const coinGain = Math.floor(data.coinRest / coinRate());
-    data.coinRest -= coinGain * coinRate();
+    const coinGain0 = Math.floor(data.coinRest / coinRate());
+    data.coinRest -= coinGain0 * coinRate();
+    const coinGain = typeof boostOn === 'function' && boostOn() ? coinGain0 * 2 : coinGain0;   // 16/11 : ⚡ Pièces ×2 (15 min)
     data.coins += coinGain;
     state.sessionCoins += coinGain;
 
@@ -2295,6 +2296,8 @@ const BADGES = [
     // Ajouté le 09/11 après l'événement (demande de l'utilisateur) : ceux qui l'ont fini le reçoivent à l'ouverture du jeu
     { id: 'ev-maghreb-2026', icon: '🐪', name: 'Escale au Maghreb 2026', desc: 'Trouver 50 questions de l’Escale au Maghreb 2026', event: 'maghreb-2026',
       test: s => s.eventsWon.includes('maghreb-2026') },
+    { id: 'ev-noel-2026', icon: '🎅', name: 'Noël 2026', desc: 'Terminer la tournée du Père Noël 2026 (55 questions)', event: 'noel-2026',
+      test: s => s.eventsWon.includes('noel-2026') },
     { id: 'first',     icon: '🌱', name: 'Premiers pas',        desc: 'Terminer un niveau',                    test: s => s.levelsDone >= 1 },
     { id: 'right25',   icon: '👍', name: 'Bien parti',          desc: '25 bonnes réponses du premier coup',    test: s => s.right >= 25 },
     { id: 'right100',  icon: '💯', name: 'Centenaire',          desc: '100 bonnes réponses du premier coup',   test: s => s.right >= 100 },
@@ -2459,7 +2462,8 @@ const BADGE_FAMS = [
     ['🎨', 'Avatar', 'collections complètes', [['avColl1', '1 collection', 1, s => s.avCollections], ['avColl5', '5 collections', 5, s => s.avCollections]]],
     ['🕵️', 'Badges secrets', '', BADGES_SECRET.map(b => [b.id, 'trouvé', 1, s => +!!s.secrets[b.id]])],
     ['🎉', 'Événements', '', [['ev-halloween-2026', 'événement fini', 1, s => +s.eventsWon.includes('halloween-2026')],
-        ['ev-maghreb-2026', 'événement fini', 1, s => +s.eventsWon.includes('maghreb-2026')]]]
+        ['ev-maghreb-2026', 'événement fini', 1, s => +s.eventsWon.includes('maghreb-2026')],
+        ['ev-noel-2026', 'événement fini', 1, s => +s.eventsWon.includes('noel-2026')]]]
 ];
 
 /** Semaines terminées à la 1re place de la Ligue des amis. */
@@ -2629,17 +2633,36 @@ const EVENTS = [{
     decor: ['🐪', '🌴', '🫖', '🕌', '🏜️', '🌙', '🍊', '🏺'],
     card: { id: 'ev-maghreb-2026', theme: 'Escale au Maghreb 2026', icon: '🐪', name: 'Dromadaire 2026', rarity: 'event',
             text: 'Gagnée pendant l’Escale au Maghreb 2026.' }
+}, {
+    // 16/11 (bac à sable, `bacOnly` ; pour tous : retirer bacOnly) : « La tournée du Père Noël » (aperçu apercu-tournee.html).
+    // Parties de 10 questions comme Halloween, mais habillées en voyage : 11 étapes (NOEL_TOUR, noel.js), 5 questions trouvées
+    // = étape suivante ; 3 pays ouverts au départ, +1 par étape ; une question ratée attend 1 partie (tourPick, noel.js).
+    id: 'noel-2026', bank: 'noel', name: 'Noël', title: 'Tournée du Père Noël', icon: '🎅', bacOnly: true, tour: true,
+    start: '2026-12-21', end: '2026-12-27', goal: 55, cls: 'event-noel', tip: 'tipEventNoel2026',
+    intro: 'C’est la tournée du Père Noël !', blurb: 'Aide le Père Noël à livrer ses cadeaux dans 11 pays, 10 questions à la fois.',
+    rewards: [{ at: 15, emoji: '🎁' }, { at: 30, emoji: '🎅' }, { at: 45, emoji: '🍪' }, { at: 55, emoji: '🌟' }], badge: true,
+    pumpkin: '🎁', hidden: { one: 'Cadeau caché', many: 'Cadeaux cachés', found: 'Cadeau trouvé' },
+    decor: ['🎄', '🎁', '⛄', '🦌', '🔔', '🧦', '🍪', '🌟', '🛷', '❄️'],
+    card: { id: 'ev-noel-2026', theme: 'Noël 2026', icon: '🎄', name: 'Sapin 2026', rarity: 'event',
+            text: 'Gagnée en terminant la tournée du Père Noël 2026.' }
 }];
 const evBadgeText = ev => (ev.badge ? ` et le badge ${ev.name} 2026` : '');
 const EVENT_CARDS = EVENTS.map(e => e.card);
 const EVENT_SIZE = 10;   // questions par session
 
+// 16/11 (bac à sable) : jour simulé pour essayer Noël (menu 🧪 → « Noël ») ; null = le vrai jour
+function noelSimDay() {
+    if (!BAC) return null;
+    try { return localStorage.getItem('kultivo_bac_noelday') || null; } catch (err) { return null; }
+}
+const noelDayKey = () => noelSimDay() || todayKey();
 function currentEvent() {
     let demo = null;
     try { demo = new URLSearchParams(location.search).get('demo'); } catch (err) { /* sans adresse */ }
     if (demo === 'bebe') return null;   // démo du décor « Bienvenue bébé » : sans événement
-    const today = todayKey();
-    return EVENTS.find(e => demo === e.bank) || EVENTS.find(e => today >= e.start && today <= e.end)
+    const today = noelDayKey();
+    const ok = e => !e.bacOnly || BAC;   // 16/11 : événement encore en essai = seulement dans le bac à sable
+    return EVENTS.find(e => demo === e.bank && ok(e)) || EVENTS.find(e => ok(e) && today >= e.start && today <= e.end)
         || (demo === 'lundi' ? EVENTS[0] : null);   // 13/11 : plus d'Halloween forcé dans le bac à sable (?demo=halloween pour le revoir)
 }
 const eventQuestions = ev => (window.EVENT_BANKS && window.EVENT_BANKS[ev.bank]) || [];
@@ -2657,6 +2680,7 @@ function shortDate(key) {
 
 /** 10 questions : jamais vues d'abord, puis celles ratées (pas encore trouvées), puis les autres. */
 function pickEventCards(ev) {
+    if (ev.tour && typeof tourPick === 'function') return tourPick(ev);   // 16/11 : tournée du Père Noël (noel.js)
     const bank = eventQuestions(ev);
     const found = eventData(ev).found;
     const seen = q => !!state.data.stats[q.id];
@@ -2705,7 +2729,7 @@ function placePumpkins() {
     pk.id = 'pumpkin';
     pk.type = 'button';
     pk.dataset.screen = spot.screen;
-    pk.setAttribute('aria-label', 'Citrouille cachée');
+    pk.setAttribute('aria-label', ev.hidden ? ev.hidden.one : 'Citrouille cachée');
     pk.append(emojiImg(ev.pumpkin));
     // Position dans la page (elle défile avec) : sur le parcours, à une hauteur d'écran au plus du niveau en cours ;
     // ailleurs, dans le haut de la page (au plus ~1,3 écran : un léger défilement peut suffire)
@@ -2733,7 +2757,7 @@ function placePumpkins() {
         playSound('win');
         pk.classList.add('is-caught');
         const left = pumpkinsLeft(ev);
-        showToast(`🎃 Citrouille trouvée ! +${PUMPKIN_COINS} 🪙${left ? ` · encore ${left} aujourd’hui` : ' · toutes trouvées pour aujourd’hui'}`);
+        showToast(`${ev.pumpkin} ${ev.hidden ? ev.hidden.found : 'Citrouille trouvée'} ! +${PUMPKIN_COINS} 🪙${left ? ` · encore ${left} aujourd’hui` : ' · tous trouvés pour aujourd’hui'}`);
         setTimeout(() => pk.remove(), 600);
         if (challengesTab === 'event' && !$('challengesScreen').hidden) renderEvent();
     });
@@ -2787,6 +2811,7 @@ function applyEventLook() {
     const ev = currentEvent();
     EVENTS.forEach(e => document.body.classList.toggle(e.cls, !!ev && ev.id === e.id));
     document.body.classList.toggle('deco-baby', babyDecorOn());
+    document.body.classList.toggle('deco-noel', typeof noelDecorOn === 'function' && (noelDecorOn() || ev?.bank === 'noel'));   // 16/11 : neige
     $('eventTab').hidden = !ev;
     if (ev) $('eventTab').textContent = `${ev.icon} ${ev.name}`;
 }
@@ -2842,6 +2867,7 @@ function renderEvent() {
     page.replaceChildren();
     const ev = currentEvent();
     if (!ev) return;
+    if (ev.tour && typeof renderTour === 'function') { renderTour(ev, page); return; }   // 16/11 : tournée du Père Noël
     const ed = eventData(ev);
     // Carte gagnée mais pas reçue (appli fermée pendant l'animation de fin) : on la donne maintenant
     if (ed.won && !state.data.cards[ev.card.id]) setTimeout(() => openCardBoxes([{ fixed: [ev.card] }], `${ev.icon} Carte ${ev.name} !`), 300);
@@ -2966,13 +2992,14 @@ function endEvent() {
     const right = (state.eventIds || []).filter(id => !state.failedIds.has(id));
     const before = Object.keys(ed.found).length;
     right.forEach(id => { ed.found[id] = 1; });
+    if (ev.tour && typeof tourAfterSession === 'function') tourAfterSession(ev, state.eventIds || [], right);   // ratées : attendent 1 partie
     const total = Object.keys(ed.found).length;
     const won = !ed.won && total >= ev.goal;
     if (won) ed.won = true;
     if (total > before) missionEvent('evFound', total - before);
     missionEvent('evPlay');
     const drawings = unlockEventAvatars(ev, total);
-    const drawingsText = drawings.length ? `🎨 Nouvel emoji d’avatar débloqué : ${drawings.join(' ')} ! (Profil → ton avatar)` : '';
+    const drawingsText = drawings.length && !avOn() ? `🎨 Nouvel emoji d’avatar débloqué : ${drawings.join(' ')} ! (Profil → ton avatar)` : '';
     saveData();
     checkBadges();
     setEnd({
@@ -2988,6 +3015,7 @@ function endEvent() {
         secondary: 'Retour',
         onSecondary: () => { returnToMap(); setChallengesTab('event'); }
     });
+    if (ev.tour && typeof tourEndBlock === 'function') tourEndBlock(ev, before, total);   // étape livrée : sur l'écran de fin
     if (won) {
         launchConfetti(CARD_CONFETTI.event);
         setTimeout(() => openCardBoxes([{ fixed: [ev.card] }], `${ev.icon} Carte ${ev.name} !`), 900);
@@ -3532,6 +3560,10 @@ function buildDecor(container, count) {
             badge.classList.add(left ? 'baby-blue' : 'baby-pink');
             badge.dataset.baby = '1';
             badge.dataset.fact = String(i);
+        } else if (!ev && typeof noelDecorOn === 'function' && noelDecorOn()) {   // 16/11 : décor de Noël tout décembre
+            badge.textContent = NOEL_DECOR[(i * 7 + 3) % NOEL_DECOR.length];
+            badge.dataset.noel = '1';
+            badge.dataset.fact = String(i);
         } else if (ev) {   // événement en cours : tout le décor à son thème, avec ses anecdotes
             badge.textContent = ev.decor[(i * 7 + 3) % ev.decor.length];
             badge.dataset.event = ev.id;
@@ -3616,7 +3648,7 @@ function updateNavNotifications() {
         unclaimedGoals = 1;
     }
     
-    unclaimedGoals += missionsToClaim() + questsToClaim();
+    unclaimedGoals += missionsToClaim() + questsToClaim() + (typeof adventToOpen === 'function' ? adventToOpen() : 0);
     const challengesBtn = document.querySelector('.nav-btn[data-screen="challenges"]');
     if (unclaimedGoals > 0) challengesBtn.setAttribute('data-notif', unclaimedGoals);
     else challengesBtn.removeAttribute('data-notif');
@@ -5800,6 +5832,7 @@ function renderChallenges() {
         : 'Modifiable tant que tu n’as pas joué aujourd’hui.';
     renderMissionsRow();
     questLoad();
+    if (typeof renderAdventRow === 'function') renderAdventRow();   // 16/11 : calendrier de l'Avent (décembre)
 
     // Défi du jour
     const result = data.daily[today];
@@ -6411,6 +6444,8 @@ function renderShopV2() {
     }
     vit.append(head, look, row, foot);
     grid.append(vit);
+    const rayon = typeof noelRayonCard === 'function' ? noelRayonCard() : null;   // 16/11 : rayon de Noël (tout décembre)
+    if (rayon) grid.append(rayon);
 
     // 2) Coffre de cartes
     const owned = CARDS.filter(c => d.cards[c.id]).length;
@@ -6473,6 +6508,7 @@ function renderShopV2() {
         }));
         tools.append(line(item.icon, item.name, item.desc, buttons, { text: item.max ? `🎒 ${have} / ${item.max}` : `🎒 ${have} en stock`, zero: !have }));
     });
+    if (typeof boostShopLine === 'function') { const bl = boostShopLine(line, mkBtn); if (bl) tools.append(bl); }   // 16/11 : ⚡ Pièces ×2
     tools.append(line('💧', 'Recharge de gouttes', 'Toutes tes gouttes d’un coup.',
         [mkBtn(d.drops >= DROPS_MAX ? 'Plein' : `${DROPS_REFILL_PRICE} 🪙`, 'btn-green', d.drops >= DROPS_MAX || d.coins < DROPS_REFILL_PRICE, async () => {
             if (await askBuy('Recharge de gouttes', DROPS_REFILL_PRICE, `Toutes tes gouttes d’un coup (${DROPS_MAX}).`) && refillDrops()) renderShop();
@@ -7359,7 +7395,8 @@ function showCard() {
     const tag = $('challengeTag');
     tag.hidden = !['challenge', 'daily', 'sprint', 'placement', 'event', 'duel', 'kulti'].includes(state.mode);
     const ev = state.mode === 'event' ? EVENTS.find(e => e.id === state.eventId) : null;
-    tag.textContent = ev ? `${ev.icon} ${ev.name}`
+    tag.textContent = ev && ev.tour && typeof tourTag === 'function' ? tourTag(item.q)
+                    : ev ? `${ev.icon} ${ev.name}`
                     : state.mode === 'duel' ? `⚔️ Duel · ${state.done + 1}/${state.total}`
                     : state.mode === 'kulti' && state.kultiKind === 'tf' ? `✅ Vrai ou faux · ${state.done + 1}/${state.total}`
                     : state.mode === 'kulti' && state.kultiKind === 'annee' ? `📅 Devine l’année · ${state.done + 1}/${state.total}`
@@ -7425,7 +7462,7 @@ function showCard() {
     $('hintList').replaceChildren();
     $('hintList').hidden = true;
     $('hintPanel').hidden = true;
-    $('hintBtn').hidden = ['daily', 'sprint', 'placement', 'duel', 'kulti'].includes(state.mode);
+    $('hintBtn').hidden = ['daily', 'sprint', 'placement', 'duel', 'kulti'].includes(state.mode) || !!item.q.tf || item.q.year !== undefined;   // 16/11 : pas d'indice sur un vrai / faux ou une année
 
     const input = $('userInput');
     input.value = '';
@@ -10124,6 +10161,7 @@ function avStats() {
     const done = Object.keys(d.done).map(Number).filter(n => d.done[n]);
     st.maxDone = done.length ? Math.max(...done) : 0;
     st.duelsWon = d.totals.duelsWon || 0;
+    st.advent24 = !!(d.advent && d.advent.star);   // 16/11 : case du 24 décembre ouverte (calendrier de l'Avent)
     st.masters = CARDS.filter(c => c.rarity === 'master' && d.cards[c.id]).length;
     st.dailyTen = Object.values(d.daily).filter(r => r.score >= DAILY_SIZE).length;
     st.allThemes = completeThemes().length >= CARD_THEMES.length;
@@ -12575,7 +12613,7 @@ function bindEvents() {
     // Petits décors du parcours : un tap = une anecdote sur le thème ; un tap n'importe où la referme
     $('mapDecor').addEventListener('click', e => {
         const badge = e.target.closest('.decor-badge');
-        if (badge) badge.dataset.baby ? showBabyFact(badge) : badge.dataset.event ? showEventFact(badge) : showFact(badge.dataset.theme, badge);
+        if (badge) badge.dataset.baby ? showBabyFact(badge) : badge.dataset.noel ? showNoelFact(badge) : badge.dataset.event ? showEventFact(badge) : showFact(badge.dataset.theme, badge);
         if (badge) secretStep('facts', String([...$('mapDecor').querySelectorAll('.decor-badge')].indexOf(badge)), 15, 'sDecor');   // 13/11 : badge secret « Curieux de nature » (15 décors différents)
     });
     document.addEventListener('pointerdown', e => {
@@ -12781,6 +12819,9 @@ function initBac() {
         const more = await askConfirm({ title: '🧪 Bac à sable', text: `Une copie de ta partie : tout ce que tu fais ici reste ici. Rien n’est envoyé en ligne, ton vrai jeu ne change pas. ${realLv ? `Copie : niveau ${Math.min(state.data.unlocked, MAX_LEVEL)} (vraie partie : niveau ${Math.min(realLv, MAX_LEVEL)}).` : 'Ta vraie partie n’est pas sur ce navigateur : ouvre le bac à sable dans le navigateur où tu joues.'}`,
             yes: '+1 000 🪙 pour tester', no: 'Plus d’options' });
         if (more) { state.data.coins += 1000; saveData(); renderHeader(); if (!$('shopScreen').hidden) renderShop(); return; }
+        // 16/11 : Noël (calendrier de l'Avent, tournée du Père Noël, rayon de la boutique) : choisir un jour de décembre
+        const noel = await askConfirm({ title: '🧪 Bac à sable', text: `🎄 Essayer Noël : choisir un faux jour de décembre (calendrier, tournée, boutique).${noelSimDay() ? ` Jour simulé : ${shortDate(noelSimDay())}.` : ''}`, yes: 'Choisir le jour', no: 'Plus d’options' });
+        if (noel) { openNoelBacMenu(); return; }
         // 13/11 : défi de Kulti « Vrai ou faux » tout de suite (pour voir la nouvelle mise en page)
         const tf = await askConfirm({ title: '🧪 Bac à sable', text: 'Faire un défi de Kulti « Vrai ou faux » ?', yes: 'Lancer le défi', no: 'Plus d’options' });
         if (tf) {
@@ -12891,6 +12932,7 @@ function closeTopOverlay() {
     if (open('chestModal')) { if (!state.chest) closeChest(); return true; }   // coffre en cours d'ouverture : on ne ferme pas
     if (open('dropsModal')) { closeDropsModal(); return true; }
     if (open('missionsModal')) { $('missionsModal').hidden = true; return true; }
+    if (open('adventModal')) { $('adventModal').hidden = true; return true; }   // 16/11 : calendrier de l'Avent
     if (open('questModal')) { $('questModal').hidden = true; return true; }
     if (open('patchModal')) { closePatchNotes(); return true; }
     if (open('avatarModal')) { closeAvatarModal(); return true; }
