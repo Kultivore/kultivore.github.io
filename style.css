@@ -5519,3 +5519,15 @@ body.esc-theme-japon .esc-head-prog .esc-bar i { background: #e0457b; }
 :root[data-theme="dark"] body.esc-theme-japon .esc-decor { opacity: 0.65; }
 .esc-tickets-buy { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
 .esc-tickets-buy small { font-size: 0.68rem; font-weight: 900; opacity: 1; text-transform: uppercase; letter-spacing: 0.04em; }
+.card-theme-head.is-escale { color: #2f7bff; }
+.ask-tile b.is-long { font-size: 1.08rem; }
+.ask-tile b.is-xlong { font-size: 0.92rem; }
+/* 17/11 : le tampon se pose dans le carnet après une escale finie */
+.esc-stamp.is-waiting { opacity: 0; }
+.esc-stamp.is-landing { animation: escStampLand 0.55s cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+.esc-carnet-cell.is-l .esc-stamp.is-landing { --rot: 8deg; }
+@keyframes escStampLand {
+    0% { opacity: 0; transform: scale(2.6) rotate(calc(var(--rot, -10deg) - 20deg)); }
+    60% { opacity: 1; transform: scale(0.92) rotate(var(--rot, -10deg)); }
+    100% { opacity: 1; transform: scale(1) rotate(var(--rot, -10deg)); }
+}

@@ -5780,7 +5780,14 @@ function renderCollection() {
     }
     // Cartes d'événement : à part (elles ne comptent pas dans les 150), seulement si on en a une ou si l'événement est en cours
     const ev = currentEvent();
-    const shown = EVENT_CARDS.filter(c => state.data.cards[c.id] || (ev && ev.card.id === c.id));
+    const shown = EVENT_CARDS.filter(c => c.theme !== 'Escales' && (state.data.cards[c.id] || (ev && ev.card.id === c.id)));   // 17/11 : cartes d'escale à part
+    if (typeof escCardsSection === 'function') escCardsSection(grid, card => {
+        const btn = el('button', 'kcard-btn');
+        btn.type = 'button';
+        btn.append(cardFace(card, false, false));
+        btn.addEventListener('click', () => openCardView(card));
+        return btn;
+    }, true);
     if (shown.length) {
         const head = el('div', 'card-theme-head is-event');
         head.textContent = '🎉 Événements';
@@ -9678,6 +9685,7 @@ function infoTiles(list) {
         const c = el('div', `ask-tile${tone ? ` is-${tone}` : ''}`);
         const b = el('b');
         b.textContent = big;
+        if (String(big).length > 6) b.classList.add(String(big).length > 8 ? 'is-xlong' : 'is-long');   // 17/11 : « 12 500 🪙 » rentre dans la case
         const l = el('span');
         l.textContent = label;
         c.append(b, l);
@@ -11113,7 +11121,8 @@ function openFriendProfile(f) {
             cl.append(head, row);
         });
         // Cartes d'événement (Citrouille 2026…) : à part, hors du compte des 180
-        const evCards = EVENT_CARDS.filter(has);
+        const evCards = EVENT_CARDS.filter(c => c.theme !== 'Escales' && has(c));   // 17/11 : cartes d'escale à part
+        if (typeof escCardsSection === 'function') escCardsSection(cl, card => cardBtn(card, false), false, has);
         if (evCards.length) {
             const head = el('div', 'card-theme-head is-event');
             head.textContent = '🎉 Événements';

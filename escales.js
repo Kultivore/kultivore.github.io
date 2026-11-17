@@ -17,7 +17,7 @@
 const ESCALES_ON = BAC;
 const ESCALES = [
     { id: 'japon', name: 'Japon', at: 'au Japon', icon: '🗾', flag: '🇯🇵', hat: 'japon', cls: 'esc-japon', blurb: 'Mont Fuji, sushis, mangas, samouraïs…',
-      stages: ['Premiers pas', 'Kyoto', 'Tokyo'], decor: ['🌸', '⛩️', '🍣', '🗻', '🎎', '🍵', '🏯', '🎏', '🍜', '🦌'],
+      stages: ['Premiers pas', 'Tokyo · pop culture', 'Kyoto · traditions'], decor: ['🌸', '⛩️', '🍣', '🗻', '🎎', '🍵', '🏯', '🎏', '🍜', '🦌'],
       card: { id: 'esc-japon', theme: 'Escales', icon: '🗾', name: 'Escale au Japon', rarity: 'event', text: 'Gagnée en terminant l’Escale au Japon.' } },
     { id: 'italie', name: 'Italie', at: 'en Italie', icon: '🍕', blurb: 'Colisée, pizza, Venise…', soon: 'Bientôt' },
     { id: 'maghreb', name: 'Maghreb', at: 'au Maghreb', icon: '🕌', blurb: 'Médinas, couscous, Sahara…', soon: 'Bientôt' },
@@ -26,7 +26,7 @@ const ESCALES = [
 // 17/11 (retour de l'utilisateur) : 2 niveaux de paires et 2 de frises (au lieu de 3 + 3), jamais la même famille deux fois
 const ESC_LAYOUT = ['q', 'q', 'pairs', 'q', 'q', 'q', 'order', 'q', 'q', 'pairs', 'q', 'q', 'order', 'q', 'challenge'];
 const ESC_LEVELS = ESC_LAYOUT.length;
-const ESC_TICKET_PRICE = 500;   // 17/11 : les billets s'ACHÈTENT (pas de passe-droit pour les joueurs placés haut) ; le 1er est offert
+const ESC_TICKET_PRICE = 1000;  // 17/11 : les billets s'ACHÈTENT (pas de passe-droit pour les joueurs placés haut) ; le 1er est offert
 const ESC_KIND_NAME = { q: 'Questions', pairs: 'Paires', order: 'Frise', challenge: 'Défi final' };
 const ESC_KIND_ICON = { pairs: '🔗', order: '⏳', challenge: '🏆' };
 
@@ -57,12 +57,12 @@ const escBadgeCount = () => (ESCALES.some(e => escReady(e) && !escEntry(e)?.open
 async function escBuyTicket(forWhat) {
     const d = state.data;
     const price = ESC_TICKET_PRICE;
-    if (d.coins < price) { showToast(`✈️ Un billet coûte ${price} 🪙 : il te manque ${price - d.coins} 🪙.`); return false; }
+    if (d.coins < price) { showToast(`✈️ Un billet coûte ${fmtNum(price)} 🪙 : il te manque ${fmtNum(price - d.coins)} 🪙.`); return false; }
     const ok = await askConfirm({
         title: forWhat ? `${forWhat.icon} Pas de billet en stock` : '✈️ Acheter un billet ?',
-        info: [{ big: `${price} 🪙`, label: 'le billet' }, { big: `${d.coins} 🪙`, label: 'tu as' }, { big: `${d.coins - price} 🪙`, label: 'il t’en restera', tone: 'warn' }],
+        info: [{ big: `${fmtNum(price)} 🪙`, label: 'le billet' }, { big: `${fmtNum(d.coins)} 🪙`, label: 'tu as' }, { big: `${fmtNum(d.coins - price)} 🪙`, label: 'il t’en restera', tone: 'warn' }],
         text: forWhat ? `Acheter un billet pour partir ${forWhat.at} ?` : 'Il ira dans ton stock : tu pourras l’utiliser pour l’escale de ton choix, quand tu veux.',
-        yes: `Acheter · ${price} 🪙`, no: 'Plus tard'
+        yes: `Acheter · ${fmtNum(price)} 🪙`, no: 'Plus tard'
     });
     if (!ok || d.coins < price) return false;
     d.coins -= price;
@@ -81,14 +81,24 @@ const escNoise = id => (Math.imul(id ^ 0x9e3779b9, 2654435761) >>> 0) / 42949672
 /** Questions de chaque niveau de questions (n → [questions]) : triées par difficulté (avec un peu de hasard fixe), puis
     réparties dans les 8 niveaux de questions. Toujours la même répartition pour tout le monde. */
 function escQuestionLevels(e) {
-    const qs = [...escBank(e).questions].sort((a, b) => (a.d + escNoise(a.id) * 0.5) - (b.d + escNoise(b.id) * 0.5) || a.id - b.id);
+    const sortD = list => [...list].sort((a, b) => (a.d + escNoise(a.id) * 0.5) - (b.d + escNoise(b.id) * 0.5) || a.id - b.id);
     const levels = ESC_LAYOUT.map((k, i) => (k === 'q' ? i + 1 : 0)).filter(Boolean);
     const out = {};
-    levels.forEach((n, i) => {
-        const from = Math.floor(i * qs.length / levels.length), to = Math.floor((i + 1) * qs.length / levels.length);
-        out[n] = qs.slice(from, to);
-    });
+    // 17/11 : étapes À THÈME (champ « stage » 1, 2, 3 des questions) : chaque étape pioche dans ses questions, de la plus facile
+    // à la plus dure ; sans champ « stage », tout le pays d'un seul tenant
+    const all = escBank(e).questions;
+    const groups = all.some(q => q.stage) ? [1, 2, 3].map(st => [levels.filter(n => Math.floor((n - 1) / 5) + 1 === st), sortD(all.filter(q => (q.stage || 1) === st))])
+        : [[levels, sortD(all)]];
+    groups.forEach(([lv, qs]) => lv.forEach((n, i) => {
+        out[n] = qs.slice(Math.floor(i * qs.length / lv.length), Math.floor((i + 1) * qs.length / lv.length));
+    }));
     return out;
+}
+/** 17/11 : révisions = 2 questions ratées au plus des niveaux d'avant de l'escale (les plus ratées d'abord), comme au parcours. */
+function escReviews(e, n, lv) {
+    const before = new Set(Object.entries(lv).filter(([k]) => Number(k) < n).flatMap(([, qs]) => qs.map(q => q.id)));
+    return shuffle(escBank(e).questions.filter(q => before.has(q.id) && missCount(q.id) > 0 && !isLater(q.id)))
+        .sort((a, b) => missCount(b.id) - missCount(a.id)).slice(0, 2);
 }
 const escTarget = n => 1.5 + 0.35 * Math.floor((n - 1) / 5);   // difficulté visée des paires et frises : 1,5 → 2,2
 /** 2 familles par niveau, TOUJOURS les mêmes et jamais deux fois dans l'escale (17/11) : 1er niveau = familles 1 et 2,
@@ -101,7 +111,10 @@ function escItems(e, n) {
     const bank = escBank(e);
     const kind = ESC_LAYOUT[n - 1];
     const t = escTarget(n);
-    if (kind === 'q') return shuffle(escQuestionLevels(e)[n].map(q => ({ q, review: false })));
+    if (kind === 'q') {
+        const lv = escQuestionLevels(e);
+        return shuffle([...lv[n].map(q => ({ q, review: false })), ...escReviews(e, n, lv).map(q => ({ q, review: true }))]);
+    }
     if (kind === 'pairs') {
         const fams = escPickFamilies(bank.pairs, n);
         return fams.map(family => ({ family, pairs: pickPairs(family, t), matched: new Set(), failed: new Set(), order: null }));
@@ -253,7 +266,7 @@ function escRenderPage() {
     tk.querySelector('.esc-tickets-ico').append(emojiImg('✈️'));
     tk.querySelector('b').textContent = `${stock} ${stock > 1 ? 'billets' : 'billet'} en stock`;
     tk.querySelector('small').textContent = '1 billet = 1 escale de ton choix, pour toujours.';
-    tk.querySelector('.esc-tickets-buy').innerHTML = `<small>Acheter</small>${ESC_TICKET_PRICE} 🪙`;
+    tk.querySelector('.esc-tickets-buy').innerHTML = `<small>Acheter</small>${fmtNum(ESC_TICKET_PRICE)} 🪙`;
     tk.addEventListener('click', () => escBuyTicket(null));
     page.append(tk);
 
@@ -286,7 +299,7 @@ function escRenderPage() {
     section('À ouvrir avec un billet', toOpen, x => {
         const row = escRow(x);
         row.sub.textContent = x.blurb;
-        row.btn.textContent = stock ? '✈️ 1 billet' : `✈️ ${ESC_TICKET_PRICE} 🪙`;
+        row.btn.textContent = stock ? '✈️ 1 billet' : `✈️ ${fmtNum(ESC_TICKET_PRICE)} 🪙`;
         row.btn.className = `esc-btn${stock || state.data.coins >= ESC_TICKET_PRICE ? '' : ' is-off'}`;
         row.box.addEventListener('click', () => escOpenWithTicket(x));
         return row.box;
@@ -300,6 +313,22 @@ function escRenderPage() {
         return row.box;
     });
     page.append(escCarnet());
+    // 17/11 : escale qui vient d'être finie : on descend jusqu'au carnet et le tampon s'y pose
+    if (escUi.landing) {
+        const id = escUi.landing;
+        escUi.landing = null;
+        const st = page.querySelector(`.esc-carnet-cell[data-id="${id}"] .esc-stamp`);
+        if (st) {
+            st.classList.add('is-waiting');
+            setTimeout(() => {
+                page.querySelector('.esc-carnet').scrollIntoView({ block: 'center', behavior: 'smooth' });
+                setTimeout(() => { st.classList.remove('is-waiting'); st.classList.add('is-landing'); playSound('stamp'); }, 700);
+            }, 250);
+        }
+        const after = escUi.afterLanding;
+        escUi.afterLanding = null;
+        if (after) setTimeout(after, 3500);
+    }
 }
 function escRow(x) {
     const box = el('button', 'esc-dest');
@@ -469,7 +498,8 @@ async function escTapLevel(e, n) {
     const done = !!ed.done[n];
     if (!done && n > escUnlocked(e)) { showToast(`🔒 Termine d’abord le niveau ${escUnlocked(e)}.`); return; }
     const kind = ESC_LAYOUT[n - 1];
-    const what = kind === 'q' ? `${escQuestionLevels(e)[n].length} questions` : kind === 'pairs' ? '2 grilles de paires' : kind === 'order' ? '2 frises de 4 cartes, 2 cœurs' : '10 questions déjà vues';
+    const rv = kind === 'q' ? escReviews(e, n, escQuestionLevels(e)).length : 0;
+    const what = kind === 'q' ? `${escQuestionLevels(e)[n].length} questions${rv ? ` + ${rv} à revoir` : ''}` : kind === 'pairs' ? '2 grilles de paires' : kind === 'order' ? '2 frises de 4 cartes, 2 cœurs' : '10 questions déjà vues';
     const drops = state.data.drops;
     const info = done
         ? [{ big: '🔁', label: 'déjà réussi' }, { big: 'gratuit', label: 'pas de goutte', tone: 'good' }]
@@ -543,7 +573,7 @@ endSession = function (win) {
     const ed = escEntry(e);
     ed.done[n] = ed.done[n] || todayKey();
     const finished = kind === 'challenge' && !ed.stamp;
-    if (finished) ed.stamp = todayKey();
+    if (finished) { ed.stamp = todayKey(); escUi.view = null; escUi.landing = e.id; }   // 17/11 : « Continuer » mène au carnet, où le tampon se pose
     const next = n < ESC_LEVELS ? `Le niveau ${n + 1} de l’escale est ouvert.` : '';
     setEnd({
         emoji: kind === 'challenge' ? '🏆' : '🎉',
@@ -586,6 +616,7 @@ function escCarnet() {
     const pages = el('div', 'esc-carnet-pages');
     ESCALES.forEach((x, i) => {
         const cell = el('div', `esc-carnet-cell${i % 2 ? ' is-l' : ' is-r'}`);
+        cell.dataset.id = x.id;
         if (escFinished(x.id)) cell.append(escStamp(x));
         else { const empty = el('div', 'esc-stamp is-empty'); empty.innerHTML = '<strong></strong><em>?</em>'; empty.querySelector('strong').textContent = x.name.toUpperCase(); cell.append(empty); }
         pages.append(cell);
@@ -622,9 +653,34 @@ function escDemo() {
         startEscaleLevel(e, ESC_LEVELS);
         setTimeout(() => {
             state.errors = 0;
-            endSession(true);   // écran de fin : « Escale au Japon terminée ! » + tampon
-            if (keep) escAll()[e.id] = keep; else delete escAll()[e.id];
-            saveData();
+            endSession(true);   // écran de fin : « Escale au Japon terminée ! » + tampon ; « Continuer » → le tampon se pose dans le carnet
+            // l'escale est remise comme avant une fois le tampon posé (ou au plus tard 60 s après)
+            let restored = false;
+            const restore = () => { if (restored) return; restored = true; if (keep) escAll()[e.id] = keep; else delete escAll()[e.id]; saveData(); };
+            escUi.afterLanding = restore;
+            setTimeout(restore, 60000);
         }, 900);
     });
+}
+
+/* ---------- Collection (17/11) : les cartes d'escale ont leur propre rangée « 🧳 Escales » (plus dans « Événements ») ---------- */
+function escCardsSection(container, btnFn, mine, has) {
+    if (!ESCALES_ON) return;
+    const owned = has || (c => !!state.data.cards[c.id]);
+    const list = ESCALES.filter(x => x.card && (owned(x.card) || (mine && escReady(x))));
+    if (!list.length || (!mine && !list.some(x => owned(x.card)))) return;
+    const head = el('div', 'card-theme-head is-escale');
+    head.textContent = `🧳 Escales · ${list.filter(x => owned(x.card)).length}/${ESCALES.filter(x => x.card).length}`;
+    const row = el('div', 'card-row');
+    list.forEach(x => {
+        if (owned(x.card)) { row.append(btnFn(x.card)); return; }
+        const btn = el('button', 'kcard-btn');
+        btn.type = 'button';
+        const box = el('div', 'kcard is-missing is-locked rarity-event');
+        box.textContent = '🔒';
+        btn.append(box);
+        btn.addEventListener('click', () => { escUi.tab = 'escales'; escUi.view = null; showScreen('map'); showToast(`🧳 Termine l’Escale ${x.at} pour gagner sa carte.`); });
+        row.append(btn);
+    });
+    container.append(head, row);
 }

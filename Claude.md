@@ -1466,3 +1466,10 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   Bac à sable, menu 🧪 : « Voir les animations d'une escale » (`escDemo` : avion puis fin avec tampon, escale remise comme avant).
   Pas de révisions dans les escales (ratées = défi final) ; étapes « Kyoto / Tokyo » = simples titres (à décider).
   PIÈCES (requête du 17/11, 8 joueurs) : XP sur 7 jours 569 à 6 147 → 71 à 768 🪙 rien que par l'XP (+ objectif, missions, quête…).
+- 17/11 (v=20261117k, BAC À SABLE) : ESCALES V4 : billet à 1 000 🪙 (choix de l'utilisateur) ; RÉVISIONS dans les escales (`escReviews` :
+  2 questions ratées au plus des niveaux d'avant de l'escale, mêlées au niveau, « + N à revoir » au départ) ; ÉTAPES À THÈME (champ
+  `stage` des questions, `escQuestionLevels` par étape) : Japon = 1 « Premiers pas » (24 q, d 1,71), 2 « Tokyo · pop culture » (18, 1,84),
+  3 « Kyoto · traditions » (18, 2,04) ; frises : niveau 7 = Japon pop + nord-sud, niveau 13 = Histoire + hauteurs. Escale finie →
+  « Continuer » mène au CARNET où le tampon se pose (escUi.landing, .is-landing) ; la démo du bac remet l'escale après ce tampon.
+  Cartes d'escale : rangée « 🧳 Escales » dans la collection et le profil des amis (`escCardsSection`), plus dans « Événements ».
+  Fenêtres de confirmation : chiffres longs plus petits dans les cases (`infoTiles` : is-long > 6 caractères, is-xlong > 8).
