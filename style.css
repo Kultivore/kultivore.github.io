@@ -5618,3 +5618,15 @@ body.esc-theme-usa .esc-head-prog .esc-bar i { background: #c8283f; }
 .esc-pola.is-blank { background: #f1ede4; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
 .esc-pola.is-blank .esc-pola-ph { background: repeating-linear-gradient(45deg, #e6e1d6 0 6px, #ece8de 6px 12px); color: #b9b2a3; font-weight: 900; }
 .esc-pola.is-blank .esc-pola-cap { color: #b9b2a3; }
+.enc-search + div > .enc-list:first-child { margin-top: 12px; }
+/* 17/11 : recherche dans toute l'encyclopédie (onglet Savoirs) */
+.enc-gsearch { margin: 12px 0 0; }
+.enc-gres { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.enc-gres:empty { display: none; }
+.enc-gres-n { margin: 2px 2px 2px; color: var(--muted); font-size: 0.8rem; font-weight: 800; }
+.enc-gres-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 2px solid var(--line); border-left: 5px solid var(--c);
+    border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.enc-gres-ic { flex: none; font-size: 1.3rem; }
+.enc-gres-t { min-width: 0; display: flex; flex-direction: column; }
+.enc-gres-t b { font-size: 0.95rem; font-weight: 900; }
+.enc-gres-t small { color: var(--muted); font-size: 0.78rem; font-weight: 700; line-height: 1.25; }

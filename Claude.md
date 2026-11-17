@@ -1504,3 +1504,7 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   la carte). Toucher « Parcours » en bas quand on y est déjà = bascule Parcours ⇄ Escales. MAGHREB mis en « Plus tard » (publié après) :
   3 escales publiées (Japon, Italie, États-Unis) → 183 cartes ; cartes / badges / livre seulement pour les escales prêtes (escReady).
   Pour publier le Maghreb : retirer `soon` de son entrée (et ajouter ses emojis dans ESC_SOUVENIR).
+- 17/11 (v=20261117p) : RECHERCHE GÉNÉRALE dans Profil → Savoirs (POUR TOUS : `encGlobalSearch`, champ « Chercher dans toute mon
+  encyclopédie », questions sues de tous les livres, 40 résultats au plus, tap = fiche) ; recherche d'un livre : espace sous le champ.
+  BAC : interrupteur Parcours | Escales qui passait sous la barre du haut pendant un événement (le bandeau, caché par « in-escales »,
+  était mesuré à 0) → classe posée avant la mesure ; son d'avion au décollage (`escPlaneSound` : SOUNDS.plane + synthNoise).

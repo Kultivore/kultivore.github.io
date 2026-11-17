@@ -2127,6 +2127,7 @@ function encBooks() {
     });
     return Object.values(map).sort((a, b) => byThemeName(a.theme, b.theme));
 }
+let encGlobalSearch = '';   // 17/11 : texte de la recherche générale (gardé si le Profil se redessine)
 function renderEncyclopedia(box) {
     const card = box.closest('.card');
     const h2 = card?.querySelector('h2');
@@ -2166,6 +2167,44 @@ function renderEncyclopedia(box) {
     const sub = el('p', 'enc-sub');
     sub.textContent = `sur ${fmtNum(total)} questions en tout${week ? ` · +${fmtNum(week)} cette semaine` : ''}`;
     box.append(head, bar, sub);
+    // 17/11 : recherche dans TOUTE l'encyclopédie (tous les livres), résultats juste en dessous
+    const gs = el('input', 'enc-search enc-gsearch');
+    gs.type = 'search';
+    gs.placeholder = '🔍 Chercher dans toute mon encyclopédie…';
+    gs.value = encGlobalSearch;
+    const gres = el('div', 'enc-gres');
+    const drawSearch = () => {
+        gres.replaceChildren();
+        const t = encNorm(encGlobalSearch.trim());
+        if (t.length < 2) return;
+        const found = [];
+        encAll().forEach(q => { if (encKnown(q) && encNorm(q.a.join(' ') + ' ' + q.q).includes(t)) found.push(q); });
+        found.sort((a, b) => a.a[0].localeCompare(b.a[0], 'fr'));
+        const n = el('p', 'enc-gres-n');
+        n.textContent = found.length ? `${found.length} question${found.length > 1 ? 's' : ''} sue${found.length > 1 ? 's' : ''}` : 'Aucune question sue ne correspond.';
+        gres.append(n);
+        found.slice(0, 40).forEach(q => {
+            const r = el('button', 'enc-gres-row');
+            r.type = 'button';
+            r.style.setProperty('--c', ENC_COLORS[q.theme] || '#3d8bff');
+            const ic = el('span', 'enc-gres-ic');
+            ic.textContent = encIcon(q.theme);
+            const tx = el('span', 'enc-gres-t');
+            const an = el('b');
+            an.textContent = q.a[0];
+            const qq = el('small');
+            qq.textContent = q.q;
+            tx.append(an, qq);
+            r.append(ic, tx);
+            r.addEventListener('click', () => encGo(() => openEncFiche(q, found.slice(0, 40), null)));
+            gres.append(r);
+        });
+        if (found.length > 40) { const m = el('p', 'enc-gres-n'); m.textContent = `… et ${found.length - 40} autres : précise ta recherche.`; gres.append(m); }
+    };
+    let gsTimer = 0;
+    gs.addEventListener('input', () => { encGlobalSearch = gs.value; clearTimeout(gsTimer); gsTimer = setTimeout(drawSearch, 150); });
+    box.append(gs, gres);
+    drawSearch();
 
     if (recent.length) {
         const t = el('p', 'enc-sec');

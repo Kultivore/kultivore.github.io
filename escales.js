@@ -230,6 +230,10 @@ function escApplyTab() {
             b.append(dot);
         }
     });
+    // 17/11 : classes du body AVANT de mesurer (sinon le bandeau de Noël, encore caché par « in-escales », mesurait 0 et
+    // l'interrupteur passait sous la barre du haut en revenant sur le Parcours)
+    document.body.classList.toggle('in-escales', !$('mapScreen').hidden && onEsc);
+    if (!onEsc && typeof updateEventBanner === 'function') updateEventBanner();
     // Collé sous la barre du haut (et sous le bandeau d'événement s'il est là ; sur les Escales, le bandeau est caché)
     const banner = $('eventBanner');
     const top = !onEsc && banner && !banner.hidden ? banner.getBoundingClientRect().bottom + 6 : ($('topbar')?.getBoundingClientRect().height || 56) + 6;
@@ -387,8 +391,8 @@ function escTakeoff(x, done) {
     ov.querySelector('b').textContent = `Destination : ${x.name}`;
     ov.querySelector('em').append(emojiImg(x.icon));
     document.body.append(ov);
-    playSound('hop');
-    setTimeout(() => playSound('unlock'), 900);
+    escPlaneSound();
+    setTimeout(() => playSound('unlock'), 1500);
     let ended = false;
     const finish = () => {
         if (ended) return;
@@ -873,3 +877,13 @@ const ESC_SOUVENIR = {
     40648: '⛏️', 40649: '🧸', 40650: '🎩', 40651: '🛰️', 40652: '🏛️', 40653: '📜', 40654: '🏰', 40655: '🐴', 40656: '🗿', 40657: '🏹', 40658: '⛪', 40659: '🎙️',
     // Maghreb (publié plus tard)
 };
+
+/** 17/11 : bruit d'avion qui décolle (moteur qui monte + souffle), seulement si le son est activé. */
+if (typeof SOUNDS !== 'undefined') SOUNDS.plane = [[70, 0, 2.1, 'triangle', 210], [104, 0.05, 2.0, 'triangle', 330], [150, 0.4, 1.6, 'sine', 520]];
+function escPlaneSound() {
+    if (!state.data.sound) return;
+    try {
+        playSound('plane');
+        if (typeof synthNoise === 'function') { synthNoise(0, 2.2, 0.16, 260, 0.9, 2200); synthNoise(0.5, 1.6, 0.08, 900, 0.6, 3500); }
+    } catch (e) { /* pas de son : tant pis */ }
+}
