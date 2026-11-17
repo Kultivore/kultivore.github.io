@@ -1483,3 +1483,12 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   Thèmes de page clair + sombre (esc-theme-italie / maghreb / usa). Badges et cartes générés pour chaque escale (esc-<id>).
   « Bientôt » : Grèce, Égypte. Test : judge accepte toutes les réponses écrites des 240 questions (scratchpad esc_judge.js).
   L'événement « Escale au Maghreb » (evenements/maghreb.js, ancien, trop dur) reste à part, inchangé.
+- 17/11 (v=20261117m, BAC À SABLE) : ESCALES, finitions : « Bientôt » pour Grèce ET Égypte ; bulle des Escales dans le TUTORIEL du début
+  (après celle des coffres, TOUR_STEPS.splice dans escales.js) ; ANNONCE « Quoi de neuf ? » UNE fois pour les joueurs qui jouaient
+  avant (`escNews`, ESC_PATCH_NOTES, drapeau data.escNews, fenêtre patchModal) — À LA MISE EN LIGNE : mettre ESC_NEWS_DAY au jour de
+  la sortie (dans le bac = 2099 pour la voir) ; ENCYCLOPÉDIE : livre « 🧳 Voyages » (`escEncQuestions` = copies des 240 questions avec
+  theme 'Voyages', ENC_CHAPTERS.Voyages = un chapitre par escale, encAll / encIcon / ENC_COLORS dans script.js) ; PROFIL D'UN AMI :
+  3e onglet « 🧳 Voyages · N » = son carnet de voyage (`escFriendTab`, summary.escales = escales finies, via profileSummary
+  enveloppé ; dans le bac, Léa a Japon + Italie) ; mode sombre des escales plus coloré (fonds teintés + 2 lueurs du pays) — l'utilisateur
+  préfère le clair. Avis sur la difficulté : d moyen ≈ 1,8-1,9 (parcours au début 1,3, vers le niveau 150 ≈ 3) ; à revoir avec
+  question_stats une fois jouées.

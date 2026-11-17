@@ -29,7 +29,7 @@ const ESCALES = [
       stages: ['Premiers pas', 'Hollywood · pop culture', 'Washington · histoire'], decor: ['🗽', '🍔', '🏈', '🎬', '🎸', '🦅', '🏀', '🚀', '🌭', '🤠'],
       card: { id: 'esc-usa', theme: 'Escales', icon: '🗽', name: 'Escale aux États-Unis', rarity: 'event', text: 'Gagnée en terminant l’Escale aux États-Unis.' } },
     { id: 'grece', name: 'Grèce', at: 'en Grèce', icon: '🏛️', blurb: 'Acropole, dieux de l’Olympe, îles…', soon: 'Bientôt' },
-    { id: 'egypte', name: 'Égypte', at: 'en Égypte', icon: '🏺', blurb: 'Pyramides, pharaons, Nil…', soon: 'Plus tard' }
+    { id: 'egypte', name: 'Égypte', at: 'en Égypte', icon: '🏺', blurb: 'Pyramides, pharaons, Nil…', soon: 'Bientôt' }
 ];
 // 17/11 (retour de l'utilisateur) : 2 niveaux de paires et 2 de frises (au lieu de 3 + 3), jamais la même famille deux fois
 const ESC_LAYOUT = ['q', 'q', 'pairs', 'q', 'q', 'q', 'order', 'q', 'q', 'pairs', 'q', 'q', 'order', 'q', 'challenge'];
@@ -618,17 +618,17 @@ function escStamp(e, cls) {
     s.querySelector('strong').textContent = e.name.toUpperCase();
     return s;
 }
-function escCarnet() {
+function escCarnet(done = x => escFinished(x.id)) {   // 17/11 : « done » = le carnet d'un ami
     const box = el('div', 'esc-carnet');
     const head = el('div', 'esc-carnet-head');
-    const got = ESCALES.filter(x => escFinished(x.id));
+    const got = ESCALES.filter(done);
     head.innerHTML = '<b>📕 Mon carnet de voyage</b><small></small>';
     head.querySelector('small').textContent = `${got.length} / ${ESCALES.length} tampons`;
     const pages = el('div', 'esc-carnet-pages');
     ESCALES.forEach((x, i) => {
         const cell = el('div', `esc-carnet-cell${i % 2 ? ' is-l' : ' is-r'}`);
         cell.dataset.id = x.id;
-        if (escFinished(x.id)) cell.append(escStamp(x));
+        if (done(x)) cell.append(escStamp(x));
         else { const empty = el('div', 'esc-stamp is-empty'); empty.innerHTML = '<strong></strong><em>?</em>'; empty.querySelector('strong').textContent = x.name.toUpperCase(); cell.append(empty); }
         pages.append(cell);
     });
@@ -695,3 +695,78 @@ function escCardsSection(container, btnFn, mine, has) {
     });
     container.append(head, row);
 }
+
+/* ---------- 17/11 : carnet de voyage des amis, livre « Voyages » de l'encyclopédie, tutoriel, annonce ---------- */
+// Résumé envoyé aux amis : les escales finies (leur carnet de voyage)
+if (ESCALES_ON) {
+    const escOrigSummary = profileSummary;
+    profileSummary = function () { const s = escOrigSummary(); s.escales = ESCALES.filter(x => escFinished(x.id)).map(x => x.id); return s; };
+}
+/** 3e onglet du profil d'un ami : son carnet de voyage (tampons des escales finies). */
+function escFriendTab(f, s, tabBtn, pages) {
+    if (!ESCALES_ON) return;
+    let list = Array.isArray(s.escales) ? s.escales : [];
+    if (BAC && !s.escales && f && f.link === 'bac1') list = ['japon', 'italie'];   // bac à sable : Léa a déjà voyagé
+    tabBtn('voyages', `🧳 Voyages · ${list.length}`);
+    const box = pages.voyages.box;
+    box.append(escCarnet(x => list.includes(x.id)));
+    if (!list.length) {
+        const p = el('p', 'friend-empty');
+        p.textContent = 'Pas encore d’escale terminée.';
+        box.prepend(p);
+    }
+}
+// Encyclopédie : un livre « 🧳 Voyages », un chapitre par escale (les questions des escales, copiées avec ce thème)
+let escEncCache = null;
+function escEncQuestions() {
+    if (!ESCALES_ON) return [];
+    if (escEncCache) return escEncCache;
+    escEncCache = [];
+    ESCALES.filter(escReady).forEach(e => escBank(e).questions.forEach(q => escEncCache.push({ ...q, theme: 'Voyages', escale: e.id })));
+    return escEncCache;
+}
+if (ESCALES_ON && typeof ENC_CHAPTERS !== 'undefined') {
+    ENC_CHAPTERS.Voyages = ESCALES.filter(escReady).map(e => [e.icon, `Escale ${e.at}`, escBank(e).questions.map(q => q.id)]);
+}
+// Tutoriel du début : une bulle sur l'onglet des Escales (après celle des coffres)
+if (ESCALES_ON && typeof TOUR_STEPS !== 'undefined') {
+    const i = TOUR_STEPS.findIndex(st => String(st.text).includes('coffre'));
+    TOUR_STEPS.splice(i >= 0 ? i + 1 : TOUR_STEPS.length - 1, 0, {
+        target: () => document.querySelector('.esc-switch-btn[data-tab="escales"]'),
+        text: '🧳 Ici, les Escales : de petits voyages de 15 niveaux au Japon, en Italie… Ton premier billet d’avion est offert !'
+    });
+}
+// Annonce « Quoi de neuf ? » : UNE fois, seulement pour les joueurs qui jouaient avant l'arrivée des escales
+const ESC_NEWS_DAY = BAC ? '2099-01-01' : '2026-11-18';   // à mettre au jour de la mise en ligne pour tous
+const ESC_PATCH_NOTES = [
+    ['🧳', 'Les Escales', 'Nouvel onglet en haut du Parcours : de petits voyages de 15 niveaux au Japon, en Italie, au Maghreb et aux États-Unis.'],
+    ['✈️', 'Ton premier billet est offert', 'Choisis ta première escale gratuitement. Les billets suivants s’achètent 1 000 🪙, en touchant la carte des billets.'],
+    ['📕', 'Ton carnet de voyage', 'Chaque escale terminée te donne un tampon, une carte et un badge. Tes amis peuvent voir ton carnet dans ton profil.'],
+    ['🎩', 'Chaque pays a son décor', 'Ses étapes, ses paires, ses frises, ses couleurs… et Kulti change même de chapeau !']
+];
+function escNews() {
+    const d = state.data;
+    if (!ESCALES_ON || d.escNews || !d.onboarded || !d.tourDone) return;
+    const oldPlayer = Object.keys(d.activeDays || {}).some(k => k < ESC_NEWS_DAY);
+    if (!oldPlayer) { d.escNews = todayKey(); saveData(); return; }   // nouveau joueur : le tutoriel lui montre les Escales
+    if (document.querySelector('.modal-overlay:not([hidden]), .tour:not([hidden])') || !$('studyScreen').hidden) { setTimeout(escNews, 4000); return; }
+    const list = $('patchList');
+    list.replaceChildren();
+    ESC_PATCH_NOTES.forEach(([icon, title, text]) => {
+        const item = el('div', 'patch-item');
+        const ic = el('span', 'patch-icon');
+        ic.textContent = icon;
+        const body = el('div');
+        const b = el('b');
+        b.textContent = title;
+        const p = el('p');
+        p.textContent = text;
+        body.append(b, p);
+        item.append(ic, body);
+        list.append(item);
+    });
+    d.escNews = todayKey();   // une seule fois, même si la fenêtre est fermée tout de suite
+    saveData();
+    $('patchModal').hidden = false;
+}
+if (ESCALES_ON) window.addEventListener('load', () => setTimeout(escNews, 5000));

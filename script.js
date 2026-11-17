@@ -1998,13 +1998,14 @@ const ENC_ON = true;   // 12/11 : encyclopédie des savoirs, EN LIGNE POUR TOUS 
 // 12/11 : 15 couleurs bien distinctes (Cinéma et Drapeaux se ressemblaient), l'icône est posée sur un rond blanc
 const ENC_COLORS = { 'Arts': '#c026d3', 'Cinéma': '#dc2626', 'Drapeaux': '#ea580c', 'Gastronomie': '#ca8a04', 'Géographie': '#15803d', 'Histoire': '#92400e',
     'Jeux': '#7c3aed', 'Langue française': '#2563eb', 'Littérature': '#0f766e', 'Monuments': '#78716c', 'Musique': '#db2777', 'Mythologie': '#1e3a8a',
-    'Sciences': '#0891b2', 'Sport': '#65a30d', 'Technologie': '#4b5563' };
+    'Sciences': '#0891b2', 'Sport': '#65a30d', 'Technologie': '#4b5563', 'Voyages': '#0e7490' };
 let encCache = null, encCount = -1;
 function encAll() {
-    const n = QUESTIONS.length + (typeof TRAINING_QUESTIONS === 'undefined' ? 0 : TRAINING_QUESTIONS.length);
+    const extra = typeof escEncQuestions === 'function' ? escEncQuestions() : [];   // 17/11 : livre « Voyages » (questions des escales)
+    const n = QUESTIONS.length + (typeof TRAINING_QUESTIONS === 'undefined' ? 0 : TRAINING_QUESTIONS.length) + extra.length;
     if (!encCache || encCount !== n) {   // recalcul si une banque arrive plus tard
         encCache = new Map();
-        QUESTIONS.concat(typeof TRAINING_QUESTIONS === 'undefined' ? [] : TRAINING_QUESTIONS).forEach(q => encCache.set(q.id, q));
+        QUESTIONS.concat(typeof TRAINING_QUESTIONS === 'undefined' ? [] : TRAINING_QUESTIONS, extra).forEach(q => encCache.set(q.id, q));
         encCount = n;
     }
     return encCache;
@@ -2017,7 +2018,7 @@ function encIconEl(theme) {
 }
 const encQuestion = id => encAll().get(id);
 const encKnown = q => (state.data.stats[q.id]?.right || 0) > 0;
-const encIcon = theme => (THEME_DECOR.find(t => t.theme === theme) || {}).icon || '📘';
+const encIcon = theme => (THEME_DECOR.find(t => t.theme === theme) || {}).icon || (theme === 'Voyages' ? '🧳' : '📘');
 const encNorm = t => String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const encWhen = q => { const s = state.data.stats[q.id] || {}; return s.first || (s.last ? dayKey(new Date(s.last)) : ''); };
 /** 12/11 : un tap sur « savoirs », « maîtrisés » ou « réussite » réexplique ce que c'est. */
@@ -11025,8 +11026,10 @@ function openFriendProfile(f) {
         };
         tabBtn('badges', `🎖️ Badges · ${badges.length}`);
         tabBtn('cards', `🃏 Cartes · ${CARDS.filter(c => s.cards.includes(c.id)).length}/${CARDS.length}`);
+        if (typeof escFriendTab === 'function') escFriendTab(f, s, tabBtn, pages);   // 17/11 : 3e onglet « 🧳 Voyages » (son carnet de voyage)
+        if (!pages[friendTab]) friendTab = 'badges';
         const showTab = () => Object.entries(pages).forEach(([k, p]) => { p.btn.classList.toggle('is-active', k === friendTab); p.box.hidden = k !== friendTab; });
-        body.append(tabs, pages.badges.box, pages.cards.box);
+        body.append(tabs, ...Object.values(pages).map(p => p.box));
         const bl = pages.badges.box;
         const openB = b => { $('friendModal').hidden = true; openBadgeView(b, () => { $('friendModal').hidden = false; }); };
         const placed = new Set();
