@@ -1423,3 +1423,11 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   placeholder « Mot de passe », règle « 6 caractères minimum, dont une majuscule. » (`authRule`) ; majuscule OBLIGATOIRE à la création
   seulement. ACCUEIL, objectif du jour : sous-titres raccourcis (« 250 XP par jour · 🎁 50 🪙 ») + cases resserrées ≤ 400 px +
   `justify-content: safe center` (la case Intense passait sous « Continuer » à 360 px).
+- 17/11 PLAN DE SORTIE DÉCIDÉ (« on fait ça ») : 1) sortie en PARTICULIER, gratuit, SANS pub ni achat (aucune démarche, rien d'affiché sur
+  la fiche Play Store) ; 2) adresse Gmail Kultivo (validation en 2 étapes) → nom + e-mail sur confidentialite.html / supprimer-compte.html,
+  e-mails de Supabase envoyés par ce Gmail (SMTP + mot de passe d'application Google, gratuit ; « regarde tes indésirables ») ;
+  3) appli Android Capacitor ; 4) si les joueurs restent (J1 / J7 / J30) : micro-entreprise (+ domiciliation : l'adresse du « professionnel »
+  est AFFICHÉE sur la fiche Play Store, règle européenne ; 2e numéro de téléphone) PUIS pubs AdMob (fenêtre de consentement) + achats Google
+  Play dans une mise à jour, préparés d'avance dans le bac à sable ; politique de confidentialité à mettre à jour (« pas de publicité »).
+  Passage en micro-entreprise = même personne, rien à transférer ; société plus tard = transfert d'appli possible. NE JAMAIS changer
+  l'adresse du site. Conseillé à l'utilisateur : vérifier sa situation (salarié / chômage…) avec l'URSSAF ou un comptable.
