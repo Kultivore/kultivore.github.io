@@ -1404,3 +1404,15 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   sombre, --ink la rendait blanc sur blanc). Bulle de Kulti de l'écran de fin en mode sombre : fond bleu nuit #2f3f6e + contour. COUP DE POUCE : stock
   en cases (« 👆 3 en stock / 👆 2 il t'en restera », sinon prix + pièces), « 👆 Coup de pouce · 3 en stock » sur le bouton des paires, pastille verte
   du nombre sur le petit bouton 👆 des frises (data-stock), en BLEU (choix de l utilisateur). Vérifié : textes « N niveaux » = MAX_LEVEL partout.
+- 17/11 (v=20261117e, POUR TOUS) : PROTECTIONS. 1) SUPPRIMER MON COMPTE + CONFIDENTIALITÉ pour tous (`ACCOUNT_V2 = true`, SQL lancé) ;
+  nom + e-mail de contact des pages : PLUS TARD (avant le Play Store). 2) HORLOGE : `server_now()` (supabase/anti-triche.sql, À LANCER) ;
+  `checkServerClock` (lancement + retour dans l'appli, 1/min au plus) mesure l'écart avec le téléphone ; > 1 min → gardé dans localStorage
+  `kultivo_clock` et appliqué dès le <head> d'index.html (Date remplacée par une version décalée : Date.now, new Date() ; `kRealDate`,
+  `kRealNow`, `kClockSkew`) ; écart nouveau > 5 min → rechargement UNE fois par session + message « l'heure de ton téléphone n'est pas
+  juste ». Sans écart : rien ne change (Date d'origine). Testé avec +1 jour (todayKey = demain réel corrigé, dates fixes intactes).
+  3) SCORES : déclencheur `scores_guard` (même fichier) : semaine future refusée, prev_week_xp figé dans la semaine (≤ week_xp connu
+  + 1500 au changement de semaine, ≤ 3000 après plusieurs semaines, ≤ 5000 pour un nouveau joueur), défi du jour seulement à ± 1 jour,
+  figé 20 min après le 1er score du jour (colonne daily_at), au moins 2 s par bonne réponse ; corrections EN SILENCE (jamais d'erreur).
+  4) CRÉATION DE COMPTE : mot de passe tapé 2 fois (`authPassword2`, l'œil montre les deux) ; « Tu voulais dire …@gmail.com ? »
+  (`emailSuggestion`, `EMAIL_DOMAINS` avec domaines belges / suisses / québécois). E-MAIL DE BIENVENUE : pas maintenant (il faut un
+  serveur d'envoi à nous : Supabase gratuit n'envoie que ~2 e-mails par heure) → avec l'adresse Kultivo, avant la sortie (Brevo / Resend).

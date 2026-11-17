@@ -5284,3 +5284,7 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
 #orderNudge[data-stock]:not([data-stock=""])::after { content: attr(data-stock); position: absolute; top: -7px; right: -7px; min-width: 20px; height: 20px;
     padding: 0 5px; border-radius: 10px; background: var(--blue); color: #fff; font-size: 0.72rem; font-weight: 900; line-height: 20px;
     text-align: center; box-shadow: 0 0 0 2px var(--surface); }
+/* 17/11 : création de compte — 2e case du mot de passe, aide « Tu voulais dire … ? » */
+.auth-input[hidden], .auth-hint[hidden] { display: none !important; }
+.auth-hint { margin: -2px 0 0; font-size: 0.85rem; color: var(--muted); text-align: left; }
+.auth-hint-btn { padding: 0; border: 0; background: none; font: inherit; font-weight: 800; color: var(--blue); text-decoration: underline; cursor: pointer; }

@@ -9407,7 +9407,39 @@ function closeAuthModal() {
     $('authPassword').value = '';
     $('authPassword').type = 'text';
     $('authPassword').autocomplete = 'off';
+    $('authPassword2').value = '';
+    $('authPassword2').type = 'text';
+    $('authPassword2').autocomplete = 'off';
     $('authEmail').autocomplete = 'off';
+}
+/* 17/11 : création de compte plus sûre. Mot de passe tapé 2 fois (pas de faute de frappe dans un mot de passe qu'on ne
+   voit pas) ; e-mail avec une faute courante (« gmial.com », « hotmail.fr » oublié…) → « Tu voulais dire … ? » à toucher.
+   Important : sans e-mail juste, « Mot de passe oublié » ne pourra jamais arriver. */
+const EMAIL_DOMAINS = ['gmail.com', 'hotmail.fr', 'hotmail.com', 'outlook.fr', 'outlook.com', 'yahoo.fr', 'yahoo.com', 'orange.fr', 'wanadoo.fr',
+    'free.fr', 'sfr.fr', 'laposte.net', 'live.fr', 'live.com', 'icloud.com', 'me.com', 'mac.com', 'neuf.fr', 'bbox.fr', 'aol.com', 'msn.com',
+    'protonmail.com', 'proton.me', 'gmx.fr', 'gmx.com', 'ymail.com', 'hotmail.be', 'outlook.be', 'yahoo.be', 'live.be', 'skynet.be', 'telenet.be',
+    'hotmail.ch', 'bluewin.ch', 'gmx.ch', 'hotmail.ca', 'outlook.ca', 'yahoo.ca', 'live.ca', 'videotron.ca', 'hotmail.co.uk'];   // Belgique, Suisse, Québec aussi (pas de fausse alerte)
+function emailSuggestion(email) {
+    const m = /^([^@\s]+)@([^@\s]+)$/.exec(email.trim().toLowerCase());
+    if (!m) return null;
+    const dom = m[2];
+    if (EMAIL_DOMAINS.includes(dom)) return null;
+    let best = null, bestD = 3;
+    EMAIL_DOMAINS.forEach(x => { const d = levenshtein(dom, x); if (d < bestD) { best = x; bestD = d; } });
+    if (!best && /^g?mail\.?(com|fr|co)?$|^gmail\.[a-z]+$/.test(dom)) best = 'gmail.com';
+    return best && best !== dom ? `${m[1]}@${best}` : null;
+}
+function renderAuthHint() {
+    const hint = $('authHint');
+    const sug = authMode === 'signup' ? emailSuggestion($('authEmail').value) : null;
+    hint.hidden = !sug;
+    if (!sug) return;
+    hint.replaceChildren('Tu voulais dire ');
+    const b = el('button', 'auth-hint-btn');
+    b.type = 'button';
+    b.textContent = sug;
+    b.addEventListener('click', () => { $('authEmail').value = sug; renderAuthHint(); });
+    hint.append(b, ' ?');
 }
 let authMode = 'signup';
 let authDone = null;   // à appeler après une connexion réussie (ex. : passer à l'étape suivante de l'accueil)
@@ -9424,6 +9456,11 @@ function openAuthModal(mode) {
     $('authEmail').value = '';                  // champs vides à chaque ouverture (et en passant de l'un à l'autre)
     $('authPassword').value = '';
     $('authPassword').placeholder = signup ? '6 caractères minimum' : 'Mot de passe';
+    $('authPassword2').hidden = !signup;   // 17/11 : mot de passe tapé 2 fois à la création
+    $('authPassword2').value = '';
+    $('authPassword2').type = 'password';
+    $('authPassword2').autocomplete = signup ? 'new-password' : 'off';
+    $('authHint').hidden = true;
     $('authEmail').placeholder = 'Ton e-mail';
     $('authPassword').type = 'password';   // toujours masqué à l'ouverture
     $('authPassword').autocomplete = signup ? 'new-password' : 'current-password';
@@ -9449,9 +9486,13 @@ async function submitAuth(e) {
     const email = $('authEmail').value.trim();
     const password = $('authPassword').value;
     const signup = authMode === 'signup';
-    if (!c) { $('authError').textContent = 'Connexion impossible pour le moment.'; return; }
     if (!email.includes('@')) { $('authError').textContent = 'Indique ton adresse e-mail.'; return; }
     if (password.length < 6) { $('authError').textContent = 'Le mot de passe doit faire au moins 6 caractères.'; return; }
+    if (signup && $('authPassword2').value !== password) {
+        $('authError').textContent = $('authPassword2').value ? 'Les deux mots de passe ne sont pas pareils.' : 'Retape ton mot de passe dans la 2e case.';
+        return;
+    }
+    if (!c) { $('authError').textContent = 'Connexion impossible pour le moment.'; return; }
     const btn = $('authSubmit');
     btn.disabled = true;
     btn.textContent = 'Un instant…';
@@ -9495,7 +9536,7 @@ async function askNewPassword() {
    delete_my_account() (supabase/supprimer-compte.sql, À LANCER) efface le compte et, en cascade, tout ce qui lui appartient ;
    l'appareil repart de zéro. Sans compte : on propose d'effacer la partie de cet appareil. Pages web : confidentialite.html,
    supprimer-compte.html (adresse de contact à compléter). */
-const ACCOUNT_V2 = BAC;
+const ACCOUNT_V2 = true;   // 17/11 : pour tous
 async function deleteAccount() {
     const d = state.data;
     if (!cloudUser && !BAC) {   // pas de compte : rien en ligne ; on peut seulement effacer la partie de cet appareil
@@ -11256,7 +11297,45 @@ async function duelsPeek() {
 setInterval(leagueTick, 15000);
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && cloudUser) { leagueLoad(); claimGifts(); }
+    if (document.visibilityState === 'visible') checkServerClock();   // 17/11 : l'heure a pu être changée pendant que l'appli était cachée
 });
+
+/* 17/11 : HORLOGE. On demande la vraie heure à Supabase (server_now, supabase/anti-triche.sql) au lancement et au retour
+   dans l'appli (1 fois par minute au plus). Écart de plus d'une minute avec le téléphone → gardé dans kultivo_clock et
+   appliqué dès le <head> d'index.html (Date corrigée pour tout le jeu) ; s'il vient d'apparaître (> 5 min), le jeu se
+   recharge une fois avec la bonne heure. Hors ligne : le dernier écart connu reste appliqué. */
+let clockCheckedAt = 0;
+async function checkServerClock() {
+    const c = cloudClient();
+    const realNow = window.kRealNow || (() => Date.now());
+    if (!c || !navigator.onLine || realNow() - clockCheckedAt < 60000) return;
+    clockCheckedAt = realNow();
+    try {
+        const t0 = realNow();
+        const { data, error } = await c.rpc('server_now');
+        const t1 = realNow();
+        if (error || !data || t1 - t0 > 8000) return;   // fonction pas encore créée, ou réponse trop lente pour être précise
+        const server = new (window.kRealDate || Date)(data).getTime();
+        if (!(server > 0)) return;
+        let skew = Math.round(server - (t0 + t1) / 2);
+        if (Math.abs(skew) < 60000) skew = 0;
+        const applied = window.kClockSkew || 0;
+        if (skew) localStorage.setItem('kultivo_clock', String(skew)); else localStorage.removeItem('kultivo_clock');
+        if (Math.abs(skew - applied) > 300000 && !sessionStorage.getItem('kultivo_clock_reload')) {
+            sessionStorage.setItem('kultivo_clock_reload', '1');   // une seule fois par session (jamais de boucle)
+            if (skew) sessionStorage.setItem('kultivo_clock_msg', '1');
+            saveData();
+            location.reload();
+        }
+    } catch (err) { /* hors ligne : le dernier écart connu reste appliqué */ }
+}
+function clockNotice() {
+    try {
+        if (!sessionStorage.getItem('kultivo_clock_msg')) return;
+        sessionStorage.removeItem('kultivo_clock_msg');
+        setTimeout(() => showToast('🕒 L’heure de ton téléphone n’est pas juste : le jeu utilise la vraie heure.'), 1800);
+    } catch (err) { /* tant pis */ }
+}
 
 /** Recharge pseudo, amis, demandes et scores (un seul chargement à la fois : les autres appels l'attendent). */
 let leaguePromise = null;
@@ -12839,6 +12918,7 @@ function bindEvents() {
         const input = $('authPassword');
         const show = input.type === 'password';
         input.type = show ? 'text' : 'password';
+        $('authPassword2').type = input.type;   // 17/11 : l'œil montre aussi la 2e case
         $('authEye').textContent = show ? '🙈' : '👁️';
         $('authEye').setAttribute('aria-pressed', String(show));
         $('authEye').setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
@@ -12848,7 +12928,8 @@ function bindEvents() {
     $('closeAuthBtn').addEventListener('click', closeAuthModal);
     $('authSwitch').addEventListener('click', () => openAuthModal(authMode === 'signup' ? 'login' : 'signup'));
     // Clavier ouvert sur un champ de la fenêtre : on garde le champ (et le bouton) visibles au-dessus du clavier
-    ['authEmail', 'authPassword'].forEach(id => $(id).addEventListener('focus', () => {
+    $('authEmail').addEventListener('input', renderAuthHint);   // 17/11 : « Tu voulais dire …@gmail.com ? »
+    ['authEmail', 'authPassword', 'authPassword2'].forEach(id => $(id).addEventListener('focus', () => {
         [300, 600].forEach(ms => setTimeout(() => $(id).scrollIntoView({ block: 'center', behavior: 'smooth' }), ms));
     }));
     $('authForgot').addEventListener('click', forgotPassword);
@@ -13231,6 +13312,8 @@ function init() {
         setTimeout(summitCatchUp, 2600);   // 13/11 : fête du sommet jamais vue (elle plantait à la fin du niveau 300)
     }
     hideSplash();
+    checkServerClock();   // 17/11 : vraie heure (anti-triche)
+    clockNotice();
     if (ENC_ON) setTimeout(() => encCode().catch(() => {}), 4000);   // 13/11 : écrans de l'encyclopédie chargés discrètement en arrière-plan
 }
 // Écran de chargement : on le laisse au moins ~1,1 s (le temps de l'animation), puis la barre se remplit et il s'efface
