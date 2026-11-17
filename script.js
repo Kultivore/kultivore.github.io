@@ -9386,7 +9386,7 @@ async function cloudPush(force = false) {
                 remote = res.data;
             }
             if (remote && remote.data?.resetEpoch === RESET_EPOCH && (remote.xp || 0) > (state.data.xp || 0)) {
-                if (isEmptyProgress(state.data)) applyRemote(remote);
+                if (isEmptyProgress(state.data) || isSmallProgress(state.data)) applyRemote(remote);   // 17/11 : presque rien ici → le compte, sans demander
                 else if ($('cloudConflictModal').hidden) openCloudConflict(remote);
                 return;
             }
@@ -9404,6 +9404,10 @@ async function cloudPush(force = false) {
 }
 
 const isEmptyProgress = d => !d.xp && !Object.values(d.done || {}).some(Boolean);
+// 17/11 (demande de l'utilisateur) : « Quelle progression garder ? » plus rare : une partie de moins de 100 XP (2 niveaux environ)
+// compte pour presque rien → le jeu garde l'autre tout seul ; la question n'est posée que si les DEUX parties ont vraiment avancé
+const SMALL_PROGRESS_XP = 100;
+const isSmallProgress = d => (d.xp || 0) < SMALL_PROGRESS_XP;
 function progressSummary(d) {
     const done = Object.values(d.done || {}).filter(Boolean).length;
     return `${d.xp || 0} XP · ${plural(done, 'niveau terminé', 'niveaux terminés')}`;
@@ -9448,6 +9452,11 @@ async function cloudSync(justLoggedIn) {
         if (isEmptyProgress(state.data)) { applyRemote(remote); return; }
         if (!meta.dirty && !justLoggedIn) { applyRemote(remote); return; }
         if (JSON.stringify(remote.data) === JSON.stringify(state.data)) { setCloudMeta({ dirty: false, updatedAt: remote.updated_at }); return; }
+        const smallHere = isSmallProgress(state.data), smallThere = isSmallProgress(remote.data);
+        if (smallHere || smallThere) {   // 17/11 : une des deux parties ne compte presque pas → on garde celle qui a le plus d'XP
+            if ((remote.xp || 0) >= (state.data.xp || 0)) applyRemote(remote); else await cloudPush(true);
+            return;
+        }
         openCloudConflict(remote);
     } catch (err) {
         /* hors ligne ou erreur : on réessaiera plus tard */
