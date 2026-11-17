@@ -164,6 +164,41 @@ function levelFromLayout(n, layout, near = false) {
         'Cerveau d’or', 'Dernière ligne droite', 'Avant l’apothéose', 'Le dernier pas'
     ];
 
+    /* 17/11 : un nom par niveau de questions, dans l'ordre du parcours (7 par dizaine : niveaux 1, 2, 4, 5, 7, 8, 9).
+       Mi-parcours = 149, deux tiers = 199, Le dernier pas = 299. Si le nombre de niveaux change : refaire cette liste. */
+    const PATH_NAMES = [
+        'Les bases', 'Échauffement', 'Premiers pas', 'Mise en jambes', 'Petit à petit', 'Bonne pioche', 'Grains de savoir',            // 1-10
+        'Du bon pied', 'Premiers repères', 'Tout en douceur', 'Petit trot', 'Clins d’œil', 'Les classiques', 'Fil rouge',             // 11-20
+        'Culture générale', 'Curiosité', 'Bouts de savoir', 'Belle humeur', 'Pièces du puzzle', 'Vent en poupe', 'Main verte',        // 21-30
+        'Incontournables', 'Grands noms', 'Petits génies', 'Mine de rien', 'Coin des curieux', 'Sur la lancée', 'Petit train',        // 31-40
+        'Repères solides', 'Savoirs variés', 'Terrain varié', 'Esprits curieux', 'Bel élan', 'Pas chassés', 'Mise en forme',          // 41-50
+        'Nouveau souffle', 'Escapade', 'Rouages', 'Cœur à l’ouvrage', 'Sentiers battus', 'Pied à l’étrier', 'Bonne route',            // 51-60
+        'Montée en puissance', 'Ça grimpe', 'Belle foulée', 'En cadence', 'Cap au nord', 'Entre les lignes', 'Carrefours',           // 61-70
+        'Pour les curieux', 'Tremplin', 'Nouveau cap', 'Bel envol', 'Promenade', 'Pas de côté', 'Remue-méninges',                    // 71-80
+        'Entre-deux', 'Pas à pas', 'Petits sommets', 'Chemins de traverse', 'Tour d’horizon', 'Escale', 'Bonne allure',              // 81-90
+        'Les connaisseurs', 'Passionnés', 'Autres cieux', 'Nouveau palier', 'Voyage dans le temps', 'Les stratèges', 'Cap des cent',  // 91-100
+        'Seconde escale', 'Belle lancée', 'Nouveaux horizons', 'Pleine forme', 'Vent arrière', 'Cap tenu', 'Rythme de croisière',     // 101-110
+        'Haute voltige', 'Esprits brillants', 'Coups de maître', 'Les visionnaires', 'Pour les initiés', 'Raretés', 'Investigations', // 111-120
+        'Nouvel élan', 'Plein cap', 'Les éclaireurs', 'Sur la crête', 'Belle échappée', 'Grand angle', 'Pas de géant',               // 121-130
+        'Savoir solide', 'Légendes', 'Méli-mélo', 'Quasi-experts', 'Plein centre', 'Perspectives', 'Découvertes',                     // 131-140
+        'Deuxième vent', 'Exploration', 'Odyssée', 'Épopée', 'Savoir étendu', 'Grandes heures', 'Mi-parcours',                        // 141-150
+        'Seconde moitié', 'Vents porteurs', 'Terres lointaines', 'Esprit d’aventure', 'Le grand saut', 'Sur la route', 'Bel horizon', // 151-160
+        'Pleins feux', 'Érudits', 'Pionniers', 'Horizon lointain', 'Passeur de savoir', 'Mains de maître', 'Au-delà des limites',     // 161-170
+        'Haute mer', 'Les veilleurs', 'Sommets en vue', 'Le col', 'Fin limier', 'Ligne de crête', 'Œil de lynx',                      // 171-180
+        'Savoirs obscurs', 'Les abysses', 'Équilibre parfait', 'Maîtres du jeu', 'Les étoiles', 'Mythes et légendes', 'Ascension',   // 181-190
+        'Labyrinthe', 'Sagesse antique', 'Énigmes', 'Grand voyage', 'Hors des sentiers', 'Tour du monde', 'Les deux tiers',          // 191-200
+        'Les vigies', 'Dernier relais', 'Toutes voiles', 'Au long cours', 'Hautes terres', 'Cap sur les cimes', 'Le belvédère',       // 201-210
+        'Haute volée', 'Sentinelles', 'Les sages', 'Esprits affûtés', 'Fines lames', 'Œil d’aigle', 'Cimes lointaines',              // 211-220
+        'Haute montagne', 'Terres inconnues', 'Cap des géants', 'Le grand large', 'Panthéon', 'Les cimes', 'Haute culture',           // 221-230
+        'Sans frontières', 'Esprit vif', 'Tête bien faite', 'Merveilles du monde', 'Grand tour', 'Pierres et légendes', 'Patrimoine', // 231-240
+        'Les explorateurs', 'Vue d’ensemble', 'Grand chelem', 'Hors catégorie', 'Sans filet', 'Génie', 'Grande classe',              // 241-250
+        'Nouvelle frontière', 'Terra incognita', 'Les audacieux', 'Grand oral', 'Esprit d’acier', 'Mémoire d’éléphant', 'Les irréductibles', // 251-260
+        'Savoir rare', 'Têtes chercheuses', 'Haute précision', 'Virtuoses', 'Haut niveau', 'Rareté absolue', 'Fine fleur',           // 261-270
+        'Maîtres', 'Savoir absolu', 'Maîtrise totale', 'Légendes vivantes', 'Sommets de la culture', 'L’antichambre', 'Le gardien',  // 271-280
+        'Avant le vertige', 'Haute altitude', 'Air raréfié', 'Les géants', 'Esprits d’élite', 'Cerveaux en or', 'Hors norme',        // 281-290
+        'Dernière ligne droite', 'Le sprint final', 'Avant l’apothéose', 'Sous le sommet', 'Dernier effort', 'Au pied du drapeau', 'Le dernier pas' // 291-300
+    ];
+
 function assignLot(QS, firstLevel, lastLotLevel, HARD_FROM, HARD_CURVE = 1, lot = {}) {
 
     const oldMax = Math.max(1, ...QS.map(q => q.niveau || 1));
@@ -272,6 +307,8 @@ function finish() {
     if (AUTO_LEVEL_NAMES) {
         Object.keys(LEVEL_NAMES).forEach(k => delete LEVEL_NAMES[k]);
         allAssigned.forEach(({ lvl, name }) => { LEVEL_NAMES[lvl] = name || ('Niveau ' + lvl); });
+        // 17/11 : noms dans l'ordre du parcours de 300 niveaux (avant : noms des lots, « Mi-chemin » au 101…)
+        if (PATH_NAMES.length === assigned.length) assigned.forEach((lvl, i) => { LEVEL_NAMES[lvl] = PATH_NAMES[i]; });
     }
     const lastLevel = TOTAL_LEVELS || assigned[assigned.length - 1];
     for (let lvl = PAIRS_AT; lvl <= lastLevel; lvl += EVERY) LEVEL_NAMES[lvl] = 'Paires à associer';

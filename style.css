@@ -5269,3 +5269,18 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
 .legal-links { margin: 6px 0 0; text-align: center; font-size: 0.8rem; color: var(--muted); }
 .legal-links a, .legal-links .link-btn { color: var(--muted); font-size: 0.8rem; text-decoration: underline; }
 .legal-links .link-btn { display: inline; width: auto; margin: 0; padding: 0; border: 0; background: none; font: inherit; font-size: 0.8rem; cursor: pointer; }
+
+/* 17/11 : bulle de Kulti du jour de série lisible en mode sombre (texte foncé sur blanc, --ink devenait clair) */
+.streak-bubble { color: #1b2745; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); }
+/* 17/11 : bulle de Kulti de l'écran de fin bien visible en mode sombre (elle avait la même couleur que le fond) */
+:root[data-theme="dark"] .end-say { background: #2f3f6e; color: #f2f5fc; box-shadow: 0 0 0 1.5px #5a74b8, 0 4px 12px rgba(0, 0, 0, 0.4); }
+:root[data-theme="dark"] .end-say::after { border-left-color: #2f3f6e; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .end-say { background: #2f3f6e; color: #f2f5fc; box-shadow: 0 0 0 1.5px #5a74b8, 0 4px 12px rgba(0, 0, 0, 0.4); }
+    :root:not([data-theme="light"]) .end-say::after { border-left-color: #2f3f6e; }
+}
+/* 17/11 : nombre de coups de pouce en stock sur le petit bouton 👆 des frises */
+#orderNudge { position: relative; }
+#orderNudge[data-stock]:not([data-stock=""])::after { content: attr(data-stock); position: absolute; top: -7px; right: -7px; min-width: 20px; height: 20px;
+    padding: 0 5px; border-radius: 10px; background: var(--ok, #4fc72c); color: #fff; font-size: 0.72rem; font-weight: 900; line-height: 20px;
+    text-align: center; box-shadow: 0 0 0 2px var(--surface); }

@@ -1398,4 +1398,9 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
 - Ne jamais casser la sauvegarde existante : toute évolution de l'état passe par `normalizeData`.
 - Questions : réponses courtes, plusieurs variantes dans `a`, pas de doublon de réponse sur un même sujet,
   pas de mot de la réponse dans la question, explication sans balises du type « [cite: 8] ».
-- Nouvelles questions : répartir au prorata des thèmes existants, mythologie comprise (demande du 2026-10-16).
+- Nouvelles questions : répartir au prorata des thèmes existants, mythologie comprise (demande du 2026-10-16).- 17/11 (v=20261117c, POUR TOUS) : NOMS DES NIVEAUX refaits dans l'ordre du parcours de 300 (`PATH_NAMES` dans levels.js, 210 noms, appliqués
+  dans finish() si le nombre de niveaux de questions correspond ; avant : noms des lots, « Mi-chemin » au 101) : Mi-parcours 149, Seconde moitié 151,
+  Les deux tiers 199, Le dernier pas 299. Si le parcours change de taille : refaire la liste. Bulle de Kulti du jour de série : texte foncé (en mode
+  sombre, --ink la rendait blanc sur blanc). Bulle de Kulti de l'écran de fin en mode sombre : fond bleu nuit #2f3f6e + contour. COUP DE POUCE : stock
+  en cases (« 👆 3 en stock / 👆 2 il t'en restera », sinon prix + pièces), « 👆 Coup de pouce · 3 en stock » sur le bouton des paires, pastille verte
+  du nombre sur le petit bouton 👆 des frises (data-stock).

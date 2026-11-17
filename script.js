@@ -8412,10 +8412,12 @@ function renderNudgeBtn(kind) {
     btn.hidden = false;
     const used = !!target.nudged;
     btn.classList.toggle('is-picking', state.nudgePick === kind);
+    const stock = state.data.inv.nudge || 0;   // 17/11 : stock affiché sur le bouton
+    btn.dataset.stock = !used && state.nudgePick !== kind && stock > 0 ? String(stock) : '';
     if (kind === 'order') {   // frise : petit bouton à gauche de « Vérifier », comme 💡 dans les questions
         btn.textContent = state.nudgePick === kind ? '✕' : '👆';
         btn.setAttribute('aria-label', used ? 'Coup de pouce déjà utilisé' : state.nudgePick === kind ? 'Annuler le coup de pouce' : 'Coup de pouce');
-    } else btn.textContent = used ? '👆 Coup de pouce utilisé' : state.nudgePick === kind ? '✕ Annuler le coup de pouce' : '👆 Coup de pouce';
+    } else btn.textContent = used ? '👆 Coup de pouce utilisé' : state.nudgePick === kind ? '✕ Annuler le coup de pouce' : `👆 Coup de pouce${stock ? ` · ${stock} en stock` : ''}`;
     btn.disabled = used || (kind === 'order' && target.checked);
 }
 async function askNudge(kind) {
@@ -8424,7 +8426,10 @@ async function askNudge(kind) {
     if (!cost.stock && state.data.coins < cost.price) { showToast(`Il te manque ${cost.price - state.data.coins} 🪙 (ou achète des coups de pouce à la boutique).`); return; }
     const ok = await askConfirm({
         title: '👆 Coup de pouce',
-        text: `${kind === 'order' ? 'Touche ensuite la carte de ton choix : elle se place toute seule à sa bonne place.' : 'Touche ensuite la case de ton choix : sa paire est révélée.'} Un seul par ${kind === 'order' ? 'frise' : 'grille'}, et il ne rapporte pas d’XP.\n${cost.stock ? `👆 ${cost.text}` : `🪙 ${cost.text}`}`,
+        text: `${kind === 'order' ? 'Touche ensuite la carte de ton choix : elle se place toute seule à sa bonne place.' : 'Touche ensuite la case de ton choix : sa paire est révélée.'} Un seul par ${kind === 'order' ? 'frise' : 'grille'}, et il ne rapporte pas d’XP.${cost.stock ? '' : `\nÀ la boutique, il coûte ${NUDGE().price} 🪙.`}`,
+        info: cost.stock   // 17/11 : stock bien visible (cases de chiffres, comme le cœur de secours)
+            ? [{ big: `👆 ${state.data.inv.nudge}`, label: 'en stock', tone: 'good' }, { big: `👆 ${state.data.inv.nudge - 1}`, label: 'il t’en restera' }]
+            : [{ big: '👆 0', label: 'en stock', tone: 'warn' }, { big: `${cost.price} 🪙`, label: 'sur le moment' }, { big: `${fmtNum(state.data.coins)} 🪙`, label: 'tu as' }],
         yes: kind === 'order' ? 'Choisir la carte' : 'Choisir la case', no: 'Annuler'
     });
     if (!ok) return;
