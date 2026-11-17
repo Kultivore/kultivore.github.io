@@ -674,6 +674,7 @@ function escDemo() {
             const restore = () => { if (restored) return; restored = true; if (keep) escAll()[e.id] = keep; else delete escAll()[e.id]; saveData(); };
             escUi.afterLanding = restore;
             setTimeout(restore, 60000);
+            window.addEventListener('pagehide', restore, { once: true });   // appli fermée pendant la démo : on remet quand même
         }, 900);
     });
 }
