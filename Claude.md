@@ -354,7 +354,7 @@ Propriétaire : francophone. Répondre en français, expliquer simplement, pas d
   du Profil (« Confidentialité · Supprimer mon compte ») ; 2 confirmations (cases niveau / XP / cartes / amis) → rpc delete_my_account()
   (supabase/supprimer-compte.sql, À LANCER PAR L'UTILISATEUR : efface auth.users → tout part en cascade ; la quête du partenaire continue
   avec Kulti) → appareil remis à zéro (`localWipeAndRestart`) + message. Sans compte : proposition d'effacer la partie de l'appareil.
-  Bac à sable : TOUJOURS simulation, même connecté (17/11 : avant, connecté dans le bac = vrai compte, la vraie suppression était tentée ; elle a échoué car le SQL n'était pas lancé). Création de compte : « En créant un compte, tu acceptes la politique de confidentialité ».
+  Bac à sable : TOUJOURS simulation, même connecté (17/11 : avant, connecté dans le bac = vrai compte, la vraie suppression était tentée ; elle a échoué car le SQL n'était pas lancé). Création de compte : « En créant un compte, tu acceptes la politique de confidentialité ». 17/11 : JEU CASSÉ POUR TOUS ~10 min (commentaire « // » collé au milieu d'une ligne, la fin de la ligne était coupée) : TOUJOURS charger le jeu (gamedump_err.ps1) avant de pousser, même pour une ligne.
   Pages web : confidentialite.html, supprimer-compte.html (exigées par Google) avec [NOM DU RESPONSABLE] et [ADRESSE E-MAIL DE CONTACT]
   À COMPLÉTER (adresse Gmail « Kultivo » à créer). Le pseudo et l'avatar sont lisibles par tous les joueurs connectés (règle « Lire les
   pseudos »), le reste seulement par les amis : la page le dit.
