@@ -352,7 +352,7 @@ Propriétaire : francophone. Répondre en français, expliquer simplement, pas d
 - 16/11 (BAC À SABLE, v=20261116z, ACCOUNT_V2 = BAC ; pour tous : true) : AVANT DE PUBLIER — SUPPRIMER SON COMPTE + CONFIDENTIALITÉ.
   « Supprimer mon compte » : Profil → ☁️ Mon compte (sous « Se déconnecter », avec « 🔒 Politique de confidentialité ») + petit lien en bas
   du Profil (« Confidentialité · Supprimer mon compte ») ; 2 confirmations (cases niveau / XP / cartes / amis) → rpc delete_my_account()
-  (supabase/supprimer-compte.sql, À LANCER PAR L'UTILISATEUR : efface auth.users → tout part en cascade ; la quête du partenaire continue
+  (supabase/supprimer-compte.sql, LANCÉ par l'utilisateur le 17/11 : efface auth.users → tout part en cascade ; la quête du partenaire continue
   avec Kulti) → appareil remis à zéro (`localWipeAndRestart`) + message. Sans compte : proposition d'effacer la partie de l'appareil.
   Bac à sable : TOUJOURS simulation, même connecté (17/11 : avant, connecté dans le bac = vrai compte, la vraie suppression était tentée ; elle a échoué car le SQL n'était pas lancé). Création de compte : « En créant un compte, tu acceptes la politique de confidentialité ». 17/11 : JEU CASSÉ POUR TOUS ~10 min (commentaire « // » collé au milieu d'une ligne, la fin de la ligne était coupée) : TOUJOURS charger le jeu (gamedump_err.ps1) avant de pousser, même pour une ligne.
   Pages web : confidentialite.html, supprimer-compte.html (exigées par Google) avec [NOM DU RESPONSABLE] et [ADRESSE E-MAIL DE CONTACT]
