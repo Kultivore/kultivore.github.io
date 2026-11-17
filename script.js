@@ -398,7 +398,7 @@ function normalize(str) {
         .replace(/(\d),(\d)/g, '$1.$2')              // 42,195 = 42.195
         .replace(/&/g, ' et ')                         // « Tom & Jerry » = « Tom et Jerry » (2026-10-25)
         .replace(/(^|\s)m\.\s/g, '$1monsieur ')       // « M. Hulot » = « Monsieur Hulot »
-        .replace(/[’'\-–—]/g, ' ')
+        .replace(/[’'‘ʼ`´\-–—]/g, ' ')   // toutes les apostrophes (droite, courbe, celles d'iPhone…) = espace
         .replace(/[^\p{L}\p{N}.\s]/gu, '')
         .replace(/\.(?!\d)|(?<!\d)\./g, '')          // un point ne reste que dans un nombre décimal
         .replace(/\s+/g, ' ')
@@ -506,7 +506,17 @@ function judgeV1(input, rawAnswers, question = '') {
    Marge par mot : 1-3 lettres exact ; 4 lettres une voisine (½) ou une inversion ; 5-8 lettres 1 faute ; 9 et plus 2 fautes.
    Tout ce qui est accepté ainsi compte comme une faute de frappe (« Accepté, mais attention à l'orthographe »). */
 const JUDGE_VERSION = 2;
-const judge = (input, rawAnswers, question = '') => (JUDGE_VERSION === 1 ? judgeV1 : judgeV2)(input, rawAnswers, question);
+const judgeRaw = (input, rawAnswers, question = '') => (JUDGE_VERSION === 1 ? judgeV1 : judgeV2)(input, rawAnswers, question);
+// 17/11 : apostrophe oubliée (« linde », « anatomie dune chute ») = réponse sans apostrophe, essayée seulement si c'était faux
+const APOS_RE = /['’‘ʼ`´]/g;
+function judge(input, rawAnswers, question = '') {
+    const v = judgeRaw(input, rawAnswers, question);
+    if (v !== 'wrong' || /['’‘ʼ`´]/.test(String(input))) return v;
+    const glued = rawAnswers.filter(r => typeof r === 'string' && /['’]/.test(r)).map(r => r.replace(APOS_RE, ''));
+    if (!glued.length) return v;
+    const w = judgeRaw(input, glued, question);
+    return w === 'wrong' ? v : w;
+}
 
 const KEY_NEAR = (() => {
     const near = new Set();
@@ -2178,8 +2188,19 @@ function renderEncyclopedia(box) {
         const t = encNorm(encGlobalSearch.trim());
         if (t.length < 2) return;
         const found = [];
-        encAll().forEach(q => { if (encKnown(q) && encNorm(q.a.join(' ') + ' ' + q.q).includes(t)) found.push(q); });
-        found.sort((a, b) => a.a[0].localeCompare(b.a[0], 'fr'));
+        // 17/11 : rangées par pertinence : réponse exacte, puis réponse qui commence par le mot, réponse qui le contient, puis question
+        const art = x => x.replace(/^(le|la|les|l'|l’|un|une|des|du|de la|de l'|de l’)\s*/, '').trim();
+        const rank = q => {
+            const as = q.a.map(x => art(encNorm(x)));
+            if (as.some(x => x === t)) return 0;
+            if (as.some(x => x.startsWith(t))) return 1;
+            if (as.some(x => (' ' + x.replace(/[^a-z0-9]/g, ' ')).includes(' ' + t))) return 2;   // un mot de la réponse commence par le texte
+            if (as.some(x => x.includes(t))) return 3;
+            return 4;
+        };
+        encAll().forEach(q => { if (encKnown(q) && encNorm(q.a.join(' ') + ' ' + q.q).includes(t)) found.push([rank(q), q]); });
+        found.sort((a, b) => a[0] - b[0] || a[1].a[0].localeCompare(b[1].a[0], 'fr'));
+        found.forEach((x, i) => { found[i] = x[1]; });
         const n = el('p', 'enc-gres-n');
         n.textContent = found.length ? `${found.length} question${found.length > 1 ? 's' : ''} sue${found.length > 1 ? 's' : ''}` : 'Aucune question sue ne correspond.';
         gres.append(n);

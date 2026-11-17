@@ -1508,3 +1508,8 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   encyclopédie », questions sues de tous les livres, 40 résultats au plus, tap = fiche) ; recherche d'un livre : espace sous le champ.
   BAC : interrupteur Parcours | Escales qui passait sous la barre du haut pendant un événement (le bandeau, caché par « in-escales »,
   était mesuré à 0) → classe posée avant la mesure ; son d'avion au décollage (`escPlaneSound` : SOUNDS.plane + synthNoise).
+- 17/11 (v=20261117r, POUR TOUS) : recherche générale des Savoirs rangée par PERTINENCE (réponse exacte, puis réponse qui commence par le texte,
+  un mot de la réponse qui commence par lui, réponse qui le contient, puis question ; ordre alphabétique à égalité ; avant : tout alphabétique).
+  Apostrophes : droite, courbe, ‘ ʼ ` ´ = espace dans normalize ; apostrophe OUBLIÉE (« linde », « anatomie dune chute ») acceptée : `judge`
+  réessaie avec les réponses sans apostrophe seulement si c'était faux (`judgeRaw` = l'ancien judge). Testé : 473 réponses à apostrophe × 8
+  façons de l'écrire, 0 refusée ; selftest 0 bonne réponse refusée.
