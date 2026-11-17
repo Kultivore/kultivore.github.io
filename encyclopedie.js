@@ -27,6 +27,7 @@ function encSpecial(theme) {
         : theme === 'Cinéma' ? ['🎬', 'Mes affiches', 'films, séries, stars et réalisateurs', () => openEncPosters()]
         : theme === 'Drapeaux' ? ['🏳️', 'Mon mur de drapeaux', 'les drapeaux rangés par continent', () => openEncFlags()]
         : theme === 'Monuments' ? ['💌', 'Mes cartes postales', 'des albums de monuments à compléter', () => openEncPostcards()]
+        : theme === 'Voyages' ? ['🌍', 'Mon tour du monde', 'les pays de tes escales sur la carte', () => openEncMap('Voyages', null, 'voyages')]   // 17/11
         : ENC_MAP_THEMES.includes(theme) ? ['🗺️', 'Ma carte du monde', 'les pays que tu connais', () => openEncMap(theme)] : null;
 }
 /** 13/11 (bac à sable) : la salle spéciale en « vitrine » au-dessus des chapitres, avec un petit décor et un reflet qui passe. */
@@ -35,9 +36,10 @@ const ENC_VITRINE_DECO = {
     'Langue française': ['🔤', '✒️', '📜', '💬'], 'Gastronomie': [['🥖', '🍷', '🥐'], ['🍣', '🌮', '🍝']], 'Littérature': ['📕', '📗', '📘', '📙'],
     'Musique': ['🎸', '🎹', '🎤', '🎷'], 'Jeux': ['👾', '🎲', '🎮', '♟️'], 'Sport': ['🥇', '🏅', '🥈', '🥉'], 'Technologie': ['💡', '📱', '🚂', '🚀'],
     'Arts': ['🎨', '🗿', '🖌️', '🏛️'], 'Cinéma': ['🍿', '🎞️', '🎥', '⭐'], 'Drapeaux': ['🏁', '🚩', '🎌', '🏴'], 'Monuments': ['🗼', '🗽', '🏛️', '📮'],
-    'Géographie': ['🌍', '🧭', '⛰️', '🏝️'],
+    'Géographie': ['🌍', '🧭', '⛰️', '🏝️'], 'Voyages': ['✈️', '🧳', '📕', '🧭'],
 };
-const ENC_ROOM_TOTAL = () => THEME_DECOR.reduce((n, { theme }) => { const sp = encSpecial(theme); return n + (!sp ? 0 : Array.isArray(sp[0]) ? sp.length : 1); }, 0);
+// 17/11 : la salle du livre « Voyages » (escales) compte aussi pour le badge secret des salles
+const ENC_ROOM_TOTAL = () => THEME_DECOR.concat(typeof escEncQuestions === 'function' && escEncQuestions().length ? [{ theme: 'Voyages' }] : []).reduce((n, { theme }) => { const sp = encSpecial(theme); return n + (!sp ? 0 : Array.isArray(sp[0]) ? sp.length : 1); }, 0);
 function encVitrine(theme) {
     const sp = encSpecial(theme);
     if (!sp) return null;
@@ -520,14 +522,14 @@ async function openEncMap(fromTheme, keepCc = null, kind = 'geo') {
         Object.entries(window.ENC_CUISINE || {}).forEach(([id, ccs]) => { const q = all.get(Number(id)); if (q) ccs.forEach(cc => (o[cc] = o[cc] || []).push(q)); });
         o.FR = Object.keys(window.ENC_REGION || {}).map(id => all.get(Number(id))).filter(Boolean);   // la France = ses régions
         return o;
-    })() : encCountryData();
+    })() : kind === 'voyages' ? (typeof escMapData === 'function' ? escMapData() : {}) : encCountryData();   // 17/11 : pays des escales
     const st = cc => { const qs = by[cc] || []; const k = qs.filter(encKnown).length; return { qs, k, n: qs.length }; };
     const codes = Object.keys(by);
     const found = codes.filter(cc => st(cc).k > 0).length, full = codes.filter(cc => { const s = st(cc); return s.k === s.n; }).length;
     body.replaceChildren();
     const page = el('div', 'enc-full enc-mappage');   // 12/11 : la carte prend toute la page (comme une fiche)
     const h = el('h2', 'review-title enc-title is-sm');
-    h.textContent = kind === 'cuisine' ? '🍜 Ma cuisine du monde' : '🗺️ Ma carte du monde';
+    h.textContent = kind === 'cuisine' ? '🍜 Ma cuisine du monde' : kind === 'voyages' ? '🌍 Mon tour du monde' : '🗺️ Ma carte du monde';
     const tiles = el('div', 'enc-tiles enc-map-tiles');
     [[`${found} / ${codes.length}`, 'pays découverts'], [`✨ ${full}`, 'pays complets']].forEach(([v, l]) => {
         const d = el('div');

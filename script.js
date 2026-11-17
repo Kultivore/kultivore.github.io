@@ -4534,7 +4534,7 @@ function recapSlidesFor(m) {
     if (r.worst) slides.push({ bg: 'linear-gradient(160deg,#334155,#0f172a)', face: 'triste', h: 'Ta bête noire',
         p: `« ${r.worst.q.q} » ratée ${r.worst.n} fois… C’était : ${r.worst.q.a[0]} 😅` });
     if (r.cards > 0) slides.push({ bg: 'linear-gradient(160deg,#ffc800,#f59e0b)', big: `🃏 ${r.cards}`, h: r.cards > 1 ? 'cartes gagnées' : 'carte gagnée',
-        p: `${r.bigCards ? `dont ${r.bigCards} épique${r.bigCards > 1 ? 's' : ''} ou mieux ! ` : ''}Ta collection : ${Object.keys(state.data.cards).filter(id => state.data.cards[id] > 0).length} / ${CARDS.length}` });
+        p: `${r.bigCards ? `dont ${r.bigCards} épique${r.bigCards > 1 ? 's' : ''} ou mieux ! ` : ''}Ta collection : ${countedCards().filter(c => state.data.cards[c.id] > 0).length} / ${countedCards().length}` });
     slides.push({ bg: 'linear-gradient(160deg,#8b5cf6,#ec4899)', face: 'fier', h: `À ${monthName(shiftMonth(m, 1))} !`, p: 'Bravo pour ce mois 💪' });
     return slides;
 }
@@ -4640,7 +4640,7 @@ function parcoursRecap() {
         if (st.right >= 1 && miss >= 2 && (!resisted || miss > resisted.miss)) { const q = anyQuestion(id); if (q) resisted = { q, miss }; }
     }
     const podium = Object.values(d.podium || {});
-    const owned = CARDS.filter(c => d.cards[c.id] > 0).length;
+    const owned = countedCards().filter(c => d.cards[c.id] > 0).length;
     return {
         first, summit, span, played, themes, resisted,
         start: d.placement && d.placement.start > 1 ? d.placement.start : 0,
@@ -4650,7 +4650,7 @@ function parcoursRecap() {
         bestStreak: Math.max(d.best.streak || 0, d.streak || 0),
         challenges: Object.keys(d.done).filter(n => d.done[n] && Number(n) % CHALLENGE_EVERY === 0).length,
         dailies: Object.keys(d.daily || {}).length,
-        cards: owned, cardsTotal: CARDS.length, shiny: Object.keys(d.shinyCards || {}).length,
+        cards: owned, cardsTotal: countedCards().length, shiny: Object.keys(d.shinyCards || {}).length,
         badges: Object.keys(d.badges || {}).length, complete: completeThemes().length,
         duels: d.totals.duelsWon || 0, wins: podium.filter(v => v === 1).length, podiums: podium.filter(v => v >= 1 && v <= 3).length,
         friends: league?.friends?.length || 0
@@ -5538,7 +5538,7 @@ function cardFaceV1(card, big = false, shiny = false) {
     }
     if (big) {
         const meta = el('div', 'kcard-meta');
-        meta.textContent = card.rarity === 'master' ? `Carte Maître · ${card.theme}`
+        meta.textContent = card.rarity === 'master' ? `Carte Maître · ${card.theme}` : card.theme === 'Escales' ? 'Carte d’escale'
             : `${CARD_RARITIES[card.rarity].name}${shiny ? ' · Brillante' : ''} · ${card.theme}`;
         const text = el('p', 'kcard-text');
         text.textContent = card.text;
@@ -5577,7 +5577,7 @@ function cardFaceV2(card, big = false, shiny = false) {
         const theme = el('span', 'kcard-theme');
         theme.textContent = card.theme;
         const meta = el('span', 'kcard-meta');
-        meta.textContent = card.rarity === 'master' ? 'Carte Maître' : `${CARD_RARITIES[card.rarity].name}${shiny ? ' · Brillante' : ''}`;
+        meta.textContent = card.rarity === 'master' ? 'Carte Maître' : card.theme === 'Escales' ? 'Carte d’escale' : `${CARD_RARITIES[card.rarity].name}${shiny ? ' · Brillante' : ''}`;
         top.append(num, theme, meta);
         const body = el('div', 'kcard-body');
         const name = el('div', 'kcard-name');
@@ -5603,6 +5603,7 @@ function openCardView(card, onBack = null, friendShiny = false) {
     const count = onBack ? 0 : (state.data.cards[card.id] || 0);
     $('chestNote').textContent = onBack ? (friendShiny ? '✨ Carte brillante' : '')
         : card.rarity === 'master' ? `🏆 Gagnée en réussissant le palier ${TRAIN_TIERS} de l’entraînement.`
+        : card.theme === 'Escales' ? `🧳 Carte d’escale : gagnée en terminant l’${card.name.replace(/^Escale/, 'Escale')}.`   // 17/11
         : card.rarity === 'event' ? '🎉 Carte d’événement : on ne pouvait la gagner que cette semaine-là.'
         : !count ? '' : count >= SHINY_AT ? `✨ Carte brillante (${count} exemplaires)`
         : `${count} / ${SHINY_AT} exemplaires : à ${SHINY_AT}, elle devient brillante ✨`;
@@ -5716,10 +5717,12 @@ function openLockedMaster(card) {
     $('chestModal').hidden = false;
 }
 
+/** 17/11 : cartes comptées dans « x / y » : les 180 + les cartes d'escale (pas celles des événements). */
+const countedCards = () => CARDS.concat(EVENT_CARDS.filter(c => c.theme === 'Escales'));
 /** Profil : la collection, rangée par thème (cartes manquantes en gris). */
 function renderCollection() {
-    const owned = CARDS.filter(c => state.data.cards[c.id]).length;
-    $('cardCount').textContent = `${owned} / ${CARDS.length}`;
+    const owned = countedCards().filter(c => state.data.cards[c.id]).length;
+    $('cardCount').textContent = `${owned} / ${countedCards().length}`;
     const grid = $('cardGrid');
     grid.replaceChildren();
     if (owned === 0) {
@@ -6497,7 +6500,7 @@ function renderShopV2() {
     if (rayon) grid.append(rayon);
 
     // 2) Coffre de cartes
-    const owned = CARDS.filter(c => d.cards[c.id]).length;
+    const owned = countedCards().filter(c => d.cards[c.id]).length;
     const chestCard = el('article', 'card shop-lines');
     const line = (icon, title, sub, buttons, chip = null) => {
         const l = el('div', 'shop-line');
@@ -6537,7 +6540,7 @@ function renderShopV2() {
             openCardBoxes([{ size: SHOP_CHEST.size, rare: true }], '🎁 Coffre de cartes');
             renderHeader();
             renderShop();
-        })], { text: `🃏 ${owned} / ${CARDS.length}` }));
+        })], { text: `🃏 ${owned} / ${countedCards().length}` }));
     grid.append(chestCard);
 
     // 3) Objets utiles
@@ -6601,7 +6604,7 @@ function renderShop() {
     });
 
     // Coffre de cartes : ouvert tout de suite à l'achat
-    const owned = CARDS.filter(c => data.cards[c.id]).length;
+    const owned = countedCards().filter(c => data.cards[c.id]).length;
     const chest = el('article', 'card shop-card shop-chest');
     const icon = el('div', 'shop-icon');
     icon.textContent = '🎁';
@@ -6610,7 +6613,7 @@ function renderShop() {
     const desc = el('p');
     desc.textContent = `${SHOP_CHEST.size} cartes à collectionner, dont au moins une rare.`;
     const stock = el('p', 'muted');
-    stock.textContent = `Ta collection : ${owned} / ${CARDS.length}`;
+    stock.textContent = `Ta collection : ${owned} / ${countedCards().length}`;
     const actions = el('div', 'card-actions');
     const btn = el('button', 'btn btn-green');
     btn.type = 'button';
@@ -11019,13 +11022,18 @@ function openFriendProfile(f) {
         const tabBtn = (key, label) => {
             const t = el('button', 'friend-tab');
             t.type = 'button';
-            t.textContent = label;
+            // 17/11 : nom en haut, nombre en dessous (3 onglets : « Badges · 12 » ne tenait plus sur une ligne)
+            const [name, count] = label.split(' · ');
+            const tn = el('span');
+            tn.textContent = name;
+            t.append(tn);
+            if (count) { const tc = el('small'); tc.textContent = count; t.append(tc); }
             t.addEventListener('click', () => { friendTab = key; showTab(); });
             tabs.append(t);
             pages[key] = { btn: t, box: el('div', 'friend-page') };
         };
         tabBtn('badges', `🎖️ Badges · ${badges.length}`);
-        tabBtn('cards', `🃏 Cartes · ${CARDS.filter(c => s.cards.includes(c.id)).length}/${CARDS.length}`);
+        tabBtn('cards', `🃏 Cartes · ${countedCards().filter(c => s.cards.includes(c.id)).length}/${countedCards().length}`);
         if (typeof escFriendTab === 'function') escFriendTab(f, s, tabBtn, pages);   // 17/11 : 3e onglet « 🧳 Voyages » (son carnet de voyage)
         if (!pages[friendTab]) friendTab = 'badges';
         const showTab = () => Object.entries(pages).forEach(([k, p]) => { p.btn.classList.toggle('is-active', k === friendTab); p.box.hidden = k !== friendTab; });

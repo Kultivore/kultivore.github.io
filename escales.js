@@ -770,3 +770,12 @@ function escNews() {
     $('patchModal').hidden = false;
 }
 if (ESCALES_ON) window.addEventListener('load', () => setTimeout(escNews, 5000));
+/** 17/11 : salle « Mon tour du monde » du livre Voyages : les questions de chaque escale posées sur son pays (le Maghreb sur ses 3 pays). */
+const ESC_COUNTRIES = { japon: ['JP'], italie: ['IT'], maghreb: ['MA', 'DZ', 'TN'], usa: ['US'] };
+function escMapData() {
+    const o = {}, all = encAll();
+    ESCALES.filter(escReady).forEach(e => (ESC_COUNTRIES[e.id] || []).forEach(cc => {
+        o[cc] = escBank(e).questions.map(q => all.get(q.id)).filter(Boolean);
+    }));
+    return o;
+}

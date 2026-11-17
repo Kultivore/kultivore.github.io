@@ -5574,7 +5574,8 @@ body.esc-theme-usa .esc-head-prog .esc-bar i { background: #c8283f; }
 .esc-stage::before, .esc-stage::after { flex: 0 0 28px; width: 28px; margin: 0; }
 
 /* 17/11 : profil d'un ami, 3 onglets (Badges · Cartes · Voyages) : textes un peu plus petits ; carnet vide */
-.friend-tabs .friend-tab { font-size: 0.8rem; padding: 8px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.friend-tabs .friend-tab { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 2px; line-height: 1.15; }
+.friend-tabs .friend-tab small { font-size: 0.75rem; font-weight: 800; opacity: 0.75; }
 .friend-empty { margin: 6px 0 10px; color: var(--muted); font-weight: 800; text-align: center; }
 .friend-page .esc-carnet { margin-top: 6px; }
 

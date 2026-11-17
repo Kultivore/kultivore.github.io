@@ -1492,3 +1492,9 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   enveloppé ; dans le bac, Léa a Japon + Italie) ; mode sombre des escales plus coloré (fonds teintés + 2 lueurs du pays) — l'utilisateur
   préfère le clair. Avis sur la difficulté : d moyen ≈ 1,8-1,9 (parcours au début 1,3, vers le niveau 150 ≈ 3) ; à revoir avec
   question_stats une fois jouées.
+- 17/11 (v=20261117n) : livre « Voyages » : SALLE « 🌍 Mon tour du monde » (encSpecial dans encyclopedie.js → openEncMap('Voyages', null,
+  'voyages') ; `escMapData` dans escales.js : Japon JP, Italie IT, États-Unis US, Maghreb = MA + DZ + TN) ; ENC_ROOM_TOTAL compte la
+  salle (18 salles quand les escales sont là) pour le badge secret des salles. Profil d'un ami : onglets sur 2 lignes (nom, puis le
+  nombre), plus de « … ». CARTES : `countedCards()` = 180 + cartes d'escale (pas les événements) pour tous les « x / y » (Profil, boutique,
+  récaps, profil des amis) → 184 ; une carte d'escale affiche « Carte d'escale » et « 🧳 Carte d'escale : gagnée en terminant l'Escale… »
+  (plus « carte d'événement… cette semaine-là »). POUR TOUS : countedCards / textes ne changent rien tant que ESCALES_ON = BAC.
