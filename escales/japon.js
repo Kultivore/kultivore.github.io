@@ -62,7 +62,14 @@ window.ESCALE_BANKS.japon = {
         { id: 40050, theme: 'Sport', d: 2.0, q: 'Quel sport de batte et de balle est le plus populaire au Japon ?', a: ['baseball', 'base-ball', 'le baseball'], exp: 'Le tournoi des lycées, le Koshien, est suivi par tout le pays chaque été.' },
         { id: 40051, theme: 'Arts', d: 1.9, q: 'Quel animal porte-bonheur japonais lève la patte pour attirer la chance ?', a: ['chat', 'le chat', 'maneki-neko', 'maneki neko', 'chat porte-bonheur'], exp: 'Le maneki-neko : patte gauche levée pour les clients, patte droite pour l’argent.' },
         { id: 40052, theme: 'Arts', d: 2.6, q: 'Comment appelle-t-on la fête où l’on pique-nique sous les cerisiers en fleurs ?', a: ['hanami'], exp: 'Le mot veut dire « regarder les fleurs ». La météo annonce même l’arrivée des fleurs ville par ville.' },
-        { id: 40053, theme: 'Gastronomie', d: 1.8, q: 'Quelle soupe japonaise est faite avec une pâte de soja fermentée ?', a: ['soupe miso', 'miso', 'soupe au miso'], exp: 'Beaucoup de Japonais en boivent un bol à chaque repas, même au petit déjeuner.' }
+        { id: 40053, theme: 'Gastronomie', d: 1.8, q: 'Quelle soupe japonaise est faite avec une pâte de soja fermentée ?', a: ['soupe miso', 'miso', 'soupe au miso'], exp: 'Beaucoup de Japonais en boivent un bol à chaque repas, même au petit déjeuner.' },
+        // 17/11 : 6 de plus (60 = 6 par niveau de questions)
+        { id: 40054, theme: 'Géographie', d: 1.4, q: 'Sur le drapeau du Japon, de quelle couleur est le disque au centre ?', a: ['rouge', 'rouge vif'], exp: 'Le drapeau s’appelle « Hinomaru », le « cercle du soleil » : un disque rouge sur fond blanc.' },
+        { id: 40055, theme: 'Arts', d: 1.8, q: 'Comment appelle-t-on les artistes japonaises en kimono, formées à la danse, à la musique et à l’art de recevoir ?', a: ['geisha', 'geishas', 'geiko', 'guécha'], exp: 'À Kyoto, on les appelle « geiko », et les apprenties « maiko ».' },
+        { id: 40056, theme: 'Sport', d: 1.8, q: 'Quel art martial japonais se pratique avec un sabre en bambou, un masque et une armure ?', a: ['kendo', 'kendō'], exp: 'Son nom veut dire « la voie du sabre ». Le sabre en bambou s’appelle un shinai.' },
+        { id: 40057, theme: 'Jeux', d: 1.6, q: 'Quel casse-tête de chiffres, aux grilles de 9 × 9 cases, porte un nom japonais ?', a: ['sudoku', 'su-doku', 'sudokus'], exp: 'Inventé aux États-Unis, il a été rendu célèbre au Japon par l’éditeur Nikoli, qui lui a donné son nom dans les années 1980.' },
+        { id: 40058, theme: 'Jeux', d: 1.8, q: 'Quel petit animal virtuel japonais de 1996 vivait dans un porte-clés en forme d’œuf ?', a: ['Tamagotchi', 'Tamagoshi', 'Tamagochi'], exp: 'Créé par Bandai, il fallait le nourrir, jouer avec lui et nettoyer… sinon il tombait malade !' },
+        { id: 40059, theme: 'Gastronomie', d: 2.0, q: 'Quel bœuf japonais très persillé, d’une ville près d’Osaka, est l’un des plus chers du monde ?', a: ['bœuf de Kobe', 'Kobe', 'boeuf de Kobe', 'wagyu', 'wagyū'], exp: 'Le bœuf de Kobe est un wagyu (« bœuf japonais ») élevé dans la région de Hyōgo, avec un label très strict.' }
     ],
     pairs: [
         { id: 'esc-jp-plats', theme: 'Gastronomie', title: 'Cuisine japonaise', left: 'Plat', right: 'Ce que c’est', pairs: [
@@ -91,6 +98,10 @@ window.ESCALE_BANKS.japon = {
             ['Création de Nintendo (cartes à jouer)', 1889, '1889', 2.2], ['Bombe atomique sur Hiroshima', 1945, '1945', 1.4],
             ['Premiers JO de Tokyo', 1964, '1964', 1.9], ['Séisme et tsunami de Fukushima', 2011, '2011', 1.6],
             ['JO de Tokyo, reportés à cause du Covid', 2021, '2021', 1.5], ['Fin des samouraïs (ère Meiji)', 1868, '1868', 2.3]] },
+        // 17/11 : 4e famille (chaque frise ne sert qu'une fois dans l'escale) ; valeur = − latitude (le nord d'abord)
+        { id: 'esc-jp-nord-sud', theme: 'Géographie', title: 'Du nord au sud', prompt: 'Du plus au nord au plus au sud', ends: ['Plus au nord', 'Plus au sud'], items: [
+            ['Sapporo (Hokkaidō)', -43.06, '43° N', 1.8], ['Tokyo', -35.68, '35,7° N', 1.4], ['Kyoto', -35.01, '35° N', 2],
+            ['Hiroshima', -34.39, '34,4° N', 2], ['Nagasaki', -32.75, '32,7° N', 2.2], ['Okinawa (Naha)', -26.21, '26° N', 1.6]] },
         { id: 'esc-jp-pop-dates', theme: 'Jeux', title: 'Japon pop', prompt: 'Du plus ancien au plus récent', ends: ['Plus ancien', 'Plus récent'], items: [
             ['Godzilla (1er film)', 1954, '1954', 1.8], ['Hello Kitty', 1974, '1974', 2], ['Pac-Man', 1980, '1980', 1.8],
             ['Dragon Ball (manga)', 1984, '1984', 2], ['Super Mario Bros.', 1985, '1985', 1.8], ['Game Boy', 1989, '1989', 1.8],

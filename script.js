@@ -1251,7 +1251,25 @@ function keepDailyBackup() {
     }
 }
 
+/** 17/11 : carnet des pièces gagnées / dépensées par jour (coinLog : jour -> { w, s }), pour mesurer l'économie dans Supabase.
+    Calculé à chaque sauvegarde d'après le solde vu la fois d'avant (même partie seulement : rien si la partie a été remplacée). */
+let coinSeen = null;
+function logCoins() {
+    const d = state.data;
+    if (!d || typeof d.coins !== 'number') return;
+    if (coinSeen && coinSeen.data === d && d.coins !== coinSeen.coins) {
+        if (!d.coinLog || typeof d.coinLog !== 'object') d.coinLog = {};
+        const k = todayKey();
+        const e = d.coinLog[k] || (d.coinLog[k] = { w: 0, s: 0 });
+        const delta = d.coins - coinSeen.coins;
+        if (delta > 0) e.w += delta; else e.s -= delta;
+        const keys = Object.keys(d.coinLog).sort();
+        keys.slice(0, Math.max(0, keys.length - 35)).forEach(x => delete d.coinLog[x]);   // 35 jours au plus
+    }
+    coinSeen = { data: d, coins: d.coins };
+}
 function saveData() {
+    try { logCoins(); } catch (e) { /* jamais bloquant */ }
     keepDailyBackup();
     const json = JSON.stringify(state.data);
     try {
@@ -13295,6 +13313,7 @@ function onBackButton() {
 window.addEventListener('popstate', onBackButton);
 
 function init() {
+    coinSeen = { data: state.data, coins: state.data.coins };   // 17/11 : point de départ du carnet des pièces
     armBackGuard();   // touche retour du téléphone gérée par l'appli
     setupNav6();      // 15/11 : 6 onglets (bac à sable) — avant bindEvents, pour que le nouvel onglet réponde
     bindEvents();

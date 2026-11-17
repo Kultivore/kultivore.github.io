@@ -5404,3 +5404,80 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
 .map-screen.esc-japon .esc-stage::before, .map-screen.esc-japon .esc-stage::after { background: #e9b4c6; }
 :root[data-theme="dark"] .map-screen.esc-japon .esc-trip { background: linear-gradient(#3a2333, #2e1d2b 60%, #261a26); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .map-screen.esc-japon .esc-trip { background: linear-gradient(#3a2333, #2e1d2b 60%, #261a26); } }
+
+/* 17/11 (retours de l'utilisateur) : Escales v2 — niveaux à la taille du parcours, « ← Escales » toujours visible,
+   thème du pays sur toute la page (sans Noël / Halloween), bandeau d'événement caché, billets achetés, avion qui décolle */
+body.in-escales .event-banner { display: none !important; }
+.esc-tickets-ico img { width: 34px; height: 34px; display: block; }
+.esc-tickets-t { min-width: 0; }
+.esc-head { position: sticky; z-index: 8; padding: 6px 8px; border-radius: 16px; background: var(--surface);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); margin-bottom: 14px; }
+.esc-back { white-space: nowrap; }
+.esc-path { gap: 40px; }
+.esc-stop { gap: 10px; }
+.esc-node { width: 86px; height: 86px; font-size: 1.85rem; box-shadow: 0 6px 0 var(--deep); }
+.esc-node:active { transform: translateY(6px); }
+.esc-node.is-order { width: 74px; height: 74px; margin: 6px; border-radius: 18px; transform: rotate(45deg); box-shadow: 4px 4px 0 var(--deep); }
+.esc-node.is-order:active { transform: rotate(45deg) translate(4px, 4px); }
+.esc-node.is-order .esc-node-icon, .esc-node.is-order .esc-node-num, .esc-node.is-order .esc-node-check, .esc-node.is-order .esc-node-lock { transform: rotate(-45deg); }
+.esc-node.is-pairs { border-radius: 26px; }
+.esc-node.is-challenge { width: 104px; height: 104px; font-size: 2.3rem; }
+.esc-node-num { min-width: 26px; height: 26px; border-radius: 13px; font-size: 0.85rem; line-height: 26px; }
+.esc-node-check { width: 28px; height: 28px; line-height: 28px; font-size: 0.95rem; }
+.esc-node.is-locked .esc-node-icon { filter: grayscale(1); opacity: 0.55; }
+.esc-stop-label { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; max-width: 44vw; }
+.esc-stop-name { font-weight: 800; font-size: 1.05rem; color: var(--ink); }
+.esc-stop-meta { font-size: 0.8rem; font-weight: 800; color: var(--muted); }
+.esc-stop.is-pairs-stop .esc-stop-name { color: var(--pairs-ink, #0b8179); }
+.esc-stop.is-order-stop .esc-stop-name { color: var(--pink-ink, #c42c63); }
+.esc-stop.is-challenge-stop .esc-stop-name { color: var(--violet-ink, #5230a8); }
+.esc-kulti { left: calc(50% + 52px); top: 10px; width: 50px; height: 50px; }
+.esc-stop.is-final .esc-kulti { left: calc(50% + 62px); }
+.esc-decor img { width: 34px; height: 34px; }
+.esc-trip { background: none !important; }
+
+/* Thème du pays sur toute la page (petit parcours et niveaux de l'escale) : le décor de l'événement s'efface */
+body.in-escale .noel-snow { display: none !important; }
+body.in-escale .topbar, body.in-escale .nav-btn.is-active { box-shadow: none; }
+body.esc-theme-japon main, body.esc-theme-japon .lesson { background: linear-gradient(180deg, #fff1f5, #fde4ec 55%, #f9dbe6) !important; background-attachment: fixed !important; }
+body.esc-theme-japon .esc-stage { color: #b55b7a; }
+body.esc-theme-japon .esc-stage::before, body.esc-theme-japon .esc-stage::after { background: #e9b4c6; }
+:root[data-theme="dark"] body.esc-theme-japon main, :root[data-theme="dark"] body.esc-theme-japon .lesson {
+    background: linear-gradient(180deg, #3a2333, #2e1d2b 55%, #261a26) !important; background-attachment: fixed !important; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) body.esc-theme-japon main, :root:not([data-theme="light"]) body.esc-theme-japon .lesson {
+        background: linear-gradient(180deg, #3a2333, #2e1d2b 55%, #261a26) !important; background-attachment: fixed !important; }
+}
+
+/* L'avion décolle à l'ouverture d'une escale */
+.esc-takeoff { position: fixed; inset: 0; z-index: 400; overflow: hidden; cursor: pointer;
+    background: linear-gradient(180deg, #2f7bff 0%, #6fb0ff 55%, #cfe6ff 100%); animation: escToIn 0.25s ease both; }
+.esc-takeoff.is-out { animation: escToOut 0.35s ease both; }
+.esc-to-runway { position: absolute; left: -10%; right: -10%; bottom: 0; height: 22%; background: #59616f;
+    box-shadow: inset 0 6px 0 #474e5a; }
+.esc-to-runway::after { content: ""; position: absolute; left: 0; right: 0; top: 45%; height: 6px;
+    background: repeating-linear-gradient(90deg, #fff 0 36px, transparent 36px 72px); animation: escRunway 0.5s linear infinite; }
+.esc-to-plane { position: absolute; left: 8%; bottom: 20%; width: 96px; height: 96px; animation: escPlane 2.3s cubic-bezier(0.5, 0, 0.6, 1) both; }
+.esc-to-plane img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.25)); }
+.esc-to-clouds i { position: absolute; width: 140px; height: 46px; border-radius: 30px; background: rgba(255, 255, 255, 0.85);
+    animation: escCloud 2.6s linear both; }
+.esc-to-clouds i::before { content: ""; position: absolute; left: 28px; top: -24px; width: 66px; height: 56px; border-radius: 50%; background: inherit; }
+.esc-to-clouds i:nth-child(1) { top: 14%; left: 70%; }
+.esc-to-clouds i:nth-child(2) { top: 34%; left: 20%; transform: scale(0.7); animation-duration: 3.2s; }
+.esc-to-clouds i:nth-child(3) { top: 52%; left: 90%; transform: scale(0.85); }
+.esc-to-clouds i:nth-child(4) { top: 8%; left: 5%; transform: scale(0.6); animation-duration: 3.6s; }
+.esc-to-text { position: absolute; left: 0; right: 0; top: 30%; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    color: #fff; text-align: center; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25); animation: escToText 2.4s ease both; }
+.esc-to-text small { font-size: 0.85rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.9; }
+.esc-to-text b { font-size: 1.6rem; font-weight: 900; }
+.esc-to-text em img { width: 56px; height: 56px; }
+@keyframes escToIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes escToOut { to { opacity: 0; } }
+@keyframes escRunway { to { background-position: -72px 0; } }
+@keyframes escPlane {
+    0% { transform: translate(0, 0) rotate(0deg) scale(0.9); }
+    35% { transform: translate(30vw, 0) rotate(0deg) scale(1); }
+    100% { transform: translate(110vw, -80vh) rotate(-20deg) scale(1.5); }
+}
+@keyframes escCloud { from { margin-left: 0; } to { margin-left: -60vw; } }
+@keyframes escToText { 0%, 15% { opacity: 0; transform: translateY(12px); } 35%, 85% { opacity: 1; transform: none; } 100% { opacity: 0; } }

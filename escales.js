@@ -1,10 +1,11 @@
 'use strict';
 /* ============================================================
    KULTIVO — LES ESCALES (17/11/2026, BAC À SABLE ; pour tous : ESCALES_ON = true ; aperçu : apercu-escales-voyage.html)
-   Petits parcours de voyage de 15 niveaux, un par pays, ouverts avec des billets ✈️ :
-   1 billet de bienvenue + 1 tous les 20 niveaux du parcours VRAIMENT joués (ceux sautés par le placement ne comptent pas).
-   Un billet = l'escale de son choix, pour toujours. 15 niveaux en 3 étapes :
-     Q Q 🔗 Q ⏳ | Q Q 🔗 Q ⏳ | Q 🔗 Q ⏳ 🏆  (8 niveaux de questions, 3 de paires, 3 de frises, 1 défi final)
+   Petits parcours de voyage de 15 niveaux, un par pays, ouverts avec des billets ✈️ ACHETÉS (ESC_TICKET_PRICE, le 1er offert ;
+   17/11 : plus de billets gagnés tous les 20 niveaux, ça avantageait les joueurs placés haut).
+   Un billet = l'escale de son choix, pour toujours (l'avion décolle : escTakeoff). 15 niveaux en 3 étapes :
+     Q Q 🔗 Q Q | Q ⏳ Q Q 🔗 | Q Q ⏳ Q 🏆  (10 niveaux de questions, 2 de paires, 2 de frises à 3 cœurs, 1 défi final ;
+     chaque famille de paires / frises ne sert qu'UNE fois). Thème du pays sur toute la page (escTheme, body.in-escale).
    Gouttes, cœurs, XP, série et missions comme le grand parcours ; niveau refait = XP réduite (state.replay).
    Escale finie = tampon dans le carnet de voyage (en bas de l'onglet Escales) + carte d'escale (rangée avec les cartes
    d'événement, hors des 180) + badge (famille « 🧳 Globe-trotter » : 3, 6, 10 escales).
@@ -22,9 +23,11 @@ const ESCALES = [
     { id: 'maghreb', name: 'Maghreb', at: 'au Maghreb', icon: '🕌', blurb: 'Médinas, couscous, Sahara…', soon: 'Bientôt' },
     { id: 'usa', name: 'États-Unis', at: 'aux États-Unis', icon: '🗽', blurb: 'Statue de la Liberté, Hollywood…', soon: 'Plus tard' }
 ];
-const ESC_LAYOUT = ['q', 'q', 'pairs', 'q', 'order', 'q', 'q', 'pairs', 'q', 'order', 'q', 'pairs', 'q', 'order', 'challenge'];
+// 17/11 (retour de l'utilisateur) : 2 niveaux de paires et 2 de frises (au lieu de 3 + 3), jamais la même famille deux fois
+const ESC_LAYOUT = ['q', 'q', 'pairs', 'q', 'q', 'q', 'order', 'q', 'q', 'pairs', 'q', 'q', 'order', 'q', 'challenge'];
 const ESC_LEVELS = ESC_LAYOUT.length;
-const ESC_TICKET_EVERY = 20;
+const ESC_TICKET_PRICE = 500;   // 17/11 : les billets s'ACHÈTENT (pas de passe-droit pour les joueurs placés haut) ; le 1er est offert
+const ESC_KIND_NAME = { q: 'Questions', pairs: 'Paires', order: 'Frise', challenge: 'Défi final' };
 const ESC_KIND_ICON = { pairs: '🔗', order: '⏳', challenge: '🏆' };
 
 const escById = id => ESCALES.find(e => e.id === id);
@@ -43,19 +46,11 @@ function escUnlocked(e) {
     return Math.min(n, ESC_LEVELS);
 }
 
-/* ---------- Billets ✈️ ---------- */
-/** Niveaux du parcours vraiment joués (ceux validés d'office par le test de placement ne comptent pas). */
-function escPlayedLevels() {
-    const d = state.data;
-    const from = d.placement && d.placement.start > 1 ? d.placement.start : 1;
-    return Object.keys(d.done || {}).map(Number).filter(n => d.done[n] && n >= from).length;
-}
-const escTicketsEarned = () => 1 + Math.floor(escPlayedLevels() / ESC_TICKET_EVERY);
+/* ---------- Billets ✈️ (17/11 : achetés avec des pièces, le 1er offert) ---------- */
 const escTicketsUsed = () => Object.values(escAll()).filter(x => x && x.open).length;
-const escTickets = () => Math.max(0, escTicketsEarned() - escTicketsUsed());
-const escNextTicketIn = () => ESC_TICKET_EVERY - (escPlayedLevels() % ESC_TICKET_EVERY);
-/** Pastille de l'onglet Escales : un billet à utiliser ET une escale à ouvrir. */
-const escBadgeCount = () => (ESCALES.some(e => escReady(e) && !escEntry(e)?.open) ? escTickets() : 0);
+const escFreeTicket = () => escTicketsUsed() === 0;
+/** Pastille de l'onglet Escales : seulement le billet offert, tant qu'il n'est pas utilisé. */
+const escBadgeCount = () => (escFreeTicket() && ESCALES.some(e => escReady(e)) ? 1 : 0);
 
 /* ---------- Contenu d'un niveau ---------- */
 const escNoise = id => (Math.imul(id ^ 0x9e3779b9, 2654435761) >>> 0) / 4294967296;
@@ -72,12 +67,11 @@ function escQuestionLevels(e) {
     return out;
 }
 const escTarget = n => 1.5 + 0.35 * Math.floor((n - 1) / 5);   // difficulté visée des paires et frises : 1,5 → 2,2
-/** 2 familles différentes : celles du niveau d'abord (tour à tour), puis celles avec des erreurs. */
-function escPickFamilies(list, n, missedIn) {
-    const k = ESC_LAYOUT.slice(0, n - 1).filter(x => x === ESC_LAYOUT[n - 1]).length;   // 0, 1, 2 : rang de ce niveau
-    const start = (k * 2) % list.length;
-    const order = list.map((f, i) => ({ f, key: ((i - start + list.length) % list.length) - Math.min(2, missedIn(f)) * 0.6 + Math.random() * 0.3 }));
-    return order.sort((a, b) => a.key - b.key).slice(0, 2).map(x => x.f);
+/** 2 familles par niveau, TOUJOURS les mêmes et jamais deux fois dans l'escale (17/11) : 1er niveau = familles 1 et 2,
+    2e niveau = familles 3 et 4. */
+function escPickFamilies(list, n) {
+    const k = ESC_LAYOUT.slice(0, n - 1).filter(x => x === ESC_LAYOUT[n - 1]).length;   // 0 ou 1 : rang de ce niveau
+    return [list[(k * 2) % list.length], list[(k * 2 + 1) % list.length]];
 }
 function escItems(e, n) {
     const bank = escBank(e);
@@ -85,11 +79,11 @@ function escItems(e, n) {
     const t = escTarget(n);
     if (kind === 'q') return shuffle(escQuestionLevels(e)[n].map(q => ({ q, review: false })));
     if (kind === 'pairs') {
-        const fams = escPickFamilies(bank.pairs, n, f => f.pairs.filter(p => pairMiss(pairKey(f, p[0])) > 0).length);
+        const fams = escPickFamilies(bank.pairs, n);
         return fams.map(family => ({ family, pairs: pickPairs(family, t), matched: new Set(), failed: new Set(), order: null }));
     }
     if (kind === 'order') {
-        const fams = escPickFamilies(bank.order, n, f => f.items.filter(it => orderMiss(orderKey(f, it[0])) > 0).length);
+        const fams = escPickFamilies(bank.order, n);
         return fams.map(family => ({ family, items: pickOrderItems(family, t, 4, 0), placed: [], checked: false }));
     }
     // Défi final : 10 questions de l'escale, celles qui ont été ratées d'abord
@@ -106,6 +100,37 @@ function startEscaleLevel(e, n) {
     escPending = { mode: kind === 'q' ? 'level' : kind, items: escItems(e, n), esc: { id: e.id, n }, cost: !done, replay: done };
     startSession(escPending.mode);
     escPending = null;   // startSession l'a pris (ou a renoncé : pas de goutte)
+    // 17/11 : frises plus douces qu'au parcours (3 cœurs au lieu de 2)
+    if (state.escale && kind === 'order') { state.hearts = state.heartsMax = HEARTS_MAX; renderHearts(); }
+    escTheme();
+}
+
+/* ---------- Thème du pays (17/11) : pendant une escale (son petit parcours et ses niveaux), le décor de l'événement en
+   cours (Noël, Halloween…) laisse la place à celui du pays, sur toute la page ---------- */
+function escThemeId() {
+    if (!ESCALES_ON) return null;
+    if (state.escale && !$('studyScreen').hidden) return state.escale.id;
+    if (!$('mapScreen').hidden && escUi.tab === 'escales' && escUi.view && escEntry(escById(escUi.view))?.open) return escUi.view;
+    return null;
+}
+let escThemeOn = null;
+function escTheme() {
+    const id = escThemeId();
+    document.body.classList.toggle('in-escale', !!id);
+    document.body.classList.toggle('in-escales', ESCALES_ON && !$('mapScreen').hidden && escUi.tab === 'escales');
+    ESCALES.forEach(e => document.body.classList.toggle(`esc-theme-${e.id}`, id === e.id));
+    if (id === escThemeOn) return;
+    escThemeOn = id;
+    // Petits décors à côté des leçons (grand écran) : ceux du pays
+    const box = $('lessonDecor');
+    if (box) {
+        buildDecor(box, 8);
+        const e = id && escById(id);
+        if (e) box.querySelectorAll('.decor-badge').forEach((b, i) => {
+            b.textContent = e.decor[(i * 3) % e.decor.length];
+            delete b.dataset.noel; delete b.dataset.event; delete b.dataset.baby;
+        });
+    }
 }
 
 /* ---------- Kulti en voyage ---------- */
@@ -159,14 +184,18 @@ function escApplyTab() {
             b.append(dot);
         }
     });
-    // Collé sous la barre du haut (et sous le bandeau d'événement s'il est là)
+    // Collé sous la barre du haut (et sous le bandeau d'événement s'il est là ; sur les Escales, le bandeau est caché)
     const banner = $('eventBanner');
-    const top = banner && !banner.hidden ? banner.getBoundingClientRect().bottom + 6 : ($('topbar')?.getBoundingClientRect().height || 56) + 6;
+    const top = !onEsc && banner && !banner.hidden ? banner.getBoundingClientRect().bottom + 6 : ($('topbar')?.getBoundingClientRect().height || 56) + 6;
     sw.style.top = `${Math.round(top)}px`;
     $('mapScreen').classList.toggle('is-esc', onEsc);
     ESCALES.forEach(e => e.cls && $('mapScreen').classList.toggle(e.cls, onEsc && escUi.view === e.id));
     $('escPage').hidden = !onEsc;
     if (onEsc) escRenderPage();
+    escTheme();
+    // En-tête du petit parcours (« ← Escales ») collé juste sous l'onglet
+    const head = document.querySelector('#escPage .esc-head');
+    if (head) head.style.top = `${Math.round(top + sw.offsetHeight + 6)}px`;
 }
 const escOrigRenderMap = renderMap;
 renderMap = function () { escOrigRenderMap(); escApplyTab(); };
@@ -175,6 +204,7 @@ renderMap = function () { escOrigRenderMap(); escApplyTab(); };
 const escOrigShowScreen = showScreen;
 showScreen = function (name) {
     escOrigShowScreen(name);
+    if (ESCALES_ON) escTheme();
     if (!ESCALES_ON || name !== 'map' || escUi.tab !== 'escales') return;
     setTimeout(() => { if (escUi.view) escScrollToCurrent(); else window.scrollTo(0, 0); }, 120);
 };
@@ -194,9 +224,12 @@ function escRenderPage() {
     escUi.view = null;
 
     const tk = el('div', 'esc-tickets');
-    const t = escTickets();
-    tk.innerHTML = `<span class="esc-tickets-ico">✈️</span><span><b>${t} ${t > 1 ? 'billets' : 'billet'}</b><small></small></span>`;
-    tk.querySelector('small').textContent = `Prochain billet dans ${plural(escNextTicketIn(), 'niveau', 'niveaux')} du parcours`;
+    const free = escFreeTicket();
+    tk.innerHTML = '<span class="esc-tickets-ico"></span><span class="esc-tickets-t"><b></b><small></small></span>';
+    tk.querySelector('.esc-tickets-ico').append(emojiImg('✈️'));
+    tk.querySelector('b').textContent = free ? '1er billet offert !' : `Billet d’avion : ${ESC_TICKET_PRICE} 🪙`;
+    tk.querySelector('small').textContent = free ? 'Choisis ta première escale : c’est cadeau.'
+        : `Un billet ouvre l’escale de ton choix pour toujours. Tu as ${state.data.coins} 🪙.`;
     page.append(tk);
 
     const mine = ESCALES.filter(x => escEntry(x)?.open);
@@ -228,8 +261,8 @@ function escRenderPage() {
     section('À ouvrir avec un billet', toOpen, x => {
         const row = escRow(x);
         row.sub.textContent = x.blurb;
-        row.btn.textContent = '✈️ 1 billet';
-        row.btn.className = `esc-btn${t ? '' : ' is-off'}`;
+        row.btn.textContent = free ? '✈️ Offert' : `✈️ ${ESC_TICKET_PRICE} 🪙`;
+        row.btn.className = `esc-btn${free || state.data.coins >= ESC_TICKET_PRICE ? '' : ' is-off'}`;
         row.box.addEventListener('click', () => escOpenWithTicket(x));
         return row.box;
     });
@@ -258,25 +291,58 @@ function escRow(x) {
     return { box, text, sub, btn };
 }
 async function escOpenWithTicket(x) {
-    const t = escTickets();
-    if (!t) {
-        showToast(`✈️ Pas de billet pour l’instant : le prochain arrive dans ${plural(escNextTicketIn(), 'niveau', 'niveaux')} du parcours.`);
+    const d = state.data;
+    const free = escFreeTicket();
+    const price = free ? 0 : ESC_TICKET_PRICE;
+    if (d.coins < price) {
+        showToast(`✈️ Il te manque ${price - d.coins} 🪙 pour le billet (${price} 🪙).`);
         return;
     }
     const ok = await askConfirm({
         title: `${x.icon} Partir ${x.at} ?`,
-        info: [{ big: String(ESC_LEVELS), label: 'niveaux' }, { big: `✈️ ${t} → ${t - 1}`, label: 'billets', tone: 'warn' }, { big: '🃏 📕', label: 'carte + tampon', tone: 'good' }],
-        text: 'Le billet est utilisé pour de bon : l’escale reste ouverte pour toujours.',
-        yes: '✈️ Partir · −1 billet', no: 'Plus tard'
+        info: free
+            ? [{ big: String(ESC_LEVELS), label: 'niveaux' }, { big: 'offert', label: 'le billet', tone: 'good' }]
+            : [{ big: `${price} 🪙`, label: 'le billet' }, { big: `${d.coins} 🪙`, label: 'tu as' }, { big: `${d.coins - price} 🪙`, label: 'il t’en restera', tone: 'warn' }],
+        text: `${ESC_LEVELS} niveaux, puis un tampon, une carte et un badge. L’escale reste ouverte pour toujours.`,
+        yes: free ? '✈️ Partir · billet offert' : `✈️ Partir · ${price} 🪙`, no: 'Plus tard'
     });
-    if (!ok) return;
+    if (!ok || d.coins < price) return;
+    d.coins -= price;
+    if (price) d.totals.purchases++;
     escAll()[x.id] = { open: todayKey(), done: {}, stamp: null };
     saveData();
-    playSound('unlock');
-    escUi.view = x.id;
-    escApplyTab();
-    window.scrollTo(0, 0);
-    setTimeout(escScrollToCurrent, 60);
+    renderHeader();
+    escTakeoff(x, () => {
+        escUi.view = x.id;
+        escApplyTab();
+        window.scrollTo(0, 0);
+        setTimeout(escScrollToCurrent, 60);
+    });
+}
+
+/** 17/11 : l'avion décolle (~2,4 s, tap = fin tout de suite ; rien si « réduire les animations »). */
+function escTakeoff(x, done) {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { playSound('unlock'); done(); return; }
+    const ov = el('div', 'esc-takeoff');
+    ov.innerHTML = '<div class="esc-to-clouds"><i></i><i></i><i></i><i></i></div><div class="esc-to-runway"></div>'
+        + '<div class="esc-to-plane"></div><div class="esc-to-text"><small>Embarquement immédiat</small><b></b><em></em></div>';
+    ov.querySelector('.esc-to-plane').append(emojiImg('✈️'));
+    ov.querySelector('b').textContent = `Destination : ${x.name}`;
+    ov.querySelector('em').append(emojiImg(x.icon));
+    document.body.append(ov);
+    playSound('hop');
+    setTimeout(() => playSound('unlock'), 900);
+    let ended = false;
+    const finish = () => {
+        if (ended) return;
+        ended = true;
+        done();
+        ov.classList.add('is-out');
+        setTimeout(() => ov.remove(), 350);
+    };
+    ov._done = finish;
+    ov.addEventListener('click', finish);
+    setTimeout(finish, 2600);
 }
 
 /* ---------- Le petit parcours d'une escale ---------- */
@@ -287,7 +353,7 @@ function escRenderTrip(page, e) {
     back.textContent = '← Escales';
     back.addEventListener('click', () => { escUi.view = null; escApplyTab(); window.scrollTo(0, 0); });
     const title = el('b');
-    title.textContent = `${e.icon} Escale ${e.at}`;
+    title.textContent = `${e.icon} ${e.name}`;
     const count = el('small');
     count.textContent = `${escDoneCount(e)} / ${ESC_LEVELS}`;
     head.append(back, title, count);
@@ -308,27 +374,38 @@ function escRenderTrip(page, e) {
     const list = el('ol', 'esc-path');
     const unlocked = escUnlocked(e);
     const ed = escEntry(e);
+    const qLevels = escQuestionLevels(e);
     for (let n = ESC_LEVELS; n >= 1; n--) {
         const kind = ESC_LAYOUT[n - 1];
-        const li = el('li', `esc-stop${kind === 'challenge' ? ' is-final' : ''}`);
-        li.style.setProperty('--x', kind === 'challenge' ? '0px' : `${Math.round(Math.sin(n * 1.3) * 56)}px`);
+        const li = el('li', `esc-stop is-${kind}-stop${kind === 'challenge' ? ' is-final' : ''}`);
+        li.style.setProperty('--x', kind === 'challenge' ? '0px' : `${Math.round(Math.sin(n * 1.3) * 52)}px`);
         const done = !!ed.done[n];
         const locked = !done && n > unlocked;
         const btn = el('button', `esc-node is-${kind}${done ? ' is-done' : locked ? ' is-locked' : ' is-current'}`);
         btn.type = 'button';
         btn.dataset.n = String(n);
         btn.setAttribute('aria-label', `Niveau ${n}${done ? ', terminé' : locked ? ', verrouillé' : ''}`);
-        btn.textContent = ESC_KIND_ICON[kind] || String(n);
-        if (ESC_KIND_ICON[kind]) { const num = el('span', 'esc-node-num'); num.textContent = String(n); btn.append(num); }
+        if (ESC_KIND_ICON[kind]) {
+            const ic = el('span', 'esc-node-icon');
+            ic.textContent = ESC_KIND_ICON[kind];
+            const num = el('span', 'esc-node-num');
+            num.textContent = String(n);
+            btn.append(ic, num);
+        } else btn.textContent = String(n);
         if (done) { const ck = el('span', 'esc-node-check'); ck.textContent = '✓'; btn.append(ck); }
         if (locked) { const lk = el('span', 'esc-node-lock'); lk.textContent = '🔒'; btn.append(lk); }
         btn.addEventListener('click', () => escTapLevel(e, n));
         li.append(btn);
-        if (kind === 'challenge') {
-            const lab = el('small', 'esc-final-lab');
-            lab.textContent = ed.stamp ? '📕 Tampon gagné' : '🏆 Défi final · tampon';
-            li.append(lab);
-        }
+        // Nom et contenu sous le niveau, comme sur le grand parcours
+        const lab = el('div', 'esc-stop-label');
+        const name = el('span', 'esc-stop-name');
+        name.textContent = kind === 'q' ? plural(qLevels[n].length, 'question', 'questions') : ESC_KIND_NAME[kind];
+        const meta = el('span', 'esc-stop-meta');
+        meta.textContent = kind === 'pairs' ? '2 grilles' : kind === 'order' ? '2 frises · 3 cœurs'
+            : ed.stamp ? '📕 Tampon gagné' : '10 questions · le tampon !';
+        lab.append(name);
+        if (kind !== 'q') lab.append(meta);
+        li.append(lab);
         if (!done && !locked) {
             const k = kultiEl('content', 'esc-kulti kulti-blink kulti-float', false, e.hat);
             li.append(k);
@@ -363,7 +440,7 @@ async function escTapLevel(e, n) {
     const done = !!ed.done[n];
     if (!done && n > escUnlocked(e)) { showToast(`🔒 Termine d’abord le niveau ${escUnlocked(e)}.`); return; }
     const kind = ESC_LAYOUT[n - 1];
-    const what = kind === 'q' ? `${escQuestionLevels(e)[n].length} questions` : kind === 'pairs' ? '2 grilles de paires' : kind === 'order' ? '2 frises' : '10 questions déjà vues';
+    const what = kind === 'q' ? `${escQuestionLevels(e)[n].length} questions` : kind === 'pairs' ? '2 grilles de paires' : kind === 'order' ? '2 frises de 4 cartes, 3 cœurs' : '10 questions déjà vues';
     const drops = state.data.drops;
     const info = done
         ? [{ big: '🔁', label: 'déjà réussi' }, { big: 'gratuit', label: 'pas de goutte', tone: 'good' }]

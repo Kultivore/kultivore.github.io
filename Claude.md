@@ -1444,3 +1444,13 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   Kulti avec bandeau japonais (`KULTI_HATS.japon`), fond « cerisiers ». Sauvegarde data.escales = { id: { open, done: { n: jour }, stamp } }.
   E-MAILS : supabase/emails/ (modèles français + LISEZMOI : envoi par Gmail appkultivo@gmail.com, SMTP + mot de passe d'application).
   ADRESSE : appkultivo@gmail.com PAS ENCORE CRÉÉE le 17/11 (numéro bloqué par Google : réessayer depuis Android ou 24-48 h après).
+- 17/11 (v=20261117i, BAC À SABLE) : ESCALES V2 (retours de l'utilisateur) : 2 niveaux de paires + 2 de frises (au lieu de 3 + 3),
+  Q Q 🔗 Q Q | Q ⏳ Q Q 🔗 | Q Q ⏳ Q 🏆 (10 niveaux de questions de 6) ; chaque famille de paires / frises ne sert qu'UNE fois
+  (`escPickFamilies` fixe : niveau 1 = familles 1-2, niveau 2 = 3-4) ; frises d'escale à 3 cœurs ; japon.js : 60 questions (40054-40059)
+  + 4e frise « Du nord au sud ». BILLETS ACHETÉS (plus gagnés tous les 20 niveaux : avantageait les placés) : `ESC_TICKET_PRICE` = 500 🪙
+  (provisoire), le 1er billet OFFERT (pastille tant qu'il ne sert pas) ; confirmation en cases prix / tu as / il t'en restera.
+  Avion qui décolle (`escTakeoff`, ~2,4 s, tap = fin). Thème du pays sur TOUTE la page dans une escale (`escTheme` : body.in-escale +
+  esc-theme-<id>, neige / décor de Noël coupés, petits décors des leçons au pays) ; bandeau d'événement caché sur l'onglet Escales
+  (body.in-escales). « ← Escales » collé en haut (sticky). Niveaux à la taille du parcours (86 px, losange, nom sous le niveau).
+  ÉCONOMIE : le jeu note les pièces gagnées / dépensées par jour (`coinLog` : jour -> { w, s }, 35 jours, `logCoins` dans saveData,
+  POUR TOUS) ; requêtes dans supabase/pieces-semaine.sql (1 = estimation tout de suite, 2 = précise après ~7 jours) → fixer le prix.
