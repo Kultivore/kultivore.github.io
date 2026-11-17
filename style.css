@@ -5304,3 +5304,103 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
 .modal-content p.auth-error:empty { display: none; }
 .modal-content p.auth-rule { margin: -4px 0 4px; font-size: 0.8rem; line-height: 1.3; }
 .modal-content p.auth-hint { margin: -4px 0 0; }
+
+/* ============================================================
+   17/11 : LES ESCALES (bac à sable) — onglet « 🗺️ Parcours | 🧳 Escales », page des escales, petit parcours, carnet
+   ============================================================ */
+.esc-switch { position: sticky; z-index: 9; display: flex; gap: 4px; max-width: 360px; margin: -24px auto 18px; padding: 4px;
+    border-radius: 16px; background: color-mix(in srgb, var(--line) 75%, var(--bg)); box-shadow: 0 4px 12px rgba(27, 39, 69, 0.12); }
+.esc-switch-btn { position: relative; flex: 1; padding: 9px 0; border: 0; border-radius: 12px; background: none; color: var(--muted);
+    font: inherit; font-size: 0.92rem; font-weight: 900; cursor: pointer; }
+.esc-switch-btn.is-active { background: var(--surface); color: var(--ink); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+.esc-dot { position: absolute; top: -6px; right: 10px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--red);
+    color: #fff; font-size: 0.72rem; line-height: 20px; text-align: center; box-shadow: 0 0 0 2px var(--surface); }
+.map-screen.is-esc > :not(.esc-switch):not(.esc-page):not(.event-banner) { display: none !important; }
+.esc-page { max-width: 520px; margin: 0 auto; }
+.esc-tickets { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; color: #fff;
+    background: linear-gradient(135deg, #3d8bff, #6a5cff); box-shadow: 0 4px 0 #2a4fc0; }
+.esc-tickets-ico { font-size: 2rem; }
+.esc-tickets b { display: block; font-size: 1.1rem; font-weight: 900; }
+.esc-tickets small { font-size: 0.8rem; font-weight: 800; opacity: 0.92; }
+.esc-sec { margin: 18px 4px 8px; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.esc-dest { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; margin-bottom: 8px; padding: 10px 12px; overflow: hidden;
+    border: 2px solid var(--line); border-radius: 18px; background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+    box-shadow: 0 3px 0 var(--line); }
+.esc-dest.is-done { border-color: #f1d27a; background: color-mix(in srgb, #ffd54a 10%, var(--surface)); }
+.esc-dest.is-soon { opacity: 0.6; cursor: default; }
+.esc-dest-ico { flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: color-mix(in srgb, var(--blue) 10%, var(--surface)); }
+.esc-dest-ico img { width: 30px; height: 30px; }
+.esc-dest-t { flex: 1; min-width: 0; }
+.esc-dest-t b { display: block; font-size: 1rem; font-weight: 900; }
+.esc-dest-t small { display: block; color: var(--muted); font-size: 0.8rem; font-weight: 800; line-height: 1.3; }
+.esc-bar { height: 7px; margin-top: 6px; border-radius: 4px; overflow: hidden; background: var(--line); }
+.esc-bar i { display: block; height: 100%; border-radius: 4px; background: var(--blue); }
+.esc-btn { flex: none; padding: 7px 11px; border-radius: 12px; background: var(--blue); color: #fff; font-size: 0.8rem; font-weight: 900; white-space: nowrap;
+    box-shadow: 0 3px 0 var(--blue-deep, #1c5bd6); }
+.esc-btn.is-ghost { background: var(--surface); color: var(--muted); border: 2px solid var(--line); box-shadow: none; }
+.esc-btn.is-off { opacity: 0.55; }
+.esc-dest.is-done .esc-btn { margin-right: 52px; }
+/* Tampon (escale finie) */
+.esc-stamp { position: relative; display: grid; place-items: center; align-content: center; width: 104px; height: 104px; border: 4px solid #c62a3a; border-radius: 50%;
+    color: #c62a3a; text-align: center; font-weight: 900; line-height: 1.05; background: rgba(255, 255, 255, 0.5); transform: rotate(-10deg); }
+.esc-stamp::before { content: ""; position: absolute; inset: 5px; border: 2px dashed #c62a3a; border-radius: 50%; }
+.esc-stamp span { font-size: 0.55rem; letter-spacing: 0.1em; }
+.esc-stamp em img { width: 34px; height: 34px; margin: 2px 0; }
+.esc-stamp strong { font-size: 0.78rem; letter-spacing: 0.04em; }
+.esc-stamp.is-empty { border: 3px dashed #cdbf98; color: #b8a77a; background: none; transform: none; }
+.esc-stamp.is-empty::before { display: none; }
+.esc-stamp.is-empty em { font-style: normal; font-size: 1.6rem; }
+.esc-mini-stamp { position: absolute; right: 8px; top: 50%; width: 50px; height: 50px; margin-top: -25px; border-width: 3px; transform: rotate(-14deg); }
+.esc-mini-stamp::before { inset: 3px; border-width: 1px; }
+.esc-mini-stamp span { display: none; }
+.esc-mini-stamp em img { width: 20px; height: 20px; margin: 0; }
+.esc-mini-stamp strong { font-size: 0.45rem; }
+.esc-end-stamp { position: absolute; left: calc(100% + 6px); top: 4px; width: 92px; height: 92px; animation: escStampIn 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) 0.5s both; }
+@keyframes escStampIn { from { opacity: 0; transform: scale(2.4) rotate(-30deg); } to { opacity: 1; transform: rotate(-10deg); } }
+/* Carnet de voyage */
+.esc-carnet { margin: 22px 0 10px; padding: 12px; border-radius: 20px; background: #2c3e66; }
+.esc-carnet-head { display: flex; justify-content: space-between; align-items: baseline; padding: 0 4px 8px; color: #fff; }
+.esc-carnet-head b { font-size: 1.05rem; font-weight: 900; }
+.esc-carnet-head small { font-size: 0.8rem; font-weight: 800; opacity: 0.85; }
+.esc-carnet-pages { position: relative; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 128px; gap: 6px; padding: 12px 8px; border-radius: 12px;
+    background: #fbf6e9 repeating-linear-gradient(0deg, transparent 0 27px, #efe5cc 27px 28px); }
+.esc-carnet-pages::after { content: ""; position: absolute; top: 8px; bottom: 8px; left: 50%; width: 2px; background: #e3d6b3; }
+.esc-carnet-cell { display: grid; place-items: center; }
+.esc-carnet-cell.is-l .esc-stamp:not(.is-empty) { transform: rotate(8deg); }
+/* Petit parcours d'une escale */
+.esc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.esc-back { padding: 6px 10px; border: 0; border-radius: 10px; background: none; color: var(--violet-ink, #5230a8); font: inherit; font-weight: 900; cursor: pointer; }
+.esc-head b { flex: 1; text-align: center; font-size: 1.05rem; font-weight: 900; }
+.esc-head small { min-width: 60px; text-align: right; color: var(--muted); font-size: 0.82rem; font-weight: 900; }
+.esc-trip { position: relative; padding: 16px 0 20px; border-radius: 24px; }
+.esc-path { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 22px; margin: 0; padding: 0; list-style: none; }
+.esc-stop { position: relative; display: flex; flex-direction: column; align-items: center; transform: translateX(var(--x)); }
+.esc-node { --deep: var(--locked-deep, #b7c0cf); position: relative; display: grid; place-items: center; width: 70px; height: 66px; border: 0; border-radius: 50%;
+    background: var(--locked, #d4dbe6); color: var(--muted); font: inherit; font-size: 1.5rem; font-weight: 900; box-shadow: 0 6px 0 var(--deep); cursor: pointer; }
+.esc-node:active { transform: translateY(5px); box-shadow: none; }
+.esc-node.is-current { background: var(--blue); color: #fff; --deep: var(--blue-deep, #1c5bd6); outline: 6px solid color-mix(in srgb, var(--blue) 22%, transparent); }
+.esc-node.is-done { background: var(--gold); color: var(--on-gold, #fff); --deep: var(--gold-deep, #c99400); }
+.esc-node.is-pairs.is-current { background: var(--pairs, #12b3a8); --deep: var(--pairs-deep, #0b8179); outline-color: color-mix(in srgb, var(--pairs, #12b3a8) 22%, transparent); }
+.esc-node.is-order { border-radius: 18px; }
+.esc-node.is-order.is-current { background: var(--pink); --deep: var(--pink-deep, #c42c63); outline-color: color-mix(in srgb, var(--pink) 22%, transparent); }
+.esc-node.is-challenge { width: 86px; height: 80px; font-size: 1.9rem; }
+.esc-node.is-challenge.is-current { background: var(--violet); --deep: var(--violet-deep); outline-color: color-mix(in srgb, var(--violet) 22%, transparent); }
+.esc-node-num { position: absolute; left: -4px; bottom: -4px; min-width: 22px; height: 22px; padding: 0 4px; border-radius: 11px; background: var(--surface);
+    color: var(--ink); font-size: 0.72rem; line-height: 22px; box-shadow: 0 0 0 2px var(--line); }
+.esc-node-check { position: absolute; right: -4px; top: -4px; width: 22px; height: 22px; border-radius: 50%; background: var(--ok, #4fc72c); color: #fff;
+    font-size: 0.75rem; line-height: 22px; box-shadow: 0 0 0 2px var(--surface); }
+.esc-node-lock { position: absolute; right: -6px; top: -6px; font-size: 0.85rem; }
+.esc-final-lab { margin-top: 12px; padding: 3px 10px; border-radius: 10px; background: var(--surface); color: var(--muted); font-size: 0.75rem; font-weight: 900;
+    box-shadow: 0 0 0 2px var(--line); }
+.esc-kulti { position: absolute; left: calc(50% + 46px); top: 4px; width: 46px; height: 46px; pointer-events: none; }
+.esc-stop.is-final .esc-kulti { left: calc(50% + 54px); }
+.esc-stage { width: 100%; text-align: center; color: var(--muted); font-size: 0.72rem; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+.esc-stage::before, .esc-stage::after { content: ""; display: inline-block; width: 48px; height: 2px; margin: 0 8px; vertical-align: middle; background: var(--line); }
+.esc-decor { position: absolute; z-index: 2; padding: 4px; border: 0; background: none; opacity: 0.8; cursor: pointer; }
+.esc-decor img { width: 28px; height: 28px; }
+/* Japon : fond « cerisiers » */
+.map-screen.esc-japon .esc-trip { background: linear-gradient(#fff2f6, #fde7ee 60%, #f6e1ea); }
+.map-screen.esc-japon .esc-stage { color: #b55b7a; }
+.map-screen.esc-japon .esc-stage::before, .map-screen.esc-japon .esc-stage::after { background: #e9b4c6; }
+:root[data-theme="dark"] .map-screen.esc-japon .esc-trip { background: linear-gradient(#3a2333, #2e1d2b 60%, #261a26); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .map-screen.esc-japon .esc-trip { background: linear-gradient(#3a2333, #2e1d2b 60%, #261a26); } }

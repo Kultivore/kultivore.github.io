@@ -6862,7 +6862,10 @@ function pickChallengeCards(level) {
 }
 
 function startSession(requestedMode, level = 0) {
-    const mode = requestedMode !== 'level' ? requestedMode
+    // 17/11 : niveau d'une Escale (escales.js) : mode, questions / grilles / frises et coût préparés par startEscaleLevel
+    const escP = typeof escTakePending === 'function' ? escTakePending() : null;
+    if (escP) { requestedMode = escP.mode; level = 0; }
+    const mode = escP ? escP.mode : requestedMode !== 'level' ? requestedMode
                : isChallenge(level) ? 'challenge'
                : isPairs(level) ? 'pairs'
                : isOrder(level) ? 'order'
@@ -6871,13 +6874,16 @@ function startSession(requestedMode, level = 0) {
     state.replay = ['level', 'pairs', 'order', 'challenge'].includes(mode) && !!state.data.done[level];
     state.replayCounts = !state.replay || replayCountsForMissions(level);
     state.replayLevel = level;
+    if (escP) { state.replay = escP.replay; state.replayCounts = !escP.replay; }
     state.newSavoirs = [];   // 12/11 : savoirs trouvés pendant cette partie (pastille de l'écran de fin)
     if (mode === 'kulti') state.kultiKind = kultiToday().kind;
     const pairsMode = mode === 'pairs' || (mode === 'kulti' && state.kultiKind === 'paires');
     const orderMode = mode === 'order' || (mode === 'kulti' && state.kultiKind === 'frise');
 
     let items;
-    if (pairsMode) {
+    if (escP) {
+        items = escP.items;
+    } else if (pairsMode) {
         items = mode === 'kulti' ? state.kultiItems || [] : buildPairGrids(level);   // ici, items = les grilles
     } else if (orderMode) {
         items = mode === 'kulti' ? state.kultiItems || [] : buildOrderRounds(level); // ici, items = les frises
@@ -6916,13 +6922,14 @@ function startSession(requestedMode, level = 0) {
     }
     if (!items.length) return;
     // Niveau du parcours : 1 goutte au lancement, réussi ou raté
-    if (requestedMode === 'level' && !state.data.done[level] && !spendDrop()) { openDropsModal(); return; }   // déjà réussi : gratuit
+    if (escP ? escP.cost && !spendDrop() : requestedMode === 'level' && !state.data.done[level] && !spendDrop()) { openDropsModal(); return; }   // déjà réussi : gratuit
 
     const hasHearts = mode === 'level' || mode === 'challenge' || pairsMode || orderMode;
     // Défis et niveaux Ordre : 2 cœurs (une frise fausse coûte un cœur : on peut en rater une seule)
     const heartsMax = mode === 'kulti' ? 1 : mode === 'challenge' || orderMode ? CHALLENGE_HEARTS : HEARTS_MAX;
     Object.assign(state, {
         mode, level,
+        escale: escP ? escP.esc : null,   // 17/11 : { id, n } pendant un niveau d'Escale, sinon null
         returnTo: mode === 'duel' ? 'league' : ['daily', 'sprint', 'training', 'event'].includes(mode) ? 'challenges' : 'map',
         queue: pairsMode || orderMode ? [] : items,
         total: pairsMode ? items.reduce((sum, g) => sum + g.pairs.length, 0) : items.length,

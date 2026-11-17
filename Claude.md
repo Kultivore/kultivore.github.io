@@ -1431,3 +1431,16 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   Play dans une mise à jour, préparés d'avance dans le bac à sable ; politique de confidentialité à mettre à jour (« pas de publicité »).
   Passage en micro-entreprise = même personne, rien à transférer ; société plus tard = transfert d'appli possible. NE JAMAIS changer
   l'adresse du site. Conseillé à l'utilisateur : vérifier sa situation (salarié / chômage…) avec l'URSSAF ou un comptable.
+- 17/11 (v=20261117h, BAC À SABLE, `ESCALES_ON = BAC` dans escales.js ; pour tous : true) : LES ESCALES (aperçu apercu-escales-voyage.html).
+  Fichiers : escales.js (chargé APRÈS script.js et noel.js) + escales/japon.js (window.ESCALE_BANKS.japon : 54 questions ids 40000-40053,
+  d 1,2-2,6, moyenne ≈ 1,7 ; 4 familles de paires ; 3 familles de frises ; 8 anecdotes). Branchement dans script.js : startSession
+  (`escTakePending`, `state.escale`) ; le reste par enveloppes dans escales.js (renderMap, showScreen, endSession, showCard, bulles du parcours).
+  Onglet « 🗺️ Parcours | 🧳 Escales » collé en haut du parcours (`escSwitch`, pastille = billets si une escale est à ouvrir) ; page
+  `escPage` : billets, Mes voyages, À ouvrir, Bientôt (Italie, Maghreb, États-Unis), carnet de voyage (tampons). BILLETS : 1 de bienvenue
+  + 1 tous les 20 niveaux VRAIMENT joués (niveaux ≥ placement.start). 15 niveaux : Q Q 🔗 Q ⏳ | Q Q 🔗 Q ⏳ | Q 🔗 Q ⏳ 🏆 (`ESC_LAYOUT`) ;
+  questions triées par d puis réparties (6-7 par niveau) ; paires = 2 grilles de 5, frises = 2 frises de 4 ; défi final = 10 questions de
+  l'escale (ratées d'abord), 2 cœurs. Gouttes, cœurs, XP, série, missions comme le parcours ; refait = gratuit, XP réduite. Fin : tampon
+  (`escStamp`), carte « Escale au Japon » (dans EVENT_CARDS, hors des 180), badge « Japon » + famille 🧳 Globe-trotter (3 / 6 / 10).
+  Kulti avec bandeau japonais (`KULTI_HATS.japon`), fond « cerisiers ». Sauvegarde data.escales = { id: { open, done: { n: jour }, stamp } }.
+  E-MAILS : supabase/emails/ (modèles français + LISEZMOI : envoi par Gmail appkultivo@gmail.com, SMTP + mot de passe d'application).
+  ADRESSE : appkultivo@gmail.com PAS ENCORE CRÉÉE le 17/11 (numéro bloqué par Google : réessayer depuis Android ou 24-48 h après).
