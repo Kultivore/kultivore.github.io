@@ -9513,7 +9513,8 @@ async function deleteAccount() {
         text: `Le compte ${cloudUser?.email || ''} sera supprimé tout de suite, avec toute ta progression.`,
         yes: 'Supprimer définitivement', no: 'Garder mon compte' });
     if (!ok2) return;
-    if (BAC) { showToast(   // bac à sable : JAMAIS de vraie suppression (le compte connecté y est le vrai compte)'🧪 Bac à sable : le compte aurait été supprimé (rien n’est effacé ici).'); return; }
+    // bac à sable : JAMAIS de vraie suppression (le compte connecté y est le vrai compte)
+    if (BAC) { showToast('🧪 Bac à sable : le compte aurait été supprimé (rien n’est effacé ici).'); return; }
     if (!navigator.onLine) { showToast('📶 Il faut internet pour supprimer ton compte.'); return; }
     try {
         const { error } = await cloudClient().rpc('delete_my_account');
