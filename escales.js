@@ -19,9 +19,17 @@ const ESCALES = [
     { id: 'japon', name: 'Japon', at: 'au Japon', icon: '🗾', flag: '🇯🇵', hat: 'japon', cls: 'esc-japon', blurb: 'Mont Fuji, sushis, mangas, samouraïs…',
       stages: ['Premiers pas', 'Tokyo · pop culture', 'Kyoto · traditions'], decor: ['🌸', '⛩️', '🍣', '🗻', '🎎', '🍵', '🏯', '🎏', '🍜', '🦌'],
       card: { id: 'esc-japon', theme: 'Escales', icon: '🗾', name: 'Escale au Japon', rarity: 'event', text: 'Gagnée en terminant l’Escale au Japon.' } },
-    { id: 'italie', name: 'Italie', at: 'en Italie', icon: '🍕', blurb: 'Colisée, pizza, Venise…', soon: 'Bientôt' },
-    { id: 'maghreb', name: 'Maghreb', at: 'au Maghreb', icon: '🕌', blurb: 'Médinas, couscous, Sahara…', soon: 'Bientôt' },
-    { id: 'usa', name: 'États-Unis', at: 'aux États-Unis', icon: '🗽', blurb: 'Statue de la Liberté, Hollywood…', soon: 'Plus tard' }
+    { id: 'italie', name: 'Italie', at: 'en Italie', icon: '🍕', flag: '🇮🇹', hat: 'italie', cls: 'esc-italie', blurb: 'Colisée, pizza, gondoles, Renaissance…',
+      stages: ['Premiers pas', 'Rome · Antiquité', 'Florence · Renaissance'], decor: ['🍕', '🏛️', '🎭', '🍝', '🛵', '☕', '🌋', '🎨', '🍋', '⛪'],
+      card: { id: 'esc-italie', theme: 'Escales', icon: '🍕', name: 'Escale en Italie', rarity: 'event', text: 'Gagnée en terminant l’Escale en Italie.' } },
+    { id: 'maghreb', name: 'Maghreb', at: 'au Maghreb', icon: '🕌', hat: 'maghreb', cls: 'esc-maghreb', blurb: 'Médinas, couscous, Sahara, raï…',
+      stages: ['Premiers pas', 'Marrakech · médinas', 'Sahara · histoire'], decor: ['🕌', '🐪', '🏜️', '🫖', '🌴', '⭐', '🌙', '🥘', '🦂', '🏺'],
+      card: { id: 'esc-maghreb', theme: 'Escales', icon: '🕌', name: 'Escale au Maghreb', rarity: 'event', text: 'Gagnée en terminant l’Escale au Maghreb.' } },
+    { id: 'usa', name: 'États-Unis', at: 'aux États-Unis', icon: '🗽', flag: '🇺🇸', hat: 'usa', cls: 'esc-usa', blurb: 'New York, Hollywood, Far West…',
+      stages: ['Premiers pas', 'Hollywood · pop culture', 'Washington · histoire'], decor: ['🗽', '🍔', '🏈', '🎬', '🎸', '🦅', '🏀', '🚀', '🌭', '🤠'],
+      card: { id: 'esc-usa', theme: 'Escales', icon: '🗽', name: 'Escale aux États-Unis', rarity: 'event', text: 'Gagnée en terminant l’Escale aux États-Unis.' } },
+    { id: 'grece', name: 'Grèce', at: 'en Grèce', icon: '🏛️', blurb: 'Acropole, dieux de l’Olympe, îles…', soon: 'Bientôt' },
+    { id: 'egypte', name: 'Égypte', at: 'en Égypte', icon: '🏺', blurb: 'Pyramides, pharaons, Nil…', soon: 'Plus tard' }
 ];
 // 17/11 (retour de l'utilisateur) : 2 niveaux de paires et 2 de frises (au lieu de 3 + 3), jamais la même famille deux fois
 const ESC_LAYOUT = ['q', 'q', 'pairs', 'q', 'q', 'q', 'order', 'q', 'q', 'pairs', 'q', 'q', 'order', 'q', 'challenge'];
@@ -171,6 +179,9 @@ function escTheme() {
 /* ---------- Kulti en voyage ---------- */
 if (typeof KULTI_HATS !== 'undefined') {
     // Bandeau japonais (hachimaki) : blanc, rond rouge sur le front, nœud derrière
+    // 17/11 : canotier de gondolier (Italie), chapeau de cow-boy (États-Unis) ; le fez du Maghreb existe déjà (kulti.js)
+    KULTI_HATS.italie = '<svg class="kulti-hat" viewBox="0 0 36 36" aria-hidden="true"><ellipse cx="17" cy="6.6" rx="10.5" ry="2" fill="#e8c766" stroke="#c9a43f" stroke-width=".5"/><path d="M11.2 6.4 L11.6 0.6 Q17 -0.8 22.4 0.6 L22.8 6.4 Z" fill="#f3d983" stroke="#c9a43f" stroke-width=".5"/><rect x="11.4" y="3.4" width="11.2" height="2" fill="#1d1d1f"/><rect x="11.4" y="3.4" width="3.7" height="2" fill="#2e9e4f"/><rect x="18.9" y="3.4" width="3.7" height="2" fill="#d4262f"/></svg>';
+    KULTI_HATS.usa = '<svg class="kulti-hat" viewBox="0 0 36 36" aria-hidden="true"><path d="M3.6 5.4 Q8 9.2 17 8.4 Q26 9.2 30.4 5.4 Q28.4 10.4 17 10.6 Q5.6 10.4 3.6 5.4 Z" fill="#8a5a2b"/><path d="M10.4 8 Q9.6 0.4 13 -0.8 Q15 0.6 17 0.2 Q19 0.6 21 -0.8 Q24.4 0.4 23.6 8 Z" fill="#a06a35"/><path d="M10.6 6 Q17 7.2 23.4 6 L23.3 7.6 Q17 8.8 10.7 7.6 Z" fill="#4a2d14"/></svg>';
     KULTI_HATS.japon = '<svg class="kulti-hat" viewBox="0 0 36 36" aria-hidden="true"><path d="M7.6 6.2 Q18 2.6 28.4 6.2 L28.2 9.4 Q18 5.9 7.8 9.4 Z" fill="#fff" stroke="#c9ced8" stroke-width=".5"/><circle cx="18" cy="6.3" r="1.55" fill="#e0242f"/><path d="M28 6.6 L32.6 4.6 L31.6 8.1 Z M28 8.2 L32.2 9.8 L29.4 11.4 Z" fill="#fff" stroke="#c9ced8" stroke-width=".45"/></svg>';
 }
 
@@ -630,13 +641,13 @@ if (ESCALES_ON) {
     ESCALES.filter(x => x.card).forEach(x => { if (!EVENT_CARDS.some(c => c.id === x.card.id)) EVENT_CARDS.push(x.card); });
     if (typeof BADGES_NEW !== 'undefined') {
         BADGES_NEW.push(
-            { id: 'esc-japon', icon: '🗾', name: 'Japon', desc: 'Terminer l’Escale au Japon', test: () => escFinished('japon') },
+            ...ESCALES.filter(x => x.card).map(x => ({ id: `esc-${x.id}`, icon: x.icon, name: x.name, desc: `Terminer l’Escale ${x.at}`, test: () => escFinished(x.id) })),
             { id: 'trot3', icon: '🧳', name: 'Globe-trotter', desc: 'Terminer 3 escales', test: () => escFinishedCount() >= 3 },
             { id: 'trot6', icon: '🌍', name: 'Baroudeur', desc: 'Terminer 6 escales', test: () => escFinishedCount() >= 6 },
             { id: 'trot10', icon: '🌐', name: 'Tour du monde', desc: 'Terminer 10 escales', test: () => escFinishedCount() >= 10 });
     }
     if (typeof BADGE_FAMS !== 'undefined') {
-        BADGE_FAMS.push(['🧳', 'Globe-trotter', 'escales finies', [['esc-japon', 'Japon', 1, () => +escFinished('japon')],
+        BADGE_FAMS.push(['🧳', 'Globe-trotter', 'escales finies', [...ESCALES.filter(x => x.card).map(x => [`esc-${x.id}`, x.name, 1, () => +escFinished(x.id)]),
             ['trot3', '3 escales', 3, escFinishedCount], ['trot6', '6 escales', 6, escFinishedCount], ['trot10', '10 escales', 10, escFinishedCount]]]);
     }
 }

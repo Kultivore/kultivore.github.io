@@ -1473,3 +1473,13 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   « Continuer » mène au CARNET où le tampon se pose (escUi.landing, .is-landing) ; la démo du bac remet l'escale après ce tampon.
   Cartes d'escale : rangée « 🧳 Escales » dans la collection et le profil des amis (`escCardsSection`), plus dans « Événements ».
   Fenêtres de confirmation : chiffres longs plus petits dans les cases (`infoTiles` : is-long > 6 caractères, is-xlong > 8).
+- 17/11 (v=20261117l, BAC À SABLE) : ESCALES ITALIE, MAGHREB, ÉTATS-UNIS codées (60 questions chacune, 24 / 18 / 18 par étape,
+  4 familles de paires, 4 de frises, 8 anecdotes ; ids 40200+ / 40400+ / 40600+). Fichiers escales/italie.js, maghreb.js, usa.js GÉNÉRÉS
+  par scratchpad esc_build.py (+ esc_it.py, esc_mg.py, esc_us.py = contenu ; esc_patch.py = remplacements) : esc_build.py signale les
+  réponses déjà dans le jeu (questions.js, entrainement, événements sauf l'ancien Maghreb, autres escales). ~50 questions qui
+  doublonnaient le jeu (surtout les États-Unis, très présents) ont été remplacées par des sujets libres. Étapes : Italie Premiers pas /
+  Rome · Antiquité / Florence · Renaissance ; Maghreb Premiers pas / Marrakech · médinas / Sahara · histoire ; USA Premiers pas /
+  Hollywood · pop culture / Washington · histoire. Chapeaux de Kulti : canotier (italie), fez (maghreb, déjà là), cow-boy (usa).
+  Thèmes de page clair + sombre (esc-theme-italie / maghreb / usa). Badges et cartes générés pour chaque escale (esc-<id>).
+  « Bientôt » : Grèce, Égypte. Test : judge accepte toutes les réponses écrites des 240 questions (scratchpad esc_judge.js).
+  L'événement « Escale au Maghreb » (evenements/maghreb.js, ancien, trop dur) reste à part, inchangé.
