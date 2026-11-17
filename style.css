@@ -5599,3 +5599,22 @@ body.esc-theme-usa .esc-head-prog .esc-bar i { background: #c8283f; }
     :root:not([data-theme="light"]) body.esc-theme-usa main, :root:not([data-theme="light"]) body.esc-theme-usa .lesson {
         background: radial-gradient(90% 45% at 15% 0%, rgba(90, 140, 255, 0.32), transparent 70%), radial-gradient(80% 45% at 90% 100%, rgba(230, 60, 80, 0.24), transparent 70%), linear-gradient(180deg, #1d2747, #19213d 55%, #161c34) !important; background-attachment: fixed !important; }
 }
+/* 17/11 : album photo de voyage (livre Voyages) : polaroïds de travers, scotch en haut, réponse écrite à la main */
+.esc-album-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 8px; scrollbar-width: none; }
+.esc-album-tab { flex: none; display: flex; flex-direction: column; align-items: center; padding: 7px 12px; border: 2px solid var(--line); border-radius: 14px;
+    background: var(--surface); color: var(--ink); font: inherit; font-weight: 900; font-size: 0.85rem; cursor: pointer; }
+.esc-album-tab small { font-size: 0.72rem; color: var(--muted); }
+.esc-album-tab.is-on { border-color: #0e7490; background: color-mix(in srgb, #0e7490 12%, var(--surface)); }
+.esc-album-stage { margin: 16px 2px 6px; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.esc-album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 10px; padding: 6px 4px; }
+.esc-pola { position: relative; display: flex; flex-direction: column; padding: 6px 6px 4px; border: 0; border-radius: 3px; background: #fffdf8;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18); transform: rotate(var(--r, 0deg)); font: inherit; cursor: pointer; }
+.esc-pola::before { content: ""; position: absolute; top: -7px; left: 50%; width: 34px; height: 13px; margin-left: -17px; background: rgba(255, 220, 140, 0.75);
+    transform: rotate(calc(var(--r, 0deg) * -2)); }
+.esc-pola-ph { display: grid; place-items: center; aspect-ratio: 1; border-radius: 2px; font-size: 1.9rem;
+    background: linear-gradient(160deg, #cfe7ff, #ffe1ec); }
+.esc-pola-cap { min-height: 2.3em; padding-top: 4px; color: #2b2b3a; font-family: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive; font-size: 0.72rem;
+    font-weight: 700; line-height: 1.15; text-align: center; overflow-wrap: anywhere; }
+.esc-pola.is-blank { background: #f1ede4; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
+.esc-pola.is-blank .esc-pola-ph { background: repeating-linear-gradient(45deg, #e6e1d6 0 6px, #ece8de 6px 12px); color: #b9b2a3; font-weight: 900; }
+.esc-pola.is-blank .esc-pola-cap { color: #b9b2a3; }

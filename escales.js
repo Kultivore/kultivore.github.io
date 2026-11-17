@@ -22,14 +22,14 @@ const ESCALES = [
     { id: 'italie', name: 'Italie', at: 'en Italie', icon: '🍕', flag: '🇮🇹', hat: 'italie', cls: 'esc-italie', blurb: 'Colisée, pizza, gondoles, Renaissance…',
       stages: ['Premiers pas', 'Rome · Antiquité', 'Florence · Renaissance'], decor: ['🍕', '🏛️', '🎭', '🍝', '🛵', '☕', '🌋', '🎨', '🍋', '⛪'],
       card: { id: 'esc-italie', theme: 'Escales', icon: '🍕', name: 'Escale en Italie', rarity: 'event', text: 'Gagnée en terminant l’Escale en Italie.' } },
-    { id: 'maghreb', name: 'Maghreb', at: 'au Maghreb', icon: '🕌', hat: 'maghreb', cls: 'esc-maghreb', blurb: 'Médinas, couscous, Sahara, raï…',
-      stages: ['Premiers pas', 'Marrakech · médinas', 'Sahara · histoire'], decor: ['🕌', '🐪', '🏜️', '🫖', '🌴', '⭐', '🌙', '🥘', '🦂', '🏺'],
-      card: { id: 'esc-maghreb', theme: 'Escales', icon: '🕌', name: 'Escale au Maghreb', rarity: 'event', text: 'Gagnée en terminant l’Escale au Maghreb.' } },
     { id: 'usa', name: 'États-Unis', at: 'aux États-Unis', icon: '🗽', flag: '🇺🇸', hat: 'usa', cls: 'esc-usa', blurb: 'New York, Hollywood, Far West…',
       stages: ['Premiers pas', 'Hollywood · pop culture', 'Washington · histoire'], decor: ['🗽', '🍔', '🏈', '🎬', '🎸', '🦅', '🏀', '🚀', '🌭', '🤠'],
       card: { id: 'esc-usa', theme: 'Escales', icon: '🗽', name: 'Escale aux États-Unis', rarity: 'event', text: 'Gagnée en terminant l’Escale aux États-Unis.' } },
     { id: 'grece', name: 'Grèce', at: 'en Grèce', icon: '🏛️', blurb: 'Acropole, dieux de l’Olympe, îles…', soon: 'Bientôt' },
-    { id: 'egypte', name: 'Égypte', at: 'en Égypte', icon: '🏺', blurb: 'Pyramides, pharaons, Nil…', soon: 'Bientôt' }
+    { id: 'egypte', name: 'Égypte', at: 'en Égypte', icon: '🏺', blurb: 'Pyramides, pharaons, Nil…', soon: 'Bientôt' },
+    { id: 'maghreb', name: 'Maghreb', at: 'au Maghreb', icon: '🕌', hat: 'maghreb', cls: 'esc-maghreb', blurb: 'Médinas, couscous, Sahara, raï…', soon: 'Plus tard',   // 17/11 : prêt, mais publié plus tard (choix de l'utilisateur)
+      stages: ['Premiers pas', 'Marrakech · médinas', 'Sahara · histoire'], decor: ['🕌', '🐪', '🏜️', '🫖', '🌴', '⭐', '🌙', '🥘', '🦂', '🏺'],
+      card: { id: 'esc-maghreb', theme: 'Escales', icon: '🕌', name: 'Escale au Maghreb', rarity: 'event', text: 'Gagnée en terminant l’Escale au Maghreb.' } }
 ];
 // 17/11 (retour de l'utilisateur) : 2 niveaux de paires et 2 de frises (au lieu de 3 + 3), jamais la même famille deux fois
 const ESC_LAYOUT = ['q', 'q', 'pairs', 'q', 'q', 'q', 'order', 'q', 'q', 'pairs', 'q', 'q', 'order', 'q', 'challenge'];
@@ -638,16 +638,16 @@ function escCarnet(done = x => escFinished(x.id)) {   // 17/11 : « done » = le
 
 /* ---------- Cartes et badges ---------- */
 if (ESCALES_ON) {
-    ESCALES.filter(x => x.card).forEach(x => { if (!EVENT_CARDS.some(c => c.id === x.card.id)) EVENT_CARDS.push(x.card); });
+    ESCALES.filter(x => x.card && escReady(x)).forEach(x => { if (!EVENT_CARDS.some(c => c.id === x.card.id)) EVENT_CARDS.push(x.card); });
     if (typeof BADGES_NEW !== 'undefined') {
         BADGES_NEW.push(
-            ...ESCALES.filter(x => x.card).map(x => ({ id: `esc-${x.id}`, icon: x.icon, name: x.name, desc: `Terminer l’Escale ${x.at}`, test: () => escFinished(x.id) })),
+            ...ESCALES.filter(x => x.card && escReady(x)).map(x => ({ id: `esc-${x.id}`, icon: x.icon, name: x.name, desc: `Terminer l’Escale ${x.at}`, test: () => escFinished(x.id) })),
             { id: 'trot3', icon: '🧳', name: 'Globe-trotter', desc: 'Terminer 3 escales', test: () => escFinishedCount() >= 3 },
             { id: 'trot6', icon: '🌍', name: 'Baroudeur', desc: 'Terminer 6 escales', test: () => escFinishedCount() >= 6 },
             { id: 'trot10', icon: '🌐', name: 'Tour du monde', desc: 'Terminer 10 escales', test: () => escFinishedCount() >= 10 });
     }
     if (typeof BADGE_FAMS !== 'undefined') {
-        BADGE_FAMS.push(['🧳', 'Globe-trotter', 'escales finies', [...ESCALES.filter(x => x.card).map(x => [`esc-${x.id}`, x.name, 1, () => +escFinished(x.id)]),
+        BADGE_FAMS.push(['🧳', 'Globe-trotter', 'escales finies', [...ESCALES.filter(x => x.card && escReady(x)).map(x => [`esc-${x.id}`, x.name, 1, () => +escFinished(x.id)]),
             ['trot3', '3 escales', 3, escFinishedCount], ['trot6', '6 escales', 6, escFinishedCount], ['trot10', '10 escales', 10, escFinishedCount]]]);
     }
 }
@@ -681,7 +681,7 @@ function escCardsSection(container, btnFn, mine, has) {
     const list = ESCALES.filter(x => x.card && (owned(x.card) || (mine && escReady(x))));
     if (!list.length || (!mine && !list.some(x => owned(x.card)))) return;
     const head = el('div', 'card-theme-head is-escale');
-    head.textContent = `🧳 Escales · ${list.filter(x => owned(x.card)).length}/${ESCALES.filter(x => x.card).length}`;
+    head.textContent = `🧳 Escales · ${list.filter(x => owned(x.card)).length}/${ESCALES.filter(x => x.card && escReady(x)).length}`;
     const row = el('div', 'card-row');
     list.forEach(x => {
         if (owned(x.card)) { row.append(btnFn(x.card)); return; }
@@ -739,7 +739,7 @@ if (ESCALES_ON && typeof TOUR_STEPS !== 'undefined') {
 // Annonce « Quoi de neuf ? » : UNE fois, seulement pour les joueurs qui jouaient avant l'arrivée des escales
 const ESC_NEWS_DAY = BAC ? '2099-01-01' : '2026-11-18';   // à mettre au jour de la mise en ligne pour tous
 const ESC_PATCH_NOTES = [
-    ['🧳', 'Les Escales', 'Nouvel onglet en haut du Parcours : de petits voyages de 15 niveaux au Japon, en Italie, au Maghreb et aux États-Unis.'],
+    ['🧳', 'Les Escales', 'Nouvel onglet en haut du Parcours : de petits voyages de 15 niveaux au Japon, en Italie et aux États-Unis.'],
     ['✈️', 'Ton premier billet est offert', 'Choisis ta première escale gratuitement. Les billets suivants s’achètent 1 000 🪙, en touchant la carte des billets.'],
     ['📕', 'Ton carnet de voyage', 'Chaque escale terminée te donne un tampon, une carte et un badge. Tes amis peuvent voir ton carnet dans ton profil.'],
     ['🎩', 'Chaque pays a son décor', 'Ses étapes, ses paires, ses frises, ses couleurs… et Kulti change même de chapeau !']
@@ -779,3 +779,97 @@ function escMapData() {
     }));
     return o;
 }
+/** 17/11 : salle « 📸 Mon album de voyage » du livre Voyages (remplace la carte du monde) : une page par escale, un polaroïd
+    par question réussie (icône du sujet + la réponse écrite à la main), un polaroïd vide « ? » pour les autres, rangés par étape. */
+let escAlbumTab = null;
+function openEscAlbum(id = null, keepScroll = 0) {
+    const list = ESCALES.filter(escReady);
+    if (!list.length) return;
+    escAlbumTab = id || escAlbumTab || (list.find(e => escEntry(e)?.open) || list[0]).id;
+    const e = escById(escAlbumTab);
+    const all = encAll();
+    const qs = escBank(e).questions.map(q => ({ q: all.get(q.id), orig: q })).filter(x => x.q);
+    const known = qs.filter(x => encKnown(x.q));
+    const h = el('h2', 'review-title enc-title is-sm');
+    h.textContent = '📸 Mon album de voyage';
+    const tabs = el('div', 'esc-album-tabs');
+    list.forEach(x => {
+        const b = el('button', `esc-album-tab${x.id === e.id ? ' is-on' : ''}`);
+        b.type = 'button';
+        const k = escBank(x).questions.filter(q => encKnown(q)).length;
+        b.textContent = `${x.icon} ${x.name}`;
+        const s = el('small');
+        s.textContent = `${k} / ${escBank(x).questions.length}`;
+        b.append(s);
+        b.addEventListener('click', () => openEscAlbum(x.id));
+        tabs.append(b);
+    });
+    const cnt = el('p', 'enc-chap-sub');
+    cnt.textContent = `${known.length} / ${qs.length} souvenirs ${e.at}`;
+    let page = null;
+    const back = () => ({ label: '← Mon album', fn: () => openEscAlbum(e.id, page ? page.scrollTop : 0) });
+    const parts = [];
+    [1, 2, 3].forEach(st => {
+        const inStage = qs.filter(x => (x.orig.stage || 1) === st);
+        if (!inStage.length) return;
+        const sh = el('p', 'esc-album-stage');
+        sh.textContent = `Étape ${st} · ${e.stages[st - 1]}`;
+        const grid = el('div', 'esc-album-grid');
+        inStage.forEach((x, i) => {
+            const ok = encKnown(x.q);
+            const p = el('button', `esc-pola${ok ? '' : ' is-blank'}`);
+            p.type = 'button';
+            p.style.setProperty('--r', `${[-4, 3, -2, 4, -3, 2][(x.q.id + i) % 6]}deg`);
+            const ph = el('span', 'esc-pola-ph');
+            const cap = el('span', 'esc-pola-cap');
+            if (ok) {
+                ph.textContent = ESC_SOUVENIR[x.q.id] || encIcon(x.orig.theme);
+                cap.textContent = x.q.a[0];
+                p.addEventListener('click', () => openEncFiche(x.q, known.map(k => k.q), back()));
+            } else {
+                ph.textContent = '?';
+                cap.textContent = '…';
+                p.addEventListener('click', () => showToast('📸 Réussis cette question dans l’escale pour coller la photo.'));
+            }
+            p.append(ph, cap);
+            grid.append(p);
+        });
+        parts.push(sh, grid);
+    });
+    page = encPage(encBackBtn('← Voyages', () => openEncBook('Voyages', true)), h, tabs, cnt, ...parts);
+    page.classList.add('esc-albumpage');
+    if (keepScroll) page.scrollTop = keepScroll;
+    if (known.length >= qs.length) encDone(`album-${e.id}`, true, cnt);
+}
+
+/* 17/11 : toucher l'onglet « Parcours » (en bas) quand on y est déjà = basculer entre Parcours et Escales */
+if (ESCALES_ON) document.addEventListener('click', ev => {
+    const b = ev.target.closest('.nav-btn[data-screen="map"]');
+    if (!b || $('mapScreen').hidden || !$('studyScreen').hidden) return;
+    ev.stopImmediatePropagation();
+    ev.preventDefault();
+    escUi.tab = escUi.tab === 'escales' ? 'parcours' : 'escales';
+    escUi.view = null;
+    escApplyTab();
+    if (escUi.tab === 'parcours') setTimeout(() => document.querySelector('#mapPath .node.is-current:not(.is-optional)')?.scrollIntoView({ block: 'center' }), 60);
+    else window.scrollTo(0, 0);
+}, true);
+/** 17/11 : l'emoji de chaque souvenir de l'album (sinon l'icône du thème). */
+const ESC_SOUVENIR = {
+    40000: '🎮', 40001: '🏝️', 40002: '🌸', 40003: '🍱', 40004: '🥢', 40005: '🐙', 40006: '🥞', 40007: '♨️', 40008: '🥋', 40009: '🥋', 40010: '⭐', 40011: '👘',
+    40012: '🎎', 40013: '📚', 40014: '🤖', 40015: '🍄', 40016: '🚄', 40017: '🍁', 40018: '🌅', 40019: '🌼', 40020: '🕊️', 40021: '⛩️', 40022: '🦌', 40023: '⛩️',
+    40024: '🛏️', 40025: '🌊', 40026: '📓', 40027: '🎤', 40028: '🏴‍☠️', 40029: '⚽', 40030: '🎬', 40031: '🏴‍☠️', 40032: '🐉', 40033: '🌙', 40034: '🐱', 40035: '🔨',
+    40036: '🎮', 40037: '🚗', 40038: '🏍️', 40039: '🗾', 40040: '👗', 40041: '🌊', 40042: '🏯', 40043: '👋', 40044: '🫙', 40045: '🏯', 40046: '🤓', 40047: '🙏',
+    40048: '💖', 40049: '🚶', 40050: '⚾', 40051: '🐈', 40052: '🧺', 40053: '🎭', 40054: '🔴', 40055: '🪭', 40056: '🎹', 40057: '🧥', 40058: '🐉', 40059: '👋',
+    40200: '👢', 40201: '🟩', 40202: '🍕', 40203: '🧀', 40204: '👋', 40205: '🌿', 40206: '🍝', 40207: '👍', 40208: '🍞', 40209: '🌰', 40210: '🍙', 40211: '🙏',
+    40212: '☀️', 40213: '😱', 40214: '🌋', 40215: '🌽', 40216: '👠', 40217: '💙', 40218: '🏆', 40219: '🔱', 40220: '🏞️', 40221: '🚗', 40222: '👋', 40223: '🥣',
+    40224: '⚔️', 40225: '📜', 40226: '🏟️', 40227: '🧱', 40228: '⛪', 40229: '💂', 40230: '🏛️', 40231: '🔱', 40232: '📅', 40233: '🛡️', 40234: '🪖', 40235: '💧',
+    40236: '🌋', 40237: '🏚️', 40238: '👑', 40239: '🥻', 40240: '📅', 40241: '⛰️', 40242: '🚣', 40243: '🎭', 40244: '🌉', 40245: '🌷', 40246: '💰', 40247: '💋',
+    40248: '🍷', 40249: '🎼', 40250: '🏘️', 40251: '🐎', 40252: '🧸', 40253: '👜', 40254: '🐍', 40255: '🌟', 40256: '🏆', 40257: '🎨', 40258: '🎬', 40259: '🎤',
+    40600: '🌶️', 40601: '🏄', 40602: '🥤', 40603: '👟', 40604: '💨', 40605: '🛣️', 40606: '🛍️', 40607: '🥧', 40608: '🥜', 40609: '💵', 40610: '☕', 40611: '🏀',
+    40612: '🏈', 40613: '🌴', 40614: '🦃', 40615: '🎆', 40616: '🦅', 40617: '👌', 40618: '🏰', 40619: '🐊', 40620: '💻', 40621: '👖', 40622: '🏞️', 40623: '🌴',
+    40624: '🎸', 40625: '🎭', 40626: '🎬', 40627: '🎤', 40628: '👑', 40629: '🚀', 40630: '💖', 40631: '💪', 40632: '🛡️', 40633: '💋', 40634: '📱', 40635: '🚀',
+    40636: '🧸', 40637: '🎷', 40638: '📺', 40639: '🎧', 40640: '🏍️', 40641: '🌳', 40642: '🚢', 40643: '🔔', 40644: '🪶', 40645: '🦬', 40646: '🗳️', 40647: '🛡️',
+    40648: '⛏️', 40649: '🧸', 40650: '🎩', 40651: '🛰️', 40652: '🏛️', 40653: '📜', 40654: '🏰', 40655: '🐴', 40656: '🗿', 40657: '🏹', 40658: '⛪', 40659: '🎙️',
+    // Maghreb (publié plus tard)
+};

@@ -27,7 +27,7 @@ function encSpecial(theme) {
         : theme === 'Cinéma' ? ['🎬', 'Mes affiches', 'films, séries, stars et réalisateurs', () => openEncPosters()]
         : theme === 'Drapeaux' ? ['🏳️', 'Mon mur de drapeaux', 'les drapeaux rangés par continent', () => openEncFlags()]
         : theme === 'Monuments' ? ['💌', 'Mes cartes postales', 'des albums de monuments à compléter', () => openEncPostcards()]
-        : theme === 'Voyages' ? ['🌍', 'Mon tour du monde', 'les pays de tes escales sur la carte', () => openEncMap('Voyages', null, 'voyages')]   // 17/11
+        : theme === 'Voyages' ? ['📸', 'Mon album de voyage', 'un polaroïd pour chaque souvenir d’escale', () => openEscAlbum()]   // 17/11
         : ENC_MAP_THEMES.includes(theme) ? ['🗺️', 'Ma carte du monde', 'les pays que tu connais', () => openEncMap(theme)] : null;
 }
 /** 13/11 (bac à sable) : la salle spéciale en « vitrine » au-dessus des chapitres, avec un petit décor et un reflet qui passe. */
@@ -36,7 +36,7 @@ const ENC_VITRINE_DECO = {
     'Langue française': ['🔤', '✒️', '📜', '💬'], 'Gastronomie': [['🥖', '🍷', '🥐'], ['🍣', '🌮', '🍝']], 'Littérature': ['📕', '📗', '📘', '📙'],
     'Musique': ['🎸', '🎹', '🎤', '🎷'], 'Jeux': ['👾', '🎲', '🎮', '♟️'], 'Sport': ['🥇', '🏅', '🥈', '🥉'], 'Technologie': ['💡', '📱', '🚂', '🚀'],
     'Arts': ['🎨', '🗿', '🖌️', '🏛️'], 'Cinéma': ['🍿', '🎞️', '🎥', '⭐'], 'Drapeaux': ['🏁', '🚩', '🎌', '🏴'], 'Monuments': ['🗼', '🗽', '🏛️', '📮'],
-    'Géographie': ['🌍', '🧭', '⛰️', '🏝️'], 'Voyages': ['✈️', '🧳', '📕', '🧭'],
+    'Géographie': ['🌍', '🧭', '⛰️', '🏝️'], 'Voyages': ['📸', '✈️', '🧳', '🗺️'],
 };
 // 17/11 : la salle du livre « Voyages » (escales) compte aussi pour le badge secret des salles
 const ENC_ROOM_TOTAL = () => THEME_DECOR.concat(typeof escEncQuestions === 'function' && escEncQuestions().length ? [{ theme: 'Voyages' }] : []).reduce((n, { theme }) => { const sp = encSpecial(theme); return n + (!sp ? 0 : Array.isArray(sp[0]) ? sp.length : 1); }, 0);

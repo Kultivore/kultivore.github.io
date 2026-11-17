@@ -1498,3 +1498,9 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   nombre), plus de « … ». CARTES : `countedCards()` = 180 + cartes d'escale (pas les événements) pour tous les « x / y » (Profil, boutique,
   récaps, profil des amis) → 184 ; une carte d'escale affiche « Carte d'escale » et « 🧳 Carte d'escale : gagnée en terminant l'Escale… »
   (plus « carte d'événement… cette semaine-là »). POUR TOUS : countedCards / textes ne changent rien tant que ESCALES_ON = BAC.
+- 17/11 (v=20261117o, BAC À SABLE) : la salle du livre Voyages devient « 📸 Mon album de voyage » (`openEscAlbum` dans escales.js : un
+  onglet par escale, polaroïds rangés par étape, réponse écrite à la main, emoji propre à chaque question `ESC_SOUVENIR`, « ? » à
+  découvrir ; la carte « Mon tour du monde » n'est plus utilisée). Carte d'escale vue en grand : plus de phrase en dessous (déjà sur
+  la carte). Toucher « Parcours » en bas quand on y est déjà = bascule Parcours ⇄ Escales. MAGHREB mis en « Plus tard » (publié après) :
+  3 escales publiées (Japon, Italie, États-Unis) → 183 cartes ; cartes / badges / livre seulement pour les escales prêtes (escReady).
+  Pour publier le Maghreb : retirer `soon` de son entrée (et ajouter ses emojis dans ESC_SOUVENIR).

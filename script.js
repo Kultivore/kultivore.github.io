@@ -5603,7 +5603,7 @@ function openCardView(card, onBack = null, friendShiny = false) {
     const count = onBack ? 0 : (state.data.cards[card.id] || 0);
     $('chestNote').textContent = onBack ? (friendShiny ? '✨ Carte brillante' : '')
         : card.rarity === 'master' ? `🏆 Gagnée en réussissant le palier ${TRAIN_TIERS} de l’entraînement.`
-        : card.theme === 'Escales' ? `🧳 Carte d’escale : gagnée en terminant l’${card.name.replace(/^Escale/, 'Escale')}.`   // 17/11
+        : card.theme === 'Escales' ? ''   // 17/11 : « Gagnée en terminant l'Escale… » est déjà écrit sur la carte
         : card.rarity === 'event' ? '🎉 Carte d’événement : on ne pouvait la gagner que cette semaine-là.'
         : !count ? '' : count >= SHINY_AT ? `✨ Carte brillante (${count} exemplaires)`
         : `${count} / ${SHINY_AT} exemplaires : à ${SHINY_AT}, elle devient brillante ✨`;
