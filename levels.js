@@ -63,9 +63,9 @@ const LEVEL_LOTS = [
     { from: 4150, to: 4199, after: 110, hardFrom: 1, hardCurve: 1,
       names: ['Vents porteurs', 'Terres lointaines', 'Esprit d’aventure', 'Le grand saut', 'Sur la route', 'Bel horizon', 'Pleins feux'] },
     { from: 4200, to: 4249, after: 120, hardFrom: 1, hardCurve: 1,
-      names: ['Haute mer', 'Les veilleurs', 'Sommets en vue', 'Le col', 'Fin limier', 'Ligne de crête', 'Œil de lynx'] },
+      names: ['Haute mer', 'Les veilleurs', 'Grand air', 'Le col', 'Fin limier', 'Ligne de crête', 'Œil de lynx'] },
     { from: 4250, to: 4299, also: [4330, 4339], after: 130, hardFrom: 1, hardCurve: 1,
-      names: ['Les vigies', 'Dernier relais', 'Toutes voiles', 'Au long cours', 'Hautes terres', 'Cap sur les cimes', 'Le belvédère'] },
+      names: ['Les vigies', 'Passage de relais', 'Toutes voiles', 'Au long cours', 'Hautes terres', 'Cap sur les cimes', 'Le belvédère'] },
     // Lot 5 (2026-11-09, 3e vague) : un bloc facile après chacun des anciens 10, 20, …, 70 et un bloc dur après l'ancien 150
     // (bloc après l'ancien 10, ids 4400-4449 : retiré le 09/11, l'utilisateur voulait 300 niveaux et pas 310)
     { from: 4450, to: 4499, after: 20, hardFrom: 1, hardCurve: 1,
@@ -184,10 +184,10 @@ function levelFromLayout(n, layout, near = false) {
         'Deuxième vent', 'Exploration', 'Odyssée', 'Épopée', 'Savoir étendu', 'Grandes heures', 'Mi-parcours',                        // 141-150
         'Seconde moitié', 'Vents porteurs', 'Terres lointaines', 'Esprit d’aventure', 'Le grand saut', 'Sur la route', 'Bel horizon', // 151-160
         'Pleins feux', 'Érudits', 'Pionniers', 'Horizon lointain', 'Passeur de savoir', 'Mains de maître', 'Au-delà des limites',     // 161-170
-        'Haute mer', 'Les veilleurs', 'Sommets en vue', 'Le col', 'Fin limier', 'Ligne de crête', 'Œil de lynx',                      // 171-180
+        'Haute mer', 'Les veilleurs', 'Grand air', 'Le col', 'Fin limier', 'Ligne de crête', 'Œil de lynx',                      // 171-180
         'Savoirs obscurs', 'Les abysses', 'Équilibre parfait', 'Maîtres du jeu', 'Les étoiles', 'Mythes et légendes', 'Ascension',   // 181-190
         'Labyrinthe', 'Sagesse antique', 'Énigmes', 'Grand voyage', 'Hors des sentiers', 'Tour du monde', 'Les deux tiers',          // 191-200
-        'Les vigies', 'Dernier relais', 'Toutes voiles', 'Au long cours', 'Hautes terres', 'Cap sur les cimes', 'Le belvédère',       // 201-210
+        'Les vigies', 'Passage de relais', 'Toutes voiles', 'Au long cours', 'Hautes terres', 'Cap sur les cimes', 'Le belvédère',       // 201-210
         'Haute volée', 'Sentinelles', 'Les sages', 'Esprits affûtés', 'Fines lames', 'Œil d’aigle', 'Cimes lointaines',              // 211-220
         'Haute montagne', 'Terres inconnues', 'Cap des géants', 'Le grand large', 'Panthéon', 'Les cimes', 'Haute culture',           // 221-230
         'Sans frontières', 'Esprit vif', 'Tête bien faite', 'Merveilles du monde', 'Grand tour', 'Pierres et légendes', 'Patrimoine', // 231-240

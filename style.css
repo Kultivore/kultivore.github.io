@@ -5282,5 +5282,5 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
 /* 17/11 : nombre de coups de pouce en stock sur le petit bouton 👆 des frises */
 #orderNudge { position: relative; }
 #orderNudge[data-stock]:not([data-stock=""])::after { content: attr(data-stock); position: absolute; top: -7px; right: -7px; min-width: 20px; height: 20px;
-    padding: 0 5px; border-radius: 10px; background: var(--ok, #4fc72c); color: #fff; font-size: 0.72rem; font-weight: 900; line-height: 20px;
+    padding: 0 5px; border-radius: 10px; background: var(--blue); color: #fff; font-size: 0.72rem; font-weight: 900; line-height: 20px;
     text-align: center; box-shadow: 0 0 0 2px var(--surface); }
