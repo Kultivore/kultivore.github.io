@@ -5300,3 +5300,7 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
 /* 17/11 : 2e case du mot de passe avec son œil, règle du mot de passe sous les cases */
 .password-field[hidden], .auth-rule[hidden] { display: none !important; }
 .auth-rule { margin: -2px 0 0; font-size: 0.82rem; color: var(--muted); text-align: left; }
+/* 17/11 : moins d'espace entre la règle du mot de passe et « Créer mon compte » (message d'erreur vide = aucune place) */
+.modal-content p.auth-error:empty { display: none; }
+.modal-content p.auth-rule { margin: -4px 0 4px; font-size: 0.8rem; line-height: 1.3; }
+.modal-content p.auth-hint { margin: -4px 0 0; }
