@@ -9642,7 +9642,7 @@ async function forgotPassword() {
     const c = cloudClient();
     const email = $('authEmail').value.trim();
     if (!c || !email.includes('@')) { $('authError').textContent = 'Écris d’abord ton e-mail ci-dessus.'; return; }
-    await c.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    await c.auth.resetPasswordForEmail(email, { redirectTo: siteBase() });
     $('authError').textContent = 'Si un compte existe avec cet e-mail, tu vas recevoir un lien pour changer ton mot de passe.';
 }
 
@@ -11747,7 +11747,7 @@ async function removeFriend(link, question) {
 
 /** Lien d'invitation : partage du téléphone (WhatsApp, SMS…), sinon copie du lien. */
 async function shareInvite() {
-    const url = `${location.origin}${location.pathname}?ami=${encodeURIComponent(league.pseudo)}`;
+    const url = `${siteBase()}?ami=${encodeURIComponent(league.pseudo)}`;   // 17/11 : dans l'appli Android, toujours l'adresse du site
     const text = `Viens me défier sur Kultivo, le quiz de culture G ! Mon pseudo : ${league.pseudo}`;
     try {
         if (navigator.share) { await navigator.share({ title: 'Kultivo', text, url }); return; }
@@ -13192,6 +13192,10 @@ function bindEvents() {
    l'historique du navigateur : chaque « retour » est intercepté et fait l'action logique de l'appli. */
 let backGuard = false;
 let backExitArmedAt = 0;
+/** 17/11 : vrai dans l'appli Android (Capacitor), faux sur le site. Ce qui est propre à l'appli est dans appli.js. */
+const IS_APP = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+/** Adresse à donner aux autres (invitations, mot de passe oublié) : dans l'appli, location vaut « https://localhost/ ». */
+const siteBase = () => (IS_APP ? GAME_URL : location.origin + location.pathname);
 function armBackGuard() {
     if (backGuard) return;
     history.pushState({ kultivo: true }, '');
@@ -13399,7 +13403,7 @@ function onBackButton() {
     const screen = MAIN_SCREENS.find(name => !$(`${name}Screen`).hidden);
     if (screen && screen !== 'map') { showScreen('map'); armBackGuard(); return; }
     // Parcours : un 2e appui dans les 2,5 s quitte l'appli
-    if (Date.now() - backExitArmedAt < 2500) { history.back(); return; }
+    if (Date.now() - backExitArmedAt < 2500) { if (window.kultivoExitApp) window.kultivoExitApp(); else history.back(); return; }   // 17/11 : appli Android = vraie sortie
     backExitArmedAt = Date.now();
     showToast('Appuie encore sur retour pour quitter Kultivo');
     setTimeout(() => { if (!backGuard && Date.now() - backExitArmedAt >= 2400) armBackGuard(); }, 2500);
@@ -13476,6 +13480,6 @@ document.addEventListener('DOMContentLoaded', initAccountLegal);   // 16/11 : co
 
 // Application installable : le service worker garde une copie du jeu pour jouer hors connexion
 // (ne marche qu'en https ou sur localhost, pas en ouvrant le fichier directement)
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && !IS_APP) {   // 17/11 : pas dans l'appli Android (les fichiers y sont déjà sur le téléphone)
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
