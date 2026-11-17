@@ -1454,3 +1454,15 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   (body.in-escales). « ← Escales » collé en haut (sticky). Niveaux à la taille du parcours (86 px, losange, nom sous le niveau).
   ÉCONOMIE : le jeu note les pièces gagnées / dépensées par jour (`coinLog` : jour -> { w, s }, 35 jours, `logCoins` dans saveData,
   POUR TOUS) ; requêtes dans supabase/pieces-semaine.sql (1 = estimation tout de suite, 2 = précise après ~7 jours) → fixer le prix.
+- 17/11 (v=20261117j, BAC À SABLE) : ESCALES V3 : frises remises à 2 cœurs (choix de l'utilisateur). BILLETS = STOCK : 1 billet offert à
+  tous, la carte des billets montre « N billets en stock » et un tap = en acheter un (`escBuyTicket`, 500 🪙, data.escBought) ;
+  stock = 1 + achetés − escales ouvertes ; plusieurs escales ouvertes en même temps ; sans billet, ouvrir une escale propose l'achat.
+  En-tête du petit parcours : bouton ← en relief, « 🗾 Escale au Japon » + barre de progression + drapeau. Japon en mode sombre :
+  nuit bleu-violet + lueur rose. 27 questions du Japon qui REPRENAIENT une question déjà dans le jeu (même sujet, même angle :
+  capitale, sushi, Pikachu, Godzilla…) remplacées par des sujets absents du jeu (Akihabara, Okinawa, bento, takoyaki,
+  okonomiyaki, onsen, aïkido, shuriken, daruma, Goldorak, érable / momiji, chrysanthème, futon, Death Note, Albator, Olive et Tom,
+  Sailor Moon, Nicky Larson, Harajuku, ryokan, sayonara, otaku, cosplay, Yamaha, Uniqlo, yakuza, konnichiwa) ; outil scratchpad
+  jp_dup.py (cherche les réponses déjà dans le jeu). Restent 14 questions qui partagent seulement une RÉPONSE (angle différent).
+  Bac à sable, menu 🧪 : « Voir les animations d'une escale » (`escDemo` : avion puis fin avec tampon, escale remise comme avant).
+  Pas de révisions dans les escales (ratées = défi final) ; étapes « Kyoto / Tokyo » = simples titres (à décider).
+  PIÈCES (requête du 17/11, 8 joueurs) : XP sur 7 jours 569 à 6 147 → 71 à 768 🪙 rien que par l'XP (+ objectif, missions, quête…).

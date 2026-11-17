@@ -4,7 +4,7 @@
    Petits parcours de voyage de 15 niveaux, un par pays, ouverts avec des billets ✈️ ACHETÉS (ESC_TICKET_PRICE, le 1er offert ;
    17/11 : plus de billets gagnés tous les 20 niveaux, ça avantageait les joueurs placés haut).
    Un billet = l'escale de son choix, pour toujours (l'avion décolle : escTakeoff). 15 niveaux en 3 étapes :
-     Q Q 🔗 Q Q | Q ⏳ Q Q 🔗 | Q Q ⏳ Q 🏆  (10 niveaux de questions, 2 de paires, 2 de frises à 3 cœurs, 1 défi final ;
+     Q Q 🔗 Q Q | Q ⏳ Q Q 🔗 | Q Q ⏳ Q 🏆  (10 niveaux de questions, 2 de paires, 2 de frises (2 cœurs), 1 défi final ;
      chaque famille de paires / frises ne sert qu'UNE fois). Thème du pays sur toute la page (escTheme, body.in-escale).
    Gouttes, cœurs, XP, série et missions comme le grand parcours ; niveau refait = XP réduite (state.replay).
    Escale finie = tampon dans le carnet de voyage (en bas de l'onglet Escales) + carte d'escale (rangée avec les cartes
@@ -46,11 +46,35 @@ function escUnlocked(e) {
     return Math.min(n, ESC_LEVELS);
 }
 
-/* ---------- Billets ✈️ (17/11 : achetés avec des pièces, le 1er offert) ---------- */
+/* ---------- Billets ✈️ (17/11 : un STOCK de billets ; 1 offert à tous, les autres achetés en touchant la carte des billets ;
+   plusieurs escales peuvent être ouvertes en même temps). Stock = 1 + billets achetés (data.escBought) − escales ouvertes. ---------- */
 const escTicketsUsed = () => Object.values(escAll()).filter(x => x && x.open).length;
-const escFreeTicket = () => escTicketsUsed() === 0;
-/** Pastille de l'onglet Escales : seulement le billet offert, tant qu'il n'est pas utilisé. */
-const escBadgeCount = () => (escFreeTicket() && ESCALES.some(e => escReady(e)) ? 1 : 0);
+const escBought = () => Math.max(0, Number(state.data.escBought) || 0);
+const escStock = () => Math.max(0, 1 + escBought() - escTicketsUsed());
+/** Pastille de l'onglet Escales : des billets en stock ET une escale à ouvrir. */
+const escBadgeCount = () => (ESCALES.some(e => escReady(e) && !escEntry(e)?.open) ? escStock() : 0);
+/** Acheter un billet (carte des billets, ou au moment d'ouvrir une escale sans billet). Renvoie true si c'est fait. */
+async function escBuyTicket(forWhat) {
+    const d = state.data;
+    const price = ESC_TICKET_PRICE;
+    if (d.coins < price) { showToast(`✈️ Un billet coûte ${price} 🪙 : il te manque ${price - d.coins} 🪙.`); return false; }
+    const ok = await askConfirm({
+        title: forWhat ? `${forWhat.icon} Pas de billet en stock` : '✈️ Acheter un billet ?',
+        info: [{ big: `${price} 🪙`, label: 'le billet' }, { big: `${d.coins} 🪙`, label: 'tu as' }, { big: `${d.coins - price} 🪙`, label: 'il t’en restera', tone: 'warn' }],
+        text: forWhat ? `Acheter un billet pour partir ${forWhat.at} ?` : 'Il ira dans ton stock : tu pourras l’utiliser pour l’escale de ton choix, quand tu veux.',
+        yes: `Acheter · ${price} 🪙`, no: 'Plus tard'
+    });
+    if (!ok || d.coins < price) return false;
+    d.coins -= price;
+    d.escBought = escBought() + 1;
+    d.totals.purchases++;
+    saveData();
+    renderHeader();
+    playSound('win');
+    if (!forWhat) { showToast(`✈️ Billet acheté ! Tu en as ${escStock()} en stock.`); escRenderPage(); escApplyTab(); }
+    checkBadges();
+    return true;
+}
 
 /* ---------- Contenu d'un niveau ---------- */
 const escNoise = id => (Math.imul(id ^ 0x9e3779b9, 2654435761) >>> 0) / 4294967296;
@@ -100,8 +124,6 @@ function startEscaleLevel(e, n) {
     escPending = { mode: kind === 'q' ? 'level' : kind, items: escItems(e, n), esc: { id: e.id, n }, cost: !done, replay: done };
     startSession(escPending.mode);
     escPending = null;   // startSession l'a pris (ou a renoncé : pas de goutte)
-    // 17/11 : frises plus douces qu'au parcours (3 cœurs au lieu de 2)
-    if (state.escale && kind === 'order') { state.hearts = state.heartsMax = HEARTS_MAX; renderHearts(); }
     escTheme();
 }
 
@@ -223,13 +245,16 @@ function escRenderPage() {
     if (e && escEntry(e)?.open) { escRenderTrip(page, e); return; }
     escUi.view = null;
 
-    const tk = el('div', 'esc-tickets');
-    const free = escFreeTicket();
-    tk.innerHTML = '<span class="esc-tickets-ico"></span><span class="esc-tickets-t"><b></b><small></small></span>';
+    // Carte des billets : le stock, et un tap = en acheter un
+    const tk = el('button', 'esc-tickets');
+    tk.type = 'button';
+    const stock = escStock();
+    tk.innerHTML = '<span class="esc-tickets-ico"></span><span class="esc-tickets-t"><b></b><small></small></span><span class="esc-tickets-buy"></span>';
     tk.querySelector('.esc-tickets-ico').append(emojiImg('✈️'));
-    tk.querySelector('b').textContent = free ? '1er billet offert !' : `Billet d’avion : ${ESC_TICKET_PRICE} 🪙`;
-    tk.querySelector('small').textContent = free ? 'Choisis ta première escale : c’est cadeau.'
-        : `Un billet ouvre l’escale de ton choix pour toujours. Tu as ${state.data.coins} 🪙.`;
+    tk.querySelector('b').textContent = `${stock} ${stock > 1 ? 'billets' : 'billet'} en stock`;
+    tk.querySelector('small').textContent = '1 billet = 1 escale de ton choix, pour toujours.';
+    tk.querySelector('.esc-tickets-buy').innerHTML = `<small>Acheter</small>${ESC_TICKET_PRICE} 🪙`;
+    tk.addEventListener('click', () => escBuyTicket(null));
     page.append(tk);
 
     const mine = ESCALES.filter(x => escEntry(x)?.open);
@@ -261,8 +286,8 @@ function escRenderPage() {
     section('À ouvrir avec un billet', toOpen, x => {
         const row = escRow(x);
         row.sub.textContent = x.blurb;
-        row.btn.textContent = free ? '✈️ Offert' : `✈️ ${ESC_TICKET_PRICE} 🪙`;
-        row.btn.className = `esc-btn${free || state.data.coins >= ESC_TICKET_PRICE ? '' : ' is-off'}`;
+        row.btn.textContent = stock ? '✈️ 1 billet' : `✈️ ${ESC_TICKET_PRICE} 🪙`;
+        row.btn.className = `esc-btn${stock || state.data.coins >= ESC_TICKET_PRICE ? '' : ' is-off'}`;
         row.box.addEventListener('click', () => escOpenWithTicket(x));
         return row.box;
     });
@@ -291,24 +316,16 @@ function escRow(x) {
     return { box, text, sub, btn };
 }
 async function escOpenWithTicket(x) {
-    const d = state.data;
-    const free = escFreeTicket();
-    const price = free ? 0 : ESC_TICKET_PRICE;
-    if (d.coins < price) {
-        showToast(`✈️ Il te manque ${price - d.coins} 🪙 pour le billet (${price} 🪙).`);
-        return;
-    }
+    // Pas de billet en stock : on propose d'en acheter un (puis on part)
+    if (!escStock() && !(await escBuyTicket(x))) return;
+    const stock = escStock();
     const ok = await askConfirm({
         title: `${x.icon} Partir ${x.at} ?`,
-        info: free
-            ? [{ big: String(ESC_LEVELS), label: 'niveaux' }, { big: 'offert', label: 'le billet', tone: 'good' }]
-            : [{ big: `${price} 🪙`, label: 'le billet' }, { big: `${d.coins} 🪙`, label: 'tu as' }, { big: `${d.coins - price} 🪙`, label: 'il t’en restera', tone: 'warn' }],
+        info: [{ big: String(ESC_LEVELS), label: 'niveaux' }, { big: `✈️ ${stock}`, label: 'billets' }, { big: `✈️ ${stock - 1}`, label: 'il t’en restera', tone: 'warn' }],
         text: `${ESC_LEVELS} niveaux, puis un tampon, une carte et un badge. L’escale reste ouverte pour toujours.`,
-        yes: free ? '✈️ Partir · billet offert' : `✈️ Partir · ${price} 🪙`, no: 'Plus tard'
+        yes: '✈️ Partir · 1 billet', no: 'Plus tard'
     });
-    if (!ok || d.coins < price) return;
-    d.coins -= price;
-    if (price) d.totals.purchases++;
+    if (!ok || !escStock()) { escRenderPage(); return; }
     escAll()[x.id] = { open: todayKey(), done: {}, stamp: null };
     saveData();
     renderHeader();
@@ -348,15 +365,27 @@ function escTakeoff(x, done) {
 /* ---------- Le petit parcours d'une escale ---------- */
 function escRenderTrip(page, e) {
     const head = el('div', 'esc-head');
+    // 17/11 : vrai bouton (contour + relief) et progression en barre sous le nom
     const back = el('button', 'esc-back');
     back.type = 'button';
-    back.textContent = '← Escales';
+    back.setAttribute('aria-label', 'Retour aux escales');
+    back.innerHTML = '<span aria-hidden="true">←</span>';
     back.addEventListener('click', () => { escUi.view = null; escApplyTab(); window.scrollTo(0, 0); });
+    const mid = el('div', 'esc-head-mid');
     const title = el('b');
-    title.textContent = `${e.icon} ${e.name}`;
+    title.textContent = `${e.icon} Escale ${e.at}`;
+    const prog = el('div', 'esc-head-prog');
+    const bar = el('span', 'esc-bar');
+    const fill = el('i');
+    fill.style.width = `${Math.round(100 * escDoneCount(e) / ESC_LEVELS)}%`;
+    bar.append(fill);
     const count = el('small');
     count.textContent = `${escDoneCount(e)} / ${ESC_LEVELS}`;
-    head.append(back, title, count);
+    prog.append(bar, count);
+    mid.append(title, prog);
+    const flag = el('span', 'esc-head-flag');
+    flag.append(emojiImg(e.flag || e.icon));
+    head.append(back, mid, flag);
     page.append(head);
 
     const trip = el('div', 'esc-trip');
@@ -401,7 +430,7 @@ function escRenderTrip(page, e) {
         const name = el('span', 'esc-stop-name');
         name.textContent = kind === 'q' ? plural(qLevels[n].length, 'question', 'questions') : ESC_KIND_NAME[kind];
         const meta = el('span', 'esc-stop-meta');
-        meta.textContent = kind === 'pairs' ? '2 grilles' : kind === 'order' ? '2 frises · 3 cœurs'
+        meta.textContent = kind === 'pairs' ? '2 grilles' : kind === 'order' ? '2 frises · 2 cœurs'
             : ed.stamp ? '📕 Tampon gagné' : '10 questions · le tampon !';
         lab.append(name);
         if (kind !== 'q') lab.append(meta);
@@ -440,7 +469,7 @@ async function escTapLevel(e, n) {
     const done = !!ed.done[n];
     if (!done && n > escUnlocked(e)) { showToast(`🔒 Termine d’abord le niveau ${escUnlocked(e)}.`); return; }
     const kind = ESC_LAYOUT[n - 1];
-    const what = kind === 'q' ? `${escQuestionLevels(e)[n].length} questions` : kind === 'pairs' ? '2 grilles de paires' : kind === 'order' ? '2 frises de 4 cartes, 3 cœurs' : '10 questions déjà vues';
+    const what = kind === 'q' ? `${escQuestionLevels(e)[n].length} questions` : kind === 'pairs' ? '2 grilles de paires' : kind === 'order' ? '2 frises de 4 cartes, 2 cœurs' : '10 questions déjà vues';
     const drops = state.data.drops;
     const info = done
         ? [{ big: '🔁', label: 'déjà réussi' }, { big: 'gratuit', label: 'pas de goutte', tone: 'good' }]
@@ -579,4 +608,23 @@ if (ESCALES_ON) {
         BADGE_FAMS.push(['🧳', 'Globe-trotter', 'escales finies', [['esc-japon', 'Japon', 1, () => +escFinished('japon')],
             ['trot3', '3 escales', 3, escFinishedCount], ['trot6', '6 escales', 6, escFinishedCount], ['trot10', '10 escales', 10, escFinishedCount]]]);
     }
+}
+
+/* ---------- Bac à sable (17/11) : voir l'avion puis la fin d'escale avec le tampon, sans toucher à sa vraie escale ---------- */
+function escDemo() {
+    const e = escById('japon');
+    const keep = escAll()[e.id] ? JSON.parse(JSON.stringify(escAll()[e.id])) : null;
+    showScreen('map');
+    escTakeoff(e, () => {
+        const ed = { open: todayKey(), done: {}, stamp: null };
+        for (let n = 1; n <= ESC_LEVELS; n++) ed.done[n] = 'demo';   // déjà « fait » : pas de goutte dépensée
+        escAll()[e.id] = ed;
+        startEscaleLevel(e, ESC_LEVELS);
+        setTimeout(() => {
+            state.errors = 0;
+            endSession(true);   // écran de fin : « Escale au Japon terminée ! » + tampon
+            if (keep) escAll()[e.id] = keep; else delete escAll()[e.id];
+            saveData();
+        }, 900);
+    });
 }

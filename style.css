@@ -5481,3 +5481,41 @@ body.esc-theme-japon .esc-stage::before, body.esc-theme-japon .esc-stage::after 
 }
 @keyframes escCloud { from { margin-left: 0; } to { margin-left: -60vw; } }
 @keyframes escToText { 0%, 15% { opacity: 0; transform: translateY(12px); } 35%, 85% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+
+/* 17/11 (suite) : carte des billets cliquable (stock + acheter), en-tête du petit parcours plus clair, Japon en mode sombre */
+.esc-tickets { width: 100%; border: 0; font: inherit; text-align: left; cursor: pointer; }
+.esc-tickets-t { flex: 1; }
+.esc-tickets-buy { flex: none; padding: 7px 11px; border-radius: 12px; background: rgba(255, 255, 255, 0.95); color: var(--blue-deep, #1c5bd6);
+    font-size: 0.85rem; font-weight: 900; white-space: nowrap; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18); }
+.esc-tickets:active { transform: translateY(2px); }
+.esc-head { display: grid; grid-template-columns: 46px 1fr 46px; align-items: center; gap: 10px; padding: 8px 10px; }
+.esc-back { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 2px solid var(--line); border-radius: 14px;
+    background: var(--surface); color: var(--ink); font-size: 1.35rem; font-weight: 900; line-height: 1;
+    box-shadow: 0 4px 0 var(--line); cursor: pointer; transition: transform 0.08s, box-shadow 0.08s; }
+.esc-back:active { transform: translateY(4px); box-shadow: none; }
+.esc-head-mid { min-width: 0; text-align: center; }
+.esc-head-mid b { display: block; font-size: 1rem; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.esc-head-prog { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.esc-head-prog .esc-bar { flex: 1; display: block; margin: 0; height: 8px; }
+.esc-head-prog small { min-width: 0; color: var(--muted); font-size: 0.78rem; font-weight: 900; white-space: nowrap; }
+.esc-head-flag { display: grid; place-items: center; }
+.esc-head-flag img { width: 34px; height: 34px; }
+body.esc-theme-japon .esc-head-prog .esc-bar i { background: #e0457b; }
+
+/* Japon en mode sombre : nuit bleu-violet avec une lueur rose (au lieu du violet-marron) */
+:root[data-theme="dark"] body.esc-theme-japon main, :root[data-theme="dark"] body.esc-theme-japon .lesson {
+    background: radial-gradient(120% 60% at 50% 0%, rgba(240, 98, 146, 0.22), transparent 70%), linear-gradient(180deg, #1b1830, #161427 60%, #121022) !important;
+    background-attachment: fixed !important; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) body.esc-theme-japon main, :root:not([data-theme="light"]) body.esc-theme-japon .lesson {
+        background: radial-gradient(120% 60% at 50% 0%, rgba(240, 98, 146, 0.22), transparent 70%), linear-gradient(180deg, #1b1830, #161427 60%, #121022) !important;
+        background-attachment: fixed !important; }
+    :root:not([data-theme="light"]) body.esc-theme-japon .esc-stage { color: #f39ab9; }
+    :root:not([data-theme="light"]) body.esc-theme-japon .esc-stage::before, :root:not([data-theme="light"]) body.esc-theme-japon .esc-stage::after { background: #7a3d5a; }
+    :root:not([data-theme="light"]) body.esc-theme-japon .esc-decor { opacity: 0.65; }
+}
+:root[data-theme="dark"] body.esc-theme-japon .esc-stage { color: #f39ab9; }
+:root[data-theme="dark"] body.esc-theme-japon .esc-stage::before, :root[data-theme="dark"] body.esc-theme-japon .esc-stage::after { background: #7a3d5a; }
+:root[data-theme="dark"] body.esc-theme-japon .esc-decor { opacity: 0.65; }
+.esc-tickets-buy { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.esc-tickets-buy small { font-size: 0.68rem; font-weight: 900; opacity: 1; text-transform: uppercase; letter-spacing: 0.04em; }

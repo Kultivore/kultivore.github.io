@@ -13157,6 +13157,11 @@ function initBac() {
         // 16/11 : Noël (calendrier de l'Avent, tournée du Père Noël, rayon de la boutique) : choisir un jour de décembre
         const noel = await askConfirm({ title: '🧪 Bac à sable', text: `🎄 Essayer Noël : choisir un faux jour de décembre (calendrier, tournée, boutique).${noelSimDay() ? ` Jour simulé : ${shortDate(noelSimDay())}.` : ''}`, yes: 'Choisir le jour', no: 'Plus d’options' });
         if (noel) { openNoelBacMenu(); return; }
+        // 17/11 : animations des escales (avion au départ, tampon à la fin)
+        if (typeof escDemo === 'function') {
+            const esc = await askConfirm({ title: '🧪 Bac à sable', text: '🧳 Voir les animations d’une escale : l’avion au départ, puis la fin avec le tampon ? (ta vraie escale ne change pas)', yes: 'Voir les animations', no: 'Plus d’options' });
+            if (esc) { escDemo(); return; }
+        }
         // 13/11 : défi de Kulti « Vrai ou faux » tout de suite (pour voir la nouvelle mise en page)
         const tf = await askConfirm({ title: '🧪 Bac à sable', text: 'Faire un défi de Kulti « Vrai ou faux » ?', yes: 'Lancer le défi', no: 'Plus d’options' });
         if (tf) {

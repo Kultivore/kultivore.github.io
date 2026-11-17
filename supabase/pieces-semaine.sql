@@ -10,8 +10,8 @@ select
   s.pseudo,
   (select coalesce(round(sum(value::numeric)), 0) from jsonb_each_text(s.data->'activeDays')
      where key >= to_char((now() at time zone 'Europe/Paris')::date - 6, 'YYYY-MM-DD'))      as xp_7_jours,
-  (select coalesce(round(sum(value::numeric)), 0) from jsonb_each_text(s.data->'activeDays')
-     where key >= to_char((now() at time zone 'Europe/Paris')::date - 6, 'YYYY-MM-DD')) / 8 as pieces_xp_estimees,
+  round((select coalesce(sum(value::numeric), 0) from jsonb_each_text(s.data->'activeDays')
+     where key >= to_char((now() at time zone 'Europe/Paris')::date - 6, 'YYYY-MM-DD')) / 8) as pieces_xp_estimees,
   s.coins                                                                                    as pieces_aujourdhui,
   s.coins - (select round((h.data->>'coins')::numeric) from public.saves_history h
              where h.user_id = s.user_id order by h.day asc limit 1)                         as solde_change
