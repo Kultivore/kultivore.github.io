@@ -1416,3 +1416,10 @@ par Google, dans l'appli + page web), page « Politique de confidentialité », 
   4) CRÉATION DE COMPTE : mot de passe tapé 2 fois (`authPassword2`, l'œil montre les deux) ; « Tu voulais dire …@gmail.com ? »
   (`emailSuggestion`, `EMAIL_DOMAINS` avec domaines belges / suisses / québécois). E-MAIL DE BIENVENUE : pas maintenant (il faut un
   serveur d'envoi à nous : Supabase gratuit n'envoie que ~2 e-mails par heure) → avec l'adresse Kultivo, avant la sortie (Brevo / Resend).
+- 17/11 (v=20261117f, POUR TOUS ; anti-triche.sql LANCÉ par l'utilisateur) : SÉRIE : un niveau du parcours PERDU (level / challenge /
+  pairs / order, joué jusqu'au bout) compte aussi pour la série (bumpStreak dans la branche !win de endSession) ; abandon (« Quitter ») non.
+  GEL + SÉRIE d'un seul tenant (`showFreezeAnim(streak, true)` lance la roulette par-dessus la glace, z-index 301, puis cache la glace ;
+  touche retour = `ov._done`). CRÉATION DE COMPTE : 2e case avec son œil (`authPass2Wrap`, `authEye2`, chaque œil montre les deux),
+  placeholder « Mot de passe », règle « 6 caractères minimum, dont une majuscule. » (`authRule`) ; majuscule OBLIGATOIRE à la création
+  seulement. ACCUEIL, objectif du jour : sous-titres raccourcis (« 250 XP par jour · 🎁 50 🪙 ») + cases resserrées ≤ 400 px +
+  `justify-content: safe center` (la case Intense passait sous « Continuer » à 360 px).

@@ -5288,3 +5288,15 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
 .auth-input[hidden], .auth-hint[hidden] { display: none !important; }
 .auth-hint { margin: -2px 0 0; font-size: 0.85rem; color: var(--muted); text-align: left; }
 .auth-hint-btn { padding: 0; border: 0; background: none; font: inherit; font-weight: 800; color: var(--blue); text-decoration: underline; cursor: pointer; }
+/* 17/11 : accueil sur petit téléphone — le contenu ne passe plus jamais sous le bouton du bas (il défile s'il le faut vraiment) */
+.onboard-body { justify-content: safe center; }
+@media (max-width: 400px) {
+    .onboard-title { font-size: 1.45rem; }
+    .onboard-text { font-size: 0.98rem; }
+    .onboard-option { padding: 11px 14px; gap: 12px; }
+    .opt-title { font-size: 0.97rem; }
+    .opt-sub { font-size: 0.85rem; }
+}
+/* 17/11 : 2e case du mot de passe avec son œil, règle du mot de passe sous les cases */
+.password-field[hidden], .auth-rule[hidden] { display: none !important; }
+.auth-rule { margin: -2px 0 0; font-size: 0.82rem; color: var(--muted); text-align: left; }

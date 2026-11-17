@@ -1466,8 +1466,9 @@ function bumpStreak() {
     data.best.streak = Math.max(data.best.streak, data.streak);
     saveData();
     // Nouveau jour de série : les animations, par-dessus l'écran de fin (gel utilisé d'abord, puis la roulette)
-    if (alive && missed > 0) celebrate(() => showFreezeAnim(data.streak));
-    celebrate(() => showStreakAnim(data.streak));
+    // 17/11 : gel puis série D'UN SEUL TENANT (avant, l'écran de fin réapparaissait un instant entre les deux)
+    if (alive && missed > 0) celebrate(() => showFreezeAnim(data.streak, true));
+    else celebrate(() => showStreakAnim(data.streak));
 }
 
 /* Petites fêtes à la suite (2026-10-27) : gel utilisé → jour de série → nouveau titre. Chacune appelle nextCelebration()
@@ -1564,7 +1565,7 @@ function showMedalAnim({ theme, icon, medal, mastered }) {
 
 /* ---------- 5 · Gel de série utilisé : la flamme se fige dans la glace, la glace éclate, la flamme repart ---------- */
 let freezeTimers = [];
-function showFreezeAnim(streak) {
+function showFreezeAnim(streak, thenStreak = false) {
     const ov = celebrationLayer('freezeAnim', 'freeze-anim');
     const ice = el('div', 'freeze-ice');
     const fire = el('img');
@@ -1580,8 +1581,20 @@ function showFreezeAnim(streak) {
     p.textContent = `Un gel de série t’a protégé. Ta série de ${plural(streak, 'jour', 'jours')} continue.`;
     txt.append(h, p);
     ov.append(ice, txt);
-    const done = () => { freezeTimers.forEach(clearTimeout); closeCelebrationLayer('freezeAnim'); };
+    let finished = false;
+    const done = () => {
+        if (finished) return;
+        finished = true;
+        freezeTimers.forEach(clearTimeout);
+        if (!thenStreak) { closeCelebrationLayer('freezeAnim'); return; }
+        // 17/11 : la roulette de la série arrive PAR-DESSUS la glace, puis la glace disparaît derrière (aucun vide entre les deux)
+        showStreakAnim(streak);
+        const sa = $('streakAnim');
+        if (sa) sa.style.zIndex = '301';
+        setTimeout(() => { ov.hidden = true; ov.classList.remove('is-on', 'is-closing'); ov.replaceChildren(); }, 450);
+    };
     ov.onclick = done;
+    ov._done = done;   // 17/11 : touche retour = même chose qu'un tap (la série suit)
     freezeTimers = [
         setTimeout(() => { ov.classList.add('is-frozen'); playSound('freeze'); }, 400),
         setTimeout(() => { ov.classList.remove('is-frozen'); ov.classList.add('is-thawed'); playSound('thaw'); }, 1800),
@@ -8028,7 +8041,10 @@ function endSession(win) {
             secondary: 'Retour à la carte',
             onSecondary: returnToMap
         });
-        if (mode === 'level' || mode === 'challenge' || mode === 'pairs' || mode === 'order') showRescueOption();
+        if (mode === 'level' || mode === 'challenge' || mode === 'pairs' || mode === 'order') {
+            showRescueOption();
+            bumpStreak();   // 17/11 (choix de l'utilisateur) : un niveau joué jusqu'au bout compte pour la série, même raté
+        }
         renderHeader();
         checkBadges();
         return;
@@ -9455,8 +9471,9 @@ function openAuthModal(mode) {
     $('authError').textContent = '';
     $('authEmail').value = '';                  // champs vides à chaque ouverture (et en passant de l'un à l'autre)
     $('authPassword').value = '';
-    $('authPassword').placeholder = signup ? '6 caractères minimum' : 'Mot de passe';
-    $('authPassword2').hidden = !signup;   // 17/11 : mot de passe tapé 2 fois à la création
+    $('authPassword').placeholder = 'Mot de passe';   // 17/11 : la règle est écrite en dessous (authRule)
+    $('authRule').hidden = !signup;
+    $('authPass2Wrap').hidden = !signup;   // 17/11 : mot de passe tapé 2 fois à la création
     $('authPassword2').value = '';
     $('authPassword2').type = 'password';
     $('authPassword2').autocomplete = signup ? 'new-password' : 'off';
@@ -9466,6 +9483,7 @@ function openAuthModal(mode) {
     $('authPassword').autocomplete = signup ? 'new-password' : 'current-password';
     $('authEmail').autocomplete = 'email';
     $('authEye').textContent = '👁️';
+    $('authEye2').textContent = '👁️';
     $('authModal').hidden = false;
     // Pas de focus automatique : le clavier ne s'ouvre que quand le joueur touche un champ (fenêtre entière visible)
 }
@@ -9488,6 +9506,8 @@ async function submitAuth(e) {
     const signup = authMode === 'signup';
     if (!email.includes('@')) { $('authError').textContent = 'Indique ton adresse e-mail.'; return; }
     if (password.length < 6) { $('authError').textContent = 'Le mot de passe doit faire au moins 6 caractères.'; return; }
+    // 17/11 : une majuscule obligatoire à la création (les comptes déjà créés se connectent comme avant)
+    if (signup && !/[A-ZÀ-ÖØ-Þ]/.test(password)) { $('authError').textContent = 'Il faut au moins une majuscule dans le mot de passe.'; return; }
     if (signup && $('authPassword2').value !== password) {
         $('authError').textContent = $('authPassword2').value ? 'Les deux mots de passe ne sont pas pareils.' : 'Retape ton mot de passe dans la 2e case.';
         return;
@@ -12202,7 +12222,7 @@ function renderOnboard(animate = true) {
         GOAL_CHOICES.forEach((choice, i) => list.append(onboardOption({
             icon: GOAL_ICONS[i],
             title: `${choice.label} · ${GOAL_HINTS[choice.xp] || `${choice.xp} XP par jour`}`,
-            sub: `${choice.xp} XP par jour · 🎁 ${choice.reward} 🪙 de récompense`,
+            sub: `${choice.xp} XP par jour · 🎁 ${choice.reward} 🪙`,   // 17/11 : plus court (la case passait sous « Continuer » à 360 px)
             selected: state.data.goal === choice.xp,
             onPick: () => { state.data.goal = choice.xp; saveData(); }
         })));
@@ -12914,16 +12934,17 @@ function bindEvents() {
     });
     $('closeAccountBtn').addEventListener('click', () => { $('accountModal').hidden = true; });
     // Œil du mot de passe : afficher / masquer ce qu'on tape
-    $('authEye').addEventListener('click', () => {
-        const input = $('authPassword');
-        const show = input.type === 'password';
-        input.type = show ? 'text' : 'password';
-        $('authPassword2').type = input.type;   // 17/11 : l'œil montre aussi la 2e case
-        $('authEye').textContent = show ? '🙈' : '👁️';
-        $('authEye').setAttribute('aria-pressed', String(show));
-        $('authEye').setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
-        input.focus();
-    });
+    // 17/11 : un œil sur chaque case ; chacun montre / cache LES DEUX cases
+    [['authEye', 'authPassword'], ['authEye2', 'authPassword2']].forEach(([eyeId, inputId]) => $(eyeId).addEventListener('click', () => {
+        const show = $('authPassword').type === 'password';
+        ['authPassword', 'authPassword2'].forEach(id => { $(id).type = show ? 'text' : 'password'; });
+        ['authEye', 'authEye2'].forEach(id => {
+            $(id).textContent = show ? '🙈' : '👁️';
+            $(id).setAttribute('aria-pressed', String(show));
+            $(id).setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+        });
+        $(inputId).focus();
+    }));
     $('cloudLogoutBtn').addEventListener('click', () => { $('accountModal').hidden = true; cloudLogout(); });
     $('closeAuthBtn').addEventListener('click', closeAuthModal);
     $('authSwitch').addEventListener('click', () => openAuthModal(authMode === 'signup' ? 'login' : 'signup'));
@@ -13207,6 +13228,7 @@ function closePatchNotes() {
 function closeTopOverlay() {
     const open = id => !$(id).hidden;
     if ($('streakAnim') && !$('streakAnim').hidden) { closeStreakAnim(); return true; }
+    if ($('freezeAnim') && !$('freezeAnim').hidden && $('freezeAnim')._done) { $('freezeAnim')._done(); return true; }
     if (closeCelebrationLayer('titleAnim') || closeCelebrationLayer('freezeAnim') || closeCelebrationLayer('medalAnim')) return true;
     { const o = $('collectionAnim'); if (o && !o.hidden && o._close) { o._close(false); return true; } }
     { const o = $('summitAnim'); if (o && !o.hidden && o._close) { o._close(); return true; } }

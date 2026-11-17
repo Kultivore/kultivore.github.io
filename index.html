@@ -85,12 +85,12 @@
             setTimeout(function () { var x = document.getElementById('splash'); if (x) x.remove(); }, 8000);
         })();
     </script>
-    <script src="kulti.js?v=20261117e"></script>
+    <script src="kulti.js?v=20261117f"></script>
     <script>document.getElementById('splashRider').append(kultiEl('content', 'kulti-blink'));</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20261117e">
+    <link rel="stylesheet" href="style.css?v=20261117f">
 
     <!-- BARRE DU HAUT (visible hors leçon) -->
     <header class="topbar" id="topbar">
@@ -479,7 +479,11 @@
                     <input type="text" id="authPassword" class="auth-input" placeholder="Mot de passe" autocomplete="off" required>
                     <button type="button" id="authEye" class="password-eye" aria-label="Afficher le mot de passe" aria-pressed="false">👁️</button>
                 </div>
-                <input type="text" id="authPassword2" class="auth-input" placeholder="Retape ton mot de passe" autocomplete="off" hidden>
+                <div class="password-field" id="authPass2Wrap" hidden>
+                    <input type="text" id="authPassword2" class="auth-input" placeholder="Retape ton mot de passe" autocomplete="off">
+                    <button type="button" id="authEye2" class="password-eye" aria-label="Afficher le mot de passe" aria-pressed="false">👁️</button>
+                </div>
+                <p class="auth-rule" id="authRule" hidden>6 caractères minimum, dont une majuscule.</p>
                 <p class="auth-hint" id="authHint" hidden></p>
                 <p class="auth-error" id="authError" role="alert"></p>
                 <button type="submit" id="authSubmit" class="btn btn-green btn-full">Créer mon compte</button>
@@ -684,36 +688,36 @@
     <div class="toasts" id="toasts" aria-live="polite"></div>
 
     <!-- L'ordre compte : les questions d'abord, puis la logique -->
-    <script src="questions.js?v=20261117e"></script>
-    <script src="pairs.js?v=20261117e"></script>
-    <script src="order.js?v=20261117e"></script>
-    <script src="facts.js?v=20261117e"></script>
-    <script src="entrainement/banque.js?v=20261117e"></script>
-    <script src="entrainement/histoire.js?v=20261117e"></script>
-    <script src="entrainement/sciences.js?v=20261117e"></script>
-    <script src="entrainement/geographie.js?v=20261117e"></script>
-    <script src="entrainement/technologie.js?v=20261117e"></script>
-    <script src="entrainement/musique.js?v=20261117e"></script>
-    <script src="entrainement/litterature.js?v=20261117e"></script>
-    <script src="entrainement/jeux.js?v=20261117e"></script>
-    <script src="entrainement/cinema.js?v=20261117e"></script>
-    <script src="entrainement/gastronomie.js?v=20261117e"></script>
-    <script src="entrainement/sport.js?v=20261117e"></script>
-    <script src="entrainement/arts.js?v=20261117e"></script>
-    <script src="entrainement/langue-francaise.js?v=20261117e"></script>
-    <script src="entrainement/mythologie.js?v=20261117e"></script>
-    <script src="entrainement/drapeaux.js?v=20261117e"></script>
-    <script src="entrainement/monuments.js?v=20261117e"></script>
-    <script src="cards.js?v=20261117e"></script>
-    <script src="cosmetiques.js?v=20261117e"></script>
-    <script src="levels.js?v=20261117e"></script>
-    <script src="vendor/supabase.min.js?v=20261117e"></script>
-    <script src="evenements/halloween.js?v=20261117e"></script>
-    <script src="evenements/maghreb.js?v=20261117e"></script>
-    <script src="evenements/noel.js?v=20261117e"></script>
-    <script src="kulti-defis.js?v=20261117e"></script>
-    <script src="chapitres.js?v=20261117e"></script>
-    <script src="script.js?v=20261117e"></script>
-    <script src="noel.js?v=20261117e"></script>
+    <script src="questions.js?v=20261117f"></script>
+    <script src="pairs.js?v=20261117f"></script>
+    <script src="order.js?v=20261117f"></script>
+    <script src="facts.js?v=20261117f"></script>
+    <script src="entrainement/banque.js?v=20261117f"></script>
+    <script src="entrainement/histoire.js?v=20261117f"></script>
+    <script src="entrainement/sciences.js?v=20261117f"></script>
+    <script src="entrainement/geographie.js?v=20261117f"></script>
+    <script src="entrainement/technologie.js?v=20261117f"></script>
+    <script src="entrainement/musique.js?v=20261117f"></script>
+    <script src="entrainement/litterature.js?v=20261117f"></script>
+    <script src="entrainement/jeux.js?v=20261117f"></script>
+    <script src="entrainement/cinema.js?v=20261117f"></script>
+    <script src="entrainement/gastronomie.js?v=20261117f"></script>
+    <script src="entrainement/sport.js?v=20261117f"></script>
+    <script src="entrainement/arts.js?v=20261117f"></script>
+    <script src="entrainement/langue-francaise.js?v=20261117f"></script>
+    <script src="entrainement/mythologie.js?v=20261117f"></script>
+    <script src="entrainement/drapeaux.js?v=20261117f"></script>
+    <script src="entrainement/monuments.js?v=20261117f"></script>
+    <script src="cards.js?v=20261117f"></script>
+    <script src="cosmetiques.js?v=20261117f"></script>
+    <script src="levels.js?v=20261117f"></script>
+    <script src="vendor/supabase.min.js?v=20261117f"></script>
+    <script src="evenements/halloween.js?v=20261117f"></script>
+    <script src="evenements/maghreb.js?v=20261117f"></script>
+    <script src="evenements/noel.js?v=20261117f"></script>
+    <script src="kulti-defis.js?v=20261117f"></script>
+    <script src="chapitres.js?v=20261117f"></script>
+    <script src="script.js?v=20261117f"></script>
+    <script src="noel.js?v=20261117f"></script>
 </body>
 </html>
