@@ -11789,6 +11789,7 @@ async function addFriend(raw) {
     const { error } = await c.from('friendships').insert({ requester: cloudUser.id, addressee: found.user_id });
     if (error) return say('Impossible pour le moment. Réessaie.');
     say(`✓ Demande envoyée à ${found.pseudo}.`, 'good');
+    leagueMsg.waitFor = found.user_id;   // 18/11 : message retiré dès que l'ami a accepté (avant : resté jusqu'au changement d'onglet)
     leagueLoad();
 }
 
@@ -11889,6 +11890,7 @@ function renderLeague() {
         f.append(input, b);
         f.addEventListener('submit', e => { e.preventDefault(); onSubmit(input.value); });
         box.append(f);
+        if (leagueMsg && leagueMsg.waitFor && league.friends.some(f => f.id === leagueMsg.waitFor)) leagueMsg = null;
         if (leagueMsg) para(box, leagueMsg.text, `pseudo-msg is-${leagueMsg.kind}`);
         return input;
     };
