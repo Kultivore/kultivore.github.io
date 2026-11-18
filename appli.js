@@ -31,15 +31,30 @@
         }));
     }
 
-    /* 2) Barre d'état du téléphone (heure, batterie) : bleu du jeu, icônes blanches ; texte foncé en leçon si le thème est clair. */
+    /* 2) Barre d'état du téléphone (heure, batterie). 18/11 : sur les Android récents elle est TRANSPARENTE (on voit le fond
+          du jeu dessous) : icônes foncées en mode clair, blanches en mode sombre ; mises à jour quand le mode change
+          (bouton Clair / Sombre du Profil, ou réglage du téléphone en « Comme mon téléphone »). */
+    const darkNow = () => {
+        const t = document.documentElement.dataset.theme;
+        if (t === 'dark') return true;
+        if (t === 'light') return false;
+        return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    };
+    let barsDark = null;
     const paintBars = () => {
         if (!P.StatusBar) return;
-        const meta = document.querySelector('meta[name="theme-color"]');
-        call(() => P.StatusBar.setOverlaysWebView({ overlay: false }));
-        call(() => P.StatusBar.setBackgroundColor({ color: (meta && meta.content) || '#3d8bff' }));
-        call(() => P.StatusBar.setStyle({ style: 'DARK' }));   // DARK = icônes CLAIRES (sur fond bleu)
+        const dark = darkNow();
+        if (dark === barsDark) return;
+        barsDark = dark;
+        call(() => P.StatusBar.setBackgroundColor({ color: dark ? '#131a2e' : '#eef3f8' }));   // anciens Android (barre opaque)
+        call(() => P.StatusBar.setStyle({ style: dark ? 'DARK' : 'LIGHT' }));   // DARK = icônes claires, LIGHT = icônes foncées
     };
     paintBars();
+    new MutationObserver(paintBars).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    if (window.matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        if (mq.addEventListener) mq.addEventListener('change', paintBars);
+    }
 
     /* 3) Écran de démarrage d'Android : on le cache dès que notre propre écran de chargement (#splash) est affiché. */
     if (P.SplashScreen) call(() => P.SplashScreen.hide());
