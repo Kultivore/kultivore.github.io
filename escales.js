@@ -249,7 +249,12 @@ function escApplyTab() {
     if (head) head.style.top = `${Math.round(top + sw.offsetHeight + 6)}px`;
 }
 const escOrigRenderMap = renderMap;
-renderMap = function () { escOrigRenderMap(); escApplyTab(); };
+// 18/11 : sur les Escales, le grand parcours est caché AVANT d'être dessiné (sinon il défilait jusqu'au niveau en cours
+// et on voyait un instant le bas de la page des Escales, le carnet, avant le retour en haut)
+renderMap = function () {
+    if (ESCALES_ON) $('mapScreen').classList.toggle('is-esc', escUi.tab === 'escales');
+    escOrigRenderMap(); escApplyTab();
+};
 // En arrivant sur le parcours avec l'onglet Escales : liste en haut, ou petit parcours centré sur le niveau en cours
 // (passe après le défilement du grand parcours)
 const escOrigShowScreen = showScreen;
@@ -257,6 +262,7 @@ showScreen = function (name) {
     escOrigShowScreen(name);
     if (ESCALES_ON) escTheme();
     if (!ESCALES_ON || name !== 'map' || escUi.tab !== 'escales') return;
+    if (!escUi.view) window.scrollTo(0, 0);   // 18/11 : tout de suite en haut (plus d'éclair du carnet)
     setTimeout(() => { if (escUi.view) escScrollToCurrent(); else window.scrollTo(0, 0); }, 120);
 };
 // Bulles d'aide du grand parcours (coffres, révisions, tutoriel) : pas pendant qu'on regarde les Escales

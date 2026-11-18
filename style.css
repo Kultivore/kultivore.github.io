@@ -5264,6 +5264,9 @@ body.nav6 #challengesScreen[data-sub="training"] .challenges-tabs { display: non
 .account-legal { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
 .account-legal a { color: var(--blue); font-weight: 800; font-size: 0.92rem; text-decoration: none; }
 .link-btn.danger-link { color: var(--red); font-weight: 800; font-size: 0.88rem; text-decoration: underline; }
+/* 18/11 : les deux liens de « Mon compte » alignés, même taille, sans le grand espace du .link-btn */
+.account-legal { gap: 4px; }
+.account-legal a, .account-legal .link-btn.danger-link { display: block; margin: 0; padding: 8px 4px; font-size: 0.9rem; font-weight: 800; text-decoration: none; }
 .auth-legal { margin: 10px 0 0; font-size: 0.8rem; color: var(--muted); text-align: center; line-height: 1.4; }
 .auth-legal a { color: var(--blue); }
 .legal-links { margin: 6px 0 0; text-align: center; font-size: 0.8rem; color: var(--muted); }
