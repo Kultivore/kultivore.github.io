@@ -6978,7 +6978,11 @@ function startSession(requestedMode, level = 0) {
         items = mode === 'kulti' ? state.kultiItems || [] : buildOrderRounds(level); // ici, items = les frises
     } else if (mode === 'daily') {
         if (state.data.daily[todayKey()]) return;   // déjà fait aujourd'hui
-        items = dailyQuestions(todayKey()).map(q => ({ q, review: false }));
+        // 18/11 : jour FIXÉ au début de la partie. Avant, un défi commencé le soir et fini après minuit (ou appli laissée
+        // ouverte la nuit) gardait les questions de la veille mais son score était rangé au nouveau jour : le vrai défi
+        // du jour devenait impossible à jouer.
+        state.dailyDay = todayKey();
+        items = dailyQuestions(state.dailyDay).map(q => ({ q, review: false }));
         saveDailyProgress(0, [], [], 0);   // (2026-10-28) quitter puis revenir ne permet plus de le refaire en connaissant les réponses
     } else if (mode === 'sprint') {
         items = shuffle(allQuestionsPool()).map(q => ({ q, review: false }));
@@ -8178,7 +8182,7 @@ function endSession(win) {
             onPrimary: returnToMap
         });
     } else if (mode === 'daily') {
-        const day = todayKey();
+        const day = state.dailyDay || todayKey();   // le jour des questions jouées (voir startSession)
         const seconds = Math.round((Date.now() - state.startedAt) / 1000);
         state.data.daily[day] = { score: state.correct, seconds, grid: state.grid.join(''), answers: state.answers };
         addXp(XP_DAILY_DONE);
@@ -8888,7 +8892,7 @@ async function playDuel(row) {
 /** Défi du jour en cours : enregistré tel quel (questions pas encore jouées = fausses). Écrasé par le vrai résultat à la fin. */
 function saveDailyProgress(score, grid, answers, seconds) {
     const rest = DAILY_SIZE - grid.length;
-    state.data.daily[todayKey()] = { score, seconds, grid: grid.join('') + '🟥'.repeat(Math.max(0, rest)),
+    state.data.daily[state.dailyDay || todayKey()] = { score, seconds, grid: grid.join('') + '🟥'.repeat(Math.max(0, rest)),
         answers: [...answers, ...Array(Math.max(0, rest)).fill('')], partial: true };
     saveData();
 }
