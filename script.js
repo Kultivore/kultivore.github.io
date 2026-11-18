@@ -7735,6 +7735,7 @@ function kultiEndLine(mood, stamp) {
     return pickOne(list);
 }
 
+const FORCE_ON = false;   // bouton « J'avais juste » (retiré le 18/11)
 function showFeedback(verdict, skipped) {
     const q = state.current.q;
     const ok = verdict !== 'wrong';
@@ -7777,7 +7778,9 @@ function showFeedback(verdict, skipped) {
 
     // Défi du jour et sprint : pas de « J'avais juste », pour que les scores restent comparables
     const strict = state.mode === 'daily' || state.mode === 'sprint' || state.mode === 'duel' || state.mode === 'kulti';
-    $('forceBtn').hidden = ok || skipped || strict;
+    // 18/11 : « J'avais juste » RETIRÉ partout (décision de l'utilisateur : triche trop facile). Une réponse refusée à tort
+    // se signale avec « 🚩 Signaler cette question ». Pour le remettre : FORCE_ON = true.
+    $('forceBtn').hidden = !FORCE_ON || ok || skipped || strict;
 
     box.classList.add('show');
     document.body.classList.add('has-feedback');

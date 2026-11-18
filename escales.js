@@ -14,7 +14,8 @@
    (renderMap, endSession, showCard) posées ici.
    Sauvegarde : data.escales = { <id> : { open: jour, done: { n: jour }, stamp: jour } }.
    ============================================================ */
-const ESCALES_ON = BAC;
+// 18/11 : aussi dans l'APPLI Android (testeurs), pas encore sur le site
+const ESCALES_ON = BAC || (typeof IS_APP !== 'undefined' && IS_APP);
 const ESCALES = [
     { id: 'japon', name: 'Japon', at: 'au Japon', icon: '🗾', flag: '🇯🇵', hat: 'japon', cls: 'esc-japon', blurb: 'Mont Fuji, sushis, mangas, samouraïs…',
       stages: ['Premiers pas', 'Tokyo · pop culture', 'Kyoto · traditions'], decor: ['🌸', '⛩️', '🍣', '🗻', '🎎', '🍵', '🏯', '🎏', '🍜', '🦌'],
