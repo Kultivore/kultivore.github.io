@@ -7735,7 +7735,8 @@ function kultiEndLine(mood, stamp) {
     return pickOne(list);
 }
 
-const FORCE_ON = false;   // bouton « J'avais juste » (retiré le 18/11)
+// bouton « J'avais juste » : retiré dans l'appli Android (18/11), gardé sur le site (demande de l'utilisateur, 18/11)
+const FORCE_ON = !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 function showFeedback(verdict, skipped) {
     const q = state.current.q;
     const ok = verdict !== 'wrong';
