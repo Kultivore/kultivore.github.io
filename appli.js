@@ -55,19 +55,8 @@
         const mq = window.matchMedia('(prefers-color-scheme: dark)');
         if (mq.addEventListener) mq.addEventListener('change', paintBars);
     }
-    // 18/11 (choix B de l'utilisateur) : barre d'état CACHÉE pendant les leçons (écran de question / de fin),
-    // visible ailleurs. Un balayage depuis le haut la fait revenir un instant (comportement d'Android).
-    const study = document.getElementById('studyScreen');
-    let barsHidden = false;
-    const lessonBars = () => {
-        if (!P.StatusBar || !study) return;
-        const hide = !study.hidden;
-        if (hide === barsHidden) return;
-        barsHidden = hide;
-        call(() => (hide ? P.StatusBar.hide() : P.StatusBar.show()));
-    };
-    if (study) new MutationObserver(lessonBars).observe(study, { attributes: true, attributeFilter: ['hidden'] });
-    lessonBars();
+    // 18/11 : barre d'état cachée pendant les leçons ESSAYÉE puis retirée (la page ne gagnait aucune place).
+    // La barre de navigation d'Android (3 boutons / trait des gestes) est cachée par MainActivity.java (mode immersif).
 
     /* 3) Écran de démarrage d'Android : on le cache dès que notre propre écran de chargement (#splash) est affiché. */
     if (P.SplashScreen) call(() => P.SplashScreen.hide());
