@@ -9811,6 +9811,7 @@ async function cloudLogout() {
         localStorage.removeItem(CLOUD_META_KEY);
         localStorage.removeItem(LEAGUE_KEY);
     } catch (err) { /* tant pis */ }
+    try { sessionStorage.setItem('kultivo_loggedout', '1'); } catch (err) { /* tant pis */ }   // 18/11 : écran « Tu es déconnecté »
     location.reload();
 }
 
@@ -12331,6 +12332,8 @@ function welcomeGiftBox() {
 function startOnboarding() {
     onboard.step = 0;
     onboard.level = null;
+    // 18/11 : juste après une déconnexion, on propose d'abord de se reconnecter (au lieu de « Bienvenue » comme au 1er lancement)
+    try { onboard.loggedOut = !!sessionStorage.getItem('kultivo_loggedout'); sessionStorage.removeItem('kultivo_loggedout'); } catch (err) { onboard.loggedOut = false; }
     showScreen('onboard');
     renderOnboard();
 }
@@ -12370,6 +12373,7 @@ function renderOnboard(animate = true) {
     $('onboardDots').replaceChildren(...Array.from({ length: ONBOARD_STEPS }, (_, i) =>
         el('span', `onboard-dot${i <= step ? ' is-done' : ''}`)));
     $('onboardBack').style.visibility = step > 0 ? 'visible' : 'hidden';
+    $('onboardDots').style.visibility = step === 0 && onboard.loggedOut ? 'hidden' : '';   // 18/11 : pas d'étapes sur « Tu es déconnecté »
     const next = $('onboardNext');
     const skip = $('onboardSkip');
     next.disabled = false;
@@ -12379,7 +12383,15 @@ function renderOnboard(animate = true) {
     const text = el('p', 'onboard-text');
     const big = (emoji) => { const e = el('div', 'onboard-emoji'); e.textContent = emoji; return e; };
 
-    if (step === 0) {
+    if (step === 0 && onboard.loggedOut) {
+        const kulti = kultiEl('content', 'onboard-kulti kulti-blink kulti-float');
+        title.textContent = 'Tu es déconnecté';
+        text.textContent = nbspPunct('Ta partie est bien rangée dans ton compte. Reconnecte-toi pour la retrouver, ou commence une nouvelle partie sur cet appareil.');
+        body.append(kulti, title, text);
+        next.textContent = 'Me reconnecter';
+        skip.textContent = 'Nouvelle partie';
+        skip.hidden = false;
+    } else if (step === 0) {
         const kulti = kultiEl('clin', 'onboard-kulti kulti-blink kulti-float');   // Kulti se présente (2026-10-27)
         title.textContent = 'Bienvenue sur Kultivo !';
         text.textContent = nbspPunct('Moi, c’est Kulti ! Ta culture générale, un niveau après l’autre : questions, défis, grilles à associer… Commençons par faire connaissance.');
@@ -12468,6 +12480,11 @@ function onboardAccountDone() {
 }
 
 async function onboardNext() {
+    if (onboard.step === 0 && onboard.loggedOut) {   // 18/11 : « Me reconnecter » (compte retrouvé = partie rechargée)
+        authDone = () => renderOnboard();
+        openAuthModal('login');
+        return;
+    }
     if (onboard.step === 3 && cloudUser && onboard.pseudoField) {   // étape du pseudo
         const next = $('onboardNext');
         if (next.disabled) return;
@@ -12963,6 +12980,7 @@ function bindEvents() {
 
     $('onboardNext').addEventListener('click', onboardNext);
     $('onboardSkip').addEventListener('click', () => {
+        if (onboard.step === 0 && onboard.loggedOut) { onboard.loggedOut = false; renderOnboard(); return; }   // « Nouvelle partie »
         if (onboard.step === 3) {   // « Plus tard » : pas de compte, ou pas de pseudo pour l'instant
             if (cloudUser) onboard.pseudoSkipped = true;
             onboard.pseudoField = null;
