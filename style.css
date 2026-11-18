@@ -5630,3 +5630,4 @@ body.esc-theme-usa .esc-head-prog .esc-bar i { background: #c8283f; }
 .enc-gres-t { min-width: 0; display: flex; flex-direction: column; }
 .enc-gres-t b { font-size: 0.95rem; font-weight: 900; }
 .enc-gres-t small { color: var(--muted); font-size: 0.78rem; font-weight: 700; line-height: 1.25; }
+.modal-content p.auth-error.is-ok { color: var(--ok-ink); }

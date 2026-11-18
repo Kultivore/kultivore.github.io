@@ -9574,6 +9574,7 @@ function openAuthModal(mode) {
     $('authPassword').autocomplete = signup ? 'new-password' : 'current-password';
     $('authForgot').hidden = signup;
     $('authError').textContent = '';
+    $('authError').classList.remove('is-ok');
     $('authEmail').value = '';                  // champs vides à chaque ouverture (et en passant de l'un à l'autre)
     $('authPassword').value = '';
     $('authPassword').placeholder = 'Mot de passe';   // 17/11 : la règle est écrite en dessous (authRule)
@@ -9589,6 +9590,31 @@ function openAuthModal(mode) {
     $('authEmail').autocomplete = 'email';
     $('authEye').textContent = '👁️';
     $('authEye2').textContent = '👁️';
+    // 18/11 : « Mot de passe oublié » = une fenêtre à part (seulement l'e-mail) ; arrivée par le lien de l'e-mail =
+    // fenêtre « Nouveau mot de passe » (2 cases) au lieu du prompt() du navigateur
+    const forgot = mode === 'forgot', newpass = mode === 'newpass';
+    $('authIntro').textContent = forgot ? 'Écris l’e-mail de ton compte : on t’envoie un lien pour choisir un nouveau mot de passe.'
+        : newpass ? 'Choisis ton nouveau mot de passe, puis retape-le.'
+        : 'Ton compte garde ta partie : tu la retrouves sur tous tes appareils.';
+    $('authEmail').hidden = newpass;
+    $('authPassWrap').hidden = forgot;
+    $('authSwitch').hidden = newpass;
+    $('authLegal').hidden = !ACCOUNT_V2 || forgot || newpass;
+    if (forgot) {
+        $('authTitle').textContent = '🔑 Mot de passe oublié';
+        $('authSubmit').textContent = 'Envoyer le lien';
+        $('authSwitch').textContent = '← Retour à la connexion';
+        $('authForgot').hidden = true;
+    }
+    if (newpass) {
+        $('authTitle').textContent = '🔑 Nouveau mot de passe';
+        $('authSubmit').textContent = 'Changer mon mot de passe';
+        $('authForgot').hidden = true;
+        $('authRule').hidden = false;
+        $('authPass2Wrap').hidden = false;
+        $('authPassword').placeholder = 'Nouveau mot de passe';
+        $('authPassword').autocomplete = $('authPassword2').autocomplete = 'new-password';
+    }
     $('authModal').hidden = false;
     // Pas de focus automatique : le clavier ne s'ouvre que quand le joueur touche un champ (fenêtre entière visible)
 }
@@ -9605,6 +9631,8 @@ function authErrorText(error) {
 
 async function submitAuth(e) {
     e.preventDefault();
+    if (authMode === 'forgot') return sendResetLink();
+    if (authMode === 'newpass') return saveNewPassword();
     const c = cloudClient();
     const email = $('authEmail').value.trim();
     const password = $('authPassword').value;
@@ -9638,20 +9666,50 @@ async function submitAuth(e) {
     if (authDone) { const next = authDone; authDone = null; next(); }
 }
 
-async function forgotPassword() {
+// 18/11 : « Mot de passe oublié ? » ouvre sa propre fenêtre (on y retape l'e-mail du compte)
+function forgotPassword() { openAuthModal('forgot'); }
+async function sendResetLink() {
     const c = cloudClient();
     const email = $('authEmail').value.trim();
-    if (!c || !email.includes('@')) { $('authError').textContent = 'Écris d’abord ton e-mail ci-dessus.'; return; }
-    await c.auth.resetPasswordForEmail(email, { redirectTo: siteBase() });
-    $('authError').textContent = 'Si un compte existe avec cet e-mail, tu vas recevoir un lien pour changer ton mot de passe.';
+    const err = $('authError');
+    err.classList.remove('is-ok');
+    if (!email.includes('@')) { err.textContent = 'Indique l’adresse e-mail de ton compte.'; return; }
+    if (!c || !navigator.onLine) { err.textContent = 'Il faut internet pour envoyer le lien.'; return; }
+    const btn = $('authSubmit');
+    btn.disabled = true;
+    btn.textContent = 'Envoi…';
+    const { error } = await c.auth.resetPasswordForEmail(email, { redirectTo: siteBase() });
+    btn.disabled = false;
+    btn.textContent = 'Envoyer le lien';
+    if (error) { err.textContent = authErrorText(error); return; }
+    err.classList.add('is-ok');
+    err.textContent = `📩 C’est envoyé ! Si un compte existe avec ${email}, tu vas recevoir un e-mail de Kultivo (regarde aussi dans les indésirables).`;
 }
 
 /** Arrivée depuis le lien « mot de passe oublié » reçu par e-mail. */
-async function askNewPassword() {
-    const password = prompt('Choisis ton nouveau mot de passe (6 caractères minimum) :');
-    if (!password || password.length < 6) return;
+function askNewPassword() { openAuthModal('newpass'); }
+async function saveNewPassword() {
+    const password = $('authPassword').value;
+    const err = $('authError');
+    err.classList.remove('is-ok');
+    if (password.length < 6) { err.textContent = 'Le mot de passe doit faire au moins 6 caractères.'; return; }
+    if (!/[A-ZÀ-ÖØ-Þ]/.test(password)) { err.textContent = 'Il faut au moins une majuscule dans le mot de passe.'; return; }
+    if ($('authPassword2').value !== password) {
+        err.textContent = $('authPassword2').value ? 'Les deux mots de passe ne sont pas pareils.' : 'Retape ton mot de passe dans la 2e case.';
+        return;
+    }
+    const btn = $('authSubmit');
+    btn.disabled = true;
+    btn.textContent = 'Un instant…';
     const { error } = await cloudClient().auth.updateUser({ password });
-    showToast(error ? 'Impossible de changer le mot de passe, réessaie.' : '✅ Mot de passe changé !');
+    btn.disabled = false;
+    btn.textContent = 'Changer mon mot de passe';
+    if (error) {
+        err.textContent = /different|same/i.test(error.message || '') ? 'Choisis un mot de passe différent de l’ancien.' : 'Impossible de changer le mot de passe, réessaie.';
+        return;
+    }
+    closeAuthModal();
+    showToast('✅ Mot de passe changé !');
 }
 
 /** Déconnexion : la partie appartient au compte. On l'envoie une dernière fois, puis l'appareil repart de zéro
@@ -13061,7 +13119,7 @@ function bindEvents() {
     }));
     $('cloudLogoutBtn').addEventListener('click', () => { $('accountModal').hidden = true; cloudLogout(); });
     $('closeAuthBtn').addEventListener('click', closeAuthModal);
-    $('authSwitch').addEventListener('click', () => openAuthModal(authMode === 'signup' ? 'login' : 'signup'));
+    $('authSwitch').addEventListener('click', () => openAuthModal(authMode === 'login' ? 'signup' : 'login'));
     // Clavier ouvert sur un champ de la fenêtre : on garde le champ (et le bouton) visibles au-dessus du clavier
     $('authEmail').addEventListener('input', renderAuthHint);   // 17/11 : « Tu voulais dire …@gmail.com ? »
     ['authEmail', 'authPassword', 'authPassword2'].forEach(id => $(id).addEventListener('focus', () => {
