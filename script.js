@@ -13135,6 +13135,8 @@ function bindEvents() {
     });
 
     $('tourNext').addEventListener('click', () => { tourStep++; showTourStep(); });
+    // 18/11 : pendant une bulle d'explication, l'écran ne défile plus sous le doigt (le trou de lumière restait en place pendant que la page bougeait)
+    ['touchmove', 'wheel'].forEach(ev => $('tour').addEventListener(ev, e => e.preventDefault(), { passive: false }));
     $('tourSkip').addEventListener('click', () => { tourSkipped = true; endTour(); });
     $('dailyReviewBtn').addEventListener('click', openDailyReview);
     window.addEventListener('resize', () => { if (!$('tour').hidden) placeTour(); });
