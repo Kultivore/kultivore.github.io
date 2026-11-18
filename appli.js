@@ -68,10 +68,26 @@
         navigator.share = (d) => P.Share.share({ title: d.title, text: d.text, url: d.url, dialogTitle: 'Partager' });
     }
 
-    /* 6) Clavier : on garde pour l'instant le comportement du site (l'écran rétrécit quand le clavier s'ouvre : c'est sur
-          ça que fitToKeyboard s'appuie). Plus tard (demande de l'utilisateur) : bloquer le défilement sous la question
-          avec P.Keyboard (resize « none » + hauteur du clavier via keyboardWillShow) — à essayer sur le téléphone. */
-    if (P.Keyboard) {
-        call(() => P.Keyboard.setAccessoryBarVisible && P.Keyboard.setAccessoryBarVisible({ isVisible: false }));
+    /* 6) Clavier (18/11) : par défaut, Android REDIMENSIONNE toute la page quand le clavier s'ouvre / se ferme
+          (780 → 438 points sur un S22) : à chaque « Vérifier » / « Continuer », tout sautait. L'appli est maintenant en
+          « adjustNothing » (AndroidManifest.xml) : la page garde sa taille et le clavier passe par-dessus, comme dans Chrome.
+          Comme dans Chrome, on fait rétrécir seulement visualViewport.height (c'est lui que lisent updateKeyboardMode,
+          fitToKeyboard, keepAnswerVisible…). La partie de la page cachée par le clavier est calculée par Android
+          (MainActivity.java, qui appelle window.kultivoKb(points)). */
+    if (P.Keyboard) call(() => P.Keyboard.setAccessoryBarVisible && P.Keyboard.setAccessoryBarVisible({ isVisible: false }));
+    const vv = window.visualViewport;
+    const desc = vv && Object.getOwnPropertyDescriptor(Object.getPrototypeOf(vv), 'height');
+    if (desc && desc.get) {
+        let kb = 0;   // partie de la page cachée par le clavier (en points CSS)
+        Object.defineProperty(vv, 'height', { configurable: true, get: () => Math.max(0, desc.get.call(vv) - kb) });
+        window.kultivoKb = h => {
+            const v = Math.max(0, Math.round(Number(h) || 0));
+            if (window.__kbLog) window.__kbLog.push([Math.round(performance.now()), v, window.innerHeight]);
+            if (v === kb) return;
+            kb = v;
+            document.documentElement.style.setProperty('--app-kb', `${kb}px`);
+            document.documentElement.classList.toggle('app-kb', kb > 0);
+            vv.dispatchEvent(new Event('resize'));
+        };
     }
 })();

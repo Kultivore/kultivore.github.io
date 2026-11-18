@@ -5646,3 +5646,10 @@ body.esc-theme-usa .esc-head-prog .esc-bar i { background: #c8283f; }
 @keyframes bdfClaim { 50% { box-shadow: 0 3px 0 var(--gold-deep), 0 0 0 6px rgba(255, 190, 46, 0); transform: translateY(-2px); } }
 @keyframes bdfWiggle { 0%, 70%, 100% { transform: rotate(0); } 78% { transform: rotate(-12deg) scale(1.1); } 86% { transform: rotate(10deg) scale(1.1); } }
 @media (prefers-reduced-motion: reduce) { .bdf-tile.is-claim, .bdf-tile.is-claim .bdf-ic { animation: none; } }
+
+/* 18/11 : APPLI Android seulement (classe posée par appli.js) : le clavier passe PAR-DESSUS la page (comme dans Chrome).
+   Une cale sous la page permet de faire défiler jusqu'à ce qui serait caché ; les fenêtres se centrent au-dessus du clavier. */
+html.app-kb body::after { content: ''; display: block; height: var(--app-kb); }
+html.is-app .modal-overlay { padding-top: calc(20px + env(safe-area-inset-top, 0px)); }
+html.app-kb .modal-overlay { padding-bottom: calc(20px + var(--app-kb)); }
+html.app-kb .modal-content { max-height: calc(100dvh - var(--app-kb) - 40px - env(safe-area-inset-top, 0px)); }
