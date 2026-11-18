@@ -2635,7 +2635,7 @@ function renderBadgesV2(grid) {
             const nm = el('span', 'bdf-name');
             nm.textContent = hid ? 'Secret' : x.b.name;
             const sub = el('span', 'bdf-sub');
-            sub.textContent = x.claim ? `🎁 +${coinBadge()} 🪙` : hid ? '🔒 à trouver' : x.has ? `✓ ${x.goal}` : x === next ? `${nf(Math.min(x.val, x.target))} / ${nf(x.target)}` : `🔒 ${x.goal}`;
+            sub.textContent = x.claim ? '🎁 Récupérer' : hid ? '🔒 à trouver' : x.has ? `✓ ${x.goal}` : x === next ? `${nf(Math.min(x.val, x.target))} / ${nf(x.target)}` : `🔒 ${x.goal}`;
             t.append(ic, nm, sub);
             t.addEventListener('click', () => {
                 if (x.claim) { claimBadge(x.b); return; }

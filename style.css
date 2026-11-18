@@ -5631,3 +5631,18 @@ body.esc-theme-usa .esc-head-prog .esc-bar i { background: #c8283f; }
 .enc-gres-t b { font-size: 0.95rem; font-weight: 900; }
 .enc-gres-t small { color: var(--muted); font-size: 0.78rem; font-weight: 700; line-height: 1.25; }
 .modal-content p.auth-error.is-ok { color: var(--ok-ink); }
+
+/* 18/11 : badges À RÉCUPÉRER bien visibles (avant : fond bleu pâle, presque comme les autres) : case dorée pleine qui respire,
+   pastille rouge « ! » dans le coin, gain dans une pilule foncée ; bandeau du haut doré lui aussi */
+.bdf-tile.is-claim { position: relative; border-color: var(--gold-deep); background: linear-gradient(160deg, #ffe58a, var(--gold));
+    color: var(--on-gold); box-shadow: 0 3px 0 var(--gold-deep), 0 0 0 0 rgba(255, 190, 46, .6); animation: bdfClaim 1.8s ease-in-out infinite; }
+.bdf-tile.is-claim .bdf-name { color: var(--on-gold); }
+.bdf-tile.is-claim .bdf-ic { animation: bdfWiggle 1.8s ease-in-out infinite; }
+.bdf-tile.is-claim .bdf-sub { margin-top: 3px; padding: 2px 8px; border-radius: 99px; background: var(--on-gold); color: #fff; font-weight: 900; }
+.bdf-tile.is-claim::after { content: '!'; position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--red); color: #fff; font-weight: 900; font-size: .8rem; line-height: 20px; box-shadow: 0 0 0 2px var(--surface); }
+.bdf-claim { border-color: var(--gold-deep); background: linear-gradient(160deg, #ffe58a, var(--gold)); color: var(--on-gold);
+    box-shadow: 0 3px 0 var(--gold-deep); }
+@keyframes bdfClaim { 50% { box-shadow: 0 3px 0 var(--gold-deep), 0 0 0 6px rgba(255, 190, 46, 0); transform: translateY(-2px); } }
+@keyframes bdfWiggle { 0%, 70%, 100% { transform: rotate(0); } 78% { transform: rotate(-12deg) scale(1.1); } 86% { transform: rotate(10deg) scale(1.1); } }
+@media (prefers-reduced-motion: reduce) { .bdf-tile.is-claim, .bdf-tile.is-claim .bdf-ic { animation: none; } }
