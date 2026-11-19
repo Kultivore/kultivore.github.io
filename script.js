@@ -407,12 +407,14 @@ function normalize(str) {
         .replace(/[^\p{L}\p{N}.\s]/gu, '')
         .replace(/\.(?!\d)|(?<!\d)\./g, '')          // un point ne reste que dans un nombre décimal
         .replace(/\s+/g, ' ')
+        .replace(/(\d) (e|eme|ieme|er|ere|re|nd|nde)(?= |$)/g, '$1$2')   // 19/11 : « 3 eme » = « 3eme » = « 3e »
         .trim()
         .split(' ')
         .map(w => WORD_SAME[w] || w)   // st = saint, jr = junior, noire = noir… (2026-10-25, signalements)
         .map(w => {
             const ord = w.match(/^(\d+)(e|eme|ieme|er|ere|re|nd|nde)$/);   // 5e, 5ème, 1er, 2nd…
             if (ord) return `${Number(ord[1])}e`;
+            if (w === 'ier' || w === 'iere' || w === 'ire') return '1e';   // 19/11 : Darius Ier = Darius 1er, Élisabeth Ire = 1re
             if (w in ORDINAL_WORDS) return `${ORDINAL_WORDS[w]}e`;
             const r = romanValue(w);
             return r === null ? w : String(r);

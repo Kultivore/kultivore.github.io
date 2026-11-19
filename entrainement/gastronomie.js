@@ -164,7 +164,7 @@ TRAINING_QUESTIONS.push(
     { id: 18147, theme: "Gastronomie", d: 4.2, q: "Quel pâtissier français est devenu célèbre pour ses fruits en trompe-l’œil plus vrais que nature ?", a: ["Cédric Grolet", "Grolet", "Cedric Grolet"], exp: "Chef pâtissier de l’hôtel Le Meurice, à Paris." },
     { id: 18148, theme: "Gastronomie", d: 4.2, q: "Quelle boisson énergisante autrichienne a pour slogan « donne des ailes » ?", a: ["Red Bull"], exp: "Inspirée d’une boisson thaïlandaise." },
     { id: 18149, theme: "Gastronomie", d: 4.4, q: "Quel chef révélé par « Top Chef » en 2020 mêle cuisine africaine et japonaise dans son restaurant MoSuke ?", a: ["Mory Sacko", "Sacko"], exp: "Étoilé par le guide Michelin dès 2021." },
-    { id: 18150, theme: "Gastronomie", d: 4.6, q: "Quel gastronome a publié l’« Almanach des gourmands », l’ancêtre des guides, en 1803 ?", a: ["Grimod de La Reynière", "Grimod", "Grimod de la Reyniere"], exp: "Il organisait des dîners extravagants à Paris." }
+    { id: 18150, theme: "Gastronomie", d: 4.6, q: "Quel gastronome a publié l’« Almanach des gourmands », l’ancêtre des guides, en 1803 ?", a: ["Grimod de La Reynière", "Grimod", "Grimod de la Reyniere", "De La Reynière", "La Reynière"], exp: "Il organisait des dîners extravagants à Paris." }
 );
 
 /* Gastronomie · lot des paliers 6-10 (2026-11-10, faits vérifiés le 09/11) */
@@ -172,7 +172,7 @@ TRAINING_QUESTIONS.push(
     { id: 18151, theme: "Gastronomie", d: 1.0, q: "Comment appelle-t-on le pain au chocolat dans le Sud-Ouest ?", a: ["Une chocolatine", "Chocolatine"], exp: "Un débat qui divise la France depuis longtemps." },
     { id: 18152, theme: "Gastronomie", d: 1.0, q: "Quel croque-monsieur porte en plus un œuf au plat ?", a: ["Le croque-madame", "Croque-madame", "Croque madame"], exp: "L’œuf rappellerait un chapeau de dame." },
     { id: 18153, theme: "Gastronomie", d: 1.1, q: "Quels petits choux sans garniture sont couverts de grains de sucre ?", a: ["Les chouquettes", "Chouquette", "Chouquettes"], exp: "On les achète au poids à la boulangerie." },
-    { id: 18154, theme: "Gastronomie", d: 1.1, q: "Quel dessert est fait de chocolat fondu et de blancs d’œufs battus ?", a: ["La mousse au chocolat", "Mousse au chocolat"], exp: "Sans cuisson : les blancs apportent la légèreté." },
+    { id: 18154, theme: "Gastronomie", d: 1.1, q: "Quel dessert froid et aérien est fait de chocolat fondu et de blancs d’œufs battus ?", a: ["La mousse au chocolat", "Mousse au chocolat"], exp: "Sans cuisson : les blancs apportent la légèreté." },
     { id: 18155, theme: "Gastronomie", d: 1.1, q: "Quel gâteau en forme de grille se mange avec du sucre ou de la chantilly ?", a: ["La gaufre", "Gaufre", "Gaufres"], exp: "Celles de Liège ont des perles de sucre, celles de Bruxelles sont rectangulaires." },
     { id: 18156, theme: "Gastronomie", d: 1.2, q: "Quels gâteaux ronds et frits, troués au milieu, mange Homer Simpson ?", a: ["Les donuts", "Donut", "Donuts", "Beignet"], exp: "Aux États-Unis, ils se dégustent souvent avec un café." },
     { id: 18157, theme: "Gastronomie", d: 1.2, q: "Quel gâteau américain au chocolat, dense et fondant, se coupe en carrés ?", a: ["Le brownie", "Brownie"], exp: "Souvent avec des noix de pécan." },
@@ -283,7 +283,7 @@ TRAINING_QUESTIONS.push(
     { id: 18264, theme: "Gastronomie", d: 2.5, q: "Quelle tarte au citron est recouverte d’un nuage blanc doré au chalumeau ?", a: ["La tarte au citron meringuée", "Tarte au citron meringuée"], exp: "Une meringue italienne, faite avec un sirop chaud." },
     { id: 18265, theme: "Gastronomie", d: 2.0, q: "Quel nœud de pain salé, en forme de cœur, est le symbole des boulangers alsaciens ?", a: ["Le bretzel", "Bretzel", "Bretzels"], exp: "Trempé dans une solution de bicarbonate avant cuisson." },
     { id: 18266, theme: "Gastronomie", d: 2.6, q: "Quel gâteau roulé viennois en pâte très fine est garni de pommes et de cannelle ?", a: ["Le strudel", "Strudel", "Apfelstrudel"], exp: "La pâte doit être si fine qu’on peut lire un journal au travers." },
-    { id: 18267, theme: "Gastronomie", d: 1.7, q: "Quel nom italien donne-t-on à la crème glacée artisanale ?", a: ["Le gelato", "Gelato"], exp: "Plus dense et moins grasse que la glace américaine." },
+    { id: 18267, theme: "Gastronomie", d: 1.7, q: "Quel nom italien donne-t-on à la crème glacée artisanale ?", a: ["Le gelato", "Gelato", "Gelati"], exp: "Plus dense et moins grasse que la glace américaine." },
     { id: 18268, theme: "Gastronomie", d: 2.4, q: "Quelles petites boulettes italiennes de pommes de terre et de farine se servent avec du beurre et de la sauge ?", a: ["Les gnocchis", "Gnocchi", "Gnocchis"], exp: "On les égoutte dès qu’ils remontent à la surface." },
     { id: 18269, theme: "Gastronomie", d: 1.0, q: "Quel petit fromage frais en forme de cylindre, emballé dans du papier, se mange souvent sucré ?", a: ["Le petit-suisse", "Petit-suisse", "Petit suisse"], exp: "Inventé en Normandie par une fermière et un vacher suisse, vers 1850." },
     { id: 18270, theme: "Gastronomie", d: 1.0, q: "Quel fromage fondu en portions triangulaires a une vache rouge hilare sur sa boîte ?", a: ["La Vache qui rit", "Vache qui rit"], exp: "Créée en 1921 dans le Jura ; la vache a été dessinée par Benjamin Rabier." },

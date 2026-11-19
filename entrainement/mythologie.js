@@ -204,7 +204,7 @@ TRAINING_QUESTIONS.push(
     { id: 22183, theme: "Mythologie", d: 2.7, q: "Comment appelait-on les petits dieux protecteurs de la maison romaine ?", a: ["Les lares", "Lares"], exp: "Avec les pénates, qui gardaient les provisions." },
     { id: 22184, theme: "Mythologie", d: 2.8, q: "Quelle chèvre a nourri Zeus bébé en Crète ?", a: ["Amalthée", "Amalthee"], exp: "Une de ses cornes devint la corne d’abondance." },
     { id: 22185, theme: "Mythologie", d: 2.8, q: "Quel dieu égyptien de Thèbes, « le caché », est devenu le roi des dieux ?", a: ["Amon", "Amon-Rê"], exp: "Fusionné avec Rê sous le nom d’Amon-Rê." },
-    { id: 22186, theme: "Mythologie", d: 2.8, q: "Quel disque solaire Akhenaton a-t-il imposé comme dieu unique ?", a: ["Aton", "Aten"], exp: "Une révolution religieuse abandonnée après sa mort." },
+    { id: 22186, theme: "Mythologie", d: 2.8, q: "Quel disque solaire Akhenaton a-t-il imposé comme dieu unique ?", a: ["Aton", "Aten", "Culte d’Aton"], exp: "Une révolution religieuse abandonnée après sa mort." },
     { id: 22187, theme: "Mythologie", d: 2.9, q: "Quel taureau sacré était adoré à Memphis, en Égypte ?", a: ["Apis"], exp: "Il portait un triangle blanc sur le front." },
     { id: 22188, theme: "Mythologie", d: 2.9, q: "Quel dieu égyptien de Memphis, créateur, protégeait les artisans ?", a: ["Ptah"], exp: "Il aurait créé le monde par la parole." },
     { id: 22189, theme: "Mythologie", d: 2.9, q: "Quelle déesse hindoue de la richesse est l’épouse de Vishnou ?", a: ["Lakshmi", "Lakshmî"], exp: "Fêtée lors de Diwali, la fête des lumières." },
