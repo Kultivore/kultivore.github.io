@@ -4788,7 +4788,7 @@ function closeRecap() {
    une image au format story (1080 × 1920) dessinée dans un canvas — logo, « Mon mois d'octobre », Kulti fier, 6 cases de
    chiffres (pas la « bête noire »), pseudo et lien du jeu — puis le menu de partage du téléphone (ou un téléchargement). */
 const RECAP_SHARE = true;   // ouvert à tous le 27/10 (essayé dans le bac à sable)
-const GAME_URL = 'https://aymericchevailler45-pixel.github.io/Kultivo/';
+const GAME_URL = 'https://kultivo-app.github.io/';   // 19/11 : nouvelle adresse (avant : aymericchevailler45-pixel.github.io/Kultivo/)
 const loadImg = src => new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = src; });
 async function drawRecapImage(m) {
     const P = m === 'parcours';   // récap du parcours (10/11)
