@@ -83,6 +83,11 @@ let sbClient = null;                       // client Supabase (bibliothèque ven
 let cloudUser = null;                      // joueur connecté (null = pas de compte)
 let cloudPushTimer = null;
 let cloudBusy = false;
+// 19/11 : lien « mot de passe oublié » ouvert : on s'en souvient même si le jeu se recharge juste après (partie du compte
+// rechargée sur un appareil vide) — sinon la fenêtre « Nouveau mot de passe » disparaissait et on était juste reconnecté
+try { if (/(^|[#&])type=recovery(&|$)/.test(location.hash)) sessionStorage.setItem('kultivo_recovery', '1'); } catch (err) { /* tant pis */ }
+const recoveryPending = () => { try { return !!sessionStorage.getItem('kultivo_recovery'); } catch (err) { return false; } };
+const recoveryDone = () => { try { sessionStorage.removeItem('kultivo_recovery'); } catch (err) { /* tant pis */ } };
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxZnFkaHN2cGtjemFpZmdvc2VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNjE2NTUsImV4cCI6MjEwNzczNzY1NX0.EGJvwXjBlSQKP2N-xTNdebuSD33IevVYe6cE7NpOZMk';
 
 // XP gagnés
@@ -9483,13 +9488,14 @@ async function cloudInit() {
         renderCloudCard();
         if (event === 'SIGNED_IN') setTimeout(leagueLoad, 0);
         if (!$('leagueScreen').hidden) renderLeague();
-        if (event === 'PASSWORD_RECOVERY') setTimeout(askNewPassword, 300);
+        if (event === 'PASSWORD_RECOVERY') { try { sessionStorage.setItem('kultivo_recovery', '1'); } catch (err) { /* tant pis */ } setTimeout(askNewPassword, 300); }
     });
     try {
         const { data } = await c.auth.getSession();
         cloudUser = data.session?.user || null;
     } catch (err) { cloudUser = null; }
     renderCloudCard();
+    if (recoveryPending() && cloudUser) setTimeout(askNewPassword, 600);
     cloudSync(false).finally(claimGifts);   // cadeaux après la synchronisation (sinon elle pourrait les écraser)
     if (cloudUser) leagueLoad();   // demandes d'amis (pastille) et coffre du podium
     window.addEventListener('online', () => cloudSync(false));
@@ -9532,6 +9538,7 @@ function renderCloudCard() {
 /** Fermeture : le champ mot de passe redevient un simple champ texte vide. Sinon Chrome voit un formulaire de
     connexion dans la page et ajoute sa barre « clé / carte bancaire / adresse » au clavier, même pour répondre. */
 function closeAuthModal() {
+    if (authMode === 'newpass') recoveryDone();   // mot de passe changé, ou fenêtre fermée exprès
     $('authModal').hidden = true;
     $('authPassword').value = '';
     $('authPassword').type = 'text';
@@ -9695,7 +9702,7 @@ async function sendResetLink() {
 }
 
 /** Arrivée depuis le lien « mot de passe oublié » reçu par e-mail. */
-function askNewPassword() { openAuthModal('newpass'); }
+function askNewPassword() { if (!$('authModal').hidden && authMode === 'newpass') return; openAuthModal('newpass'); }
 async function saveNewPassword() {
     const password = $('authPassword').value;
     const err = $('authError');
