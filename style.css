@@ -5665,3 +5665,14 @@ html.app-kb .modal-content { max-height: calc(100dvh - var(--app-kb) - 40px - en
 /* 18/11 : APPLI Android : la barre de navigation d'Android est cachée (MainActivity.hideNavBar) et ne revient qu'un instant
    (balayage, clavier) : on ignore sa place, sinon le bas de l'écran remontait puis redescendait à chaque question. */
 html.is-app { --sab: 0px; }
+
+/* 19/11 : déconnexion involontaire : « ! » orange sur le coin du logo (la barre du haut ne change pas de largeur) + bandeau du Profil */
+body.acct-lost .brand { position: relative; cursor: pointer; }
+body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top: -4px; width: 18px; height: 18px; border-radius: 50%;
+    background: #ff9600; color: #fff; font: 900 12px/18px var(--font); text-align: center; box-shadow: 0 0 0 2px var(--surface); pointer-events: none; }
+.lost-banner { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px;
+    background: #fff3e0; border: 2px solid #ff9600; color: #7a4300; font-weight: 800; font-size: 0.92rem; }
+.lost-banner p { margin: 0; flex: 1; }
+.lost-banner .btn { flex: none; width: auto; padding: 10px 14px; font-size: 0.9rem; }
+:root[data-theme="dark"] .lost-banner { background: #3a2a10; color: #ffd77a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lost-banner { background: #3a2a10; color: #ffd77a; } }

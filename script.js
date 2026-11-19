@@ -3753,7 +3753,7 @@ function updateNavNotifications() {
     const shinies = pendingShinyCount();   // cartes à 3/3 à rendre brillantes
     const setNotif = (target, n) => n > 0 ? target.setAttribute('data-notif', n) : target.removeAttribute('data-notif');
     const avNew = avOn() ? avReadyCount : (data.avatarNew ? 1 : 0);
-    setNotif(profileBtn, unclaimedBadges + shinies + avNew + recapUnseen());
+    setNotif(profileBtn, unclaimedBadges + shinies + avNew + recapUnseen() + (accountLost() ? 1 : 0));
     setNotif($('avatarBtn'), avNew);
     setNotif(document.querySelector('.nav-btn[data-screen="shop"]'), avOn() && data.vitrineSeen !== weekStart() ? 1 : 0);
     setNotif(badgesTab, unclaimedBadges);
@@ -5993,6 +5993,19 @@ function renderChallenges() {
 
 function renderProfile() {
     const data = state.data;
+    {   // 19/11 : bandeau « tu as été déconnecté » en haut du Profil (déconnexion involontaire seulement)
+        let lost = $('lostBanner');
+        if (accountLost()) {
+            if (!lost) {
+                lost = el('div', 'lost-banner'); lost.id = 'lostBanner';
+                const t = el('p'); t.textContent = '⚠️ Tu as été déconnecté : tes parties ne sont plus sauvegardées dans ton compte.';
+                const b = el('button', 'btn btn-green'); b.type = 'button'; b.textContent = 'Me reconnecter';
+                b.addEventListener('click', () => openAuthModal('login'));
+                lost.append(t, b);
+                $('profileGrid').prepend(lost);
+            }
+        } else if (lost) lost.remove();
+    }
     const { current, next } = titleFor(data.xp);
 
     $('profileName').textContent = cloudUser && league?.userId === cloudUser.id && league.pseudo ? league.pseudo : 'Mon profil';
@@ -9354,6 +9367,40 @@ async function flushStats() {
 
 /* ---------- Sauvegarde en ligne (Supabase, table « saves ») ---------- */
 
+/* 19/11 : DÉCONNEXION INVOLONTAIRE. Quand un compte est connecté, on note sur l'appareil que la partie lui appartient
+   (kultivo_owner). « Se déconnecter » efface l'appareil (et cette note) : si la note est là SANS connexion, c'est que la
+   connexion a sauté toute seule → le joueur croit être sauvegardé alors que non. Rien pour ceux qui jouent sans compte. */
+const OWNER_KEY = 'kultivo_owner';
+let cloudReady = false;   // la session a été lue au démarrage (avant : on ne sait pas encore)
+function accountLost() {
+    if (BAC || cloudUser || !cloudReady || !window.supabase) return false;
+    try { return !!localStorage.getItem(OWNER_KEY); } catch (err) { return false; }
+}
+function noteOwner() {
+    if (BAC || !cloudUser) return;
+    try { localStorage.setItem(OWNER_KEY, cloudUser.id); localStorage.removeItem('kultivo_lost_told'); } catch (err) { /* tant pis */ }
+}
+function refreshLostUi() {
+    document.body.classList.toggle('acct-lost', accountLost());
+    if (!accountLost()) $('lostBanner')?.remove();
+    updateNavNotifications();
+    if (!$('profileScreen').hidden) renderProfile();
+}
+/** Une seule fois par déconnexion involontaire : on le dit clairement (le reste du temps : « ! » sur le logo + Profil). */
+function lostNotice(tries = 0) {
+    if (!accountLost()) return;
+    try { if (localStorage.getItem('kultivo_lost_told')) return; } catch (err) { return; }
+    const busy = !state.data.onboarded || !$('studyScreen').hidden || document.querySelector('.modal-overlay:not([hidden]), #tour:not([hidden]), #streakAnim:not([hidden])');
+    if (busy) { if (tries < 40) setTimeout(() => lostNotice(tries + 1), 3000); return; }
+    try { localStorage.setItem('kultivo_lost_told', '1'); } catch (err) { /* tant pis */ }
+    askConfirm({
+        title: '⚠️ Tu as été déconnecté',
+        art: kultiEl('inquiet', 'kulti-blink'),
+        text: 'Reconnecte-toi, sinon tes prochaines parties ne seront pas sauvegardées dans ton compte.',
+        yes: 'Me reconnecter',
+        no: 'Plus tard'
+    }).then(yes => { if (yes) openAuthModal('login'); });
+}
 function cloudMeta() {
     try { return JSON.parse(localStorage.getItem(CLOUD_META_KEY) || '{}'); } catch (err) { return {}; }
 }
@@ -9498,6 +9545,8 @@ async function cloudInit() {
     c.auth.onAuthStateChange((event, session) => {
         cloudUser = session?.user || null;
         renderCloudCard();
+        if (cloudUser) noteOwner();
+        if (cloudReady) refreshLostUi();   // 19/11 : connexion revenue → le « ! » disparaît ; perdue → il apparaît
         if (event === 'SIGNED_IN') setTimeout(leagueLoad, 0);
         if (!$('leagueScreen').hidden) renderLeague();
         if (event === 'PASSWORD_RECOVERY') { try { sessionStorage.setItem('kultivo_recovery', '1'); } catch (err) { /* tant pis */ } setTimeout(askNewPassword, 300); }
@@ -9507,6 +9556,10 @@ async function cloudInit() {
         cloudUser = data.session?.user || null;
     } catch (err) { cloudUser = null; }
     renderCloudCard();
+    cloudReady = true;
+    noteOwner();
+    refreshLostUi();
+    setTimeout(lostNotice, 3500);
     if (recoveryPending() && cloudUser) setTimeout(askNewPassword, 600);
     cloudSync(false).finally(claimGifts);   // cadeaux après la synchronisation (sinon elle pourrait les écraser)
     if (cloudUser) leagueLoad();   // demandes d'amis (pastille) et coffre du podium
@@ -9792,6 +9845,7 @@ function localWipeAndRestart() {
         localStorage.removeItem(CLOUD_META_KEY);
         localStorage.removeItem(LEAGUE_KEY);
         localStorage.removeItem('kultivo_auth');
+        localStorage.removeItem(OWNER_KEY);
     } catch (err) { /* tant pis */ }
     location.reload();
 }
@@ -9830,6 +9884,7 @@ async function cloudLogout() {
         localStorage.removeItem(BACKUP_KEY);   // la copie de secours est celle de l'ancien compte
         localStorage.removeItem(CLOUD_META_KEY);
         localStorage.removeItem(LEAGUE_KEY);
+        localStorage.removeItem(OWNER_KEY);   // 19/11 : déconnexion voulue = pas d'alerte « déconnecté »
     } catch (err) { /* tant pis */ }
     try { sessionStorage.setItem('kultivo_loggedout', '1'); } catch (err) { /* tant pis */ }   // 18/11 : écran « Tu es déconnecté »
     location.reload();
@@ -13588,7 +13643,8 @@ function init() {
         setTimeout(summitCatchUp, 2600);   // 13/11 : fête du sommet jamais vue (elle plantait à la fin du niveau 300)
     }
     hideSplash();
-    setTimeout(movedNotice, 3000);   // 19/11 : « Kultivo a déménagé » (une seule fois, site seulement)
+    setTimeout(movedNotice, 3000);
+    document.querySelector('.brand')?.addEventListener('click', () => { if (accountLost()) openAuthModal('login'); });   // 19/11 : « ! » du logo   // 19/11 : « Kultivo a déménagé » (une seule fois, site seulement)
     checkServerClock();   // 17/11 : vraie heure (anti-triche)
     clockNotice();
     if (ENC_ON) setTimeout(() => encCode().catch(() => {}), 4000);   // 13/11 : écrans de l'encyclopédie chargés discrètement en arrière-plan
