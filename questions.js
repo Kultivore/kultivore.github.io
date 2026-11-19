@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   KULTIVO — les questions
+   KULTIVORE — les questions
    ============================================================
    Chaque question : id (unique), theme, d (difficulté de 1 = très facile
    à 5 = très pointu), q (question), a (réponses acceptées), exp (explication).

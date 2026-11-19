@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   KULTIVO — questions de l'événement « Escale au Maghreb » (ids 31000+, séparées du parcours et de l'entraînement)
+   KULTIVORE — questions de l'événement « Escale au Maghreb » (ids 31000+, séparées du parcours et de l'entraînement)
    Préparé le 2026-10-30 (voyage des testeurs, 2-8 novembre 2026). Questions accessibles (d ≈ 2,3), sujets choisis pour
    ne PAS doublonner le parcours et l'entraînement (Rabat, Atlas, tajine, couscous, Chefchaouen… y sont déjà).
    Même format que questions.js (theme = vrai thème du jeu, pour les missions).

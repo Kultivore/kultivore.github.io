@@ -1,4 +1,4 @@
-/* Kultivo — encyclopédie des savoirs (écrans). Chargé en arrière-plan après le démarrage (encCode, script.js). */
+/* Kultivore — encyclopédie des savoirs (écrans). Chargé en arrière-plan après le démarrage (encCode, script.js). */
 /** 12/11 : page plein écran de l'encyclopédie ; le contenu défile dedans, « ← » et ✕ restent en haut (alignés). */
 function encPage(back, ...nodes) {
     const body = $('friendBody');

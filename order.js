@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   KULTIVO — les familles « Remets dans l'ordre » (niveaux Ordre)
+   KULTIVORE — les familles « Remets dans l'ordre » (niveaux Ordre)
    ============================================================
    Les niveaux 6, 16, 26… 116 sont des niveaux Ordre : 3 frises à la suite.
    Chaque frise montre 4 à 6 cartes mélangées à ranger dans l'ordre.

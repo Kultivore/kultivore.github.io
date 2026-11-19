@@ -1,6 +1,6 @@
 'use strict';
 /* ============================================================
-   KULTIVO — Escale États-Unis (17/11/2026, bac à sable). Questions faciles (d ≈ 1,8 en moyenne), étapes à thème (champ « stage »).
+   KULTIVORE — Escale États-Unis (17/11/2026, bac à sable). Questions faciles (d ≈ 1,8 en moyenne), étapes à thème (champ « stage »).
    ids 40600+. Fichier généré (scratchpad esc_build.py + esc_us.py). Chargé avant escales.js.
    ============================================================ */
 window.ESCALE_BANKS = window.ESCALE_BANKS || {};

@@ -1,6 +1,6 @@
 'use strict';
 /* ============================================================
-   KULTIVO — Escale au Japon (17/11/2026, bac à sable ; aperçu : apercu-escales-voyage.html)
+   KULTIVORE — Escale au Japon (17/11/2026, bac à sable ; aperçu : apercu-escales-voyage.html)
    Questions FACILES (d ≈ 1,7 en moyenne, de 1,2 à 2,6 ; 3 à 2,6 au plus) : les grands classiques du pays ont le droit
    d'être là même s'ils existent ailleurs dans le jeu (jamais la même question exacte).
    ids 40000+ (Japon : 40000-40199). Paires et frises propres à l'escale.

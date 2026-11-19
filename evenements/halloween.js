@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   KULTIVO — questions de l'événement Halloween (ids 30000+, séparées du parcours et de l'entraînement)
+   KULTIVORE — questions de l'événement Halloween (ids 30000+, séparées du parcours et de l'entraînement)
    Réutilisables chaque année : ajouter quelques questions nouvelles pour l'édition suivante.
    Même format que questions.js (theme = vrai thème du jeu, pour les missions « bonnes réponses en … »).
    ============================================================ */

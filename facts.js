@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   KULTIVO — anecdotes des petits décors du parcours
+   KULTIVORE — anecdotes des petits décors du parcours
    ============================================================
    Chaque icône du parcours représente un thème. Un tap affiche une
    anecdote : chaque icône a la sienne (dans l'ordre de la liste).

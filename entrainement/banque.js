@@ -1,5 +1,5 @@
 /* ============================================================
-   KULTIVO — banque de questions de l'ENTRAÎNEMENT PAR THÈME
+   KULTIVORE — banque de questions de l'ENTRAÎNEMENT PAR THÈME
    Questions réservées à ce mode : elles n'apparaissent jamais dans le parcours.
    Chaque thème a son fichier (entrainement/<theme>.js) qui ajoute ses questions avec TRAINING_QUESTIONS.push(…).
    Format identique au parcours : { id, theme, d (1 à 5), q, a: [réponses acceptées], exp }

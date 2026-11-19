@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   KULTIVO — répartition automatique des questions par niveau
+   KULTIVORE — répartition automatique des questions par niveau
    ============================================================
    Ce fichier lit toutes les questions de questions.js et les range
    lui-même dans les niveaux, de la plus facile à la plus difficile :

@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   KULTIVO — Noël 2026 (16/11/2026, BAC À SABLE ; pour tous : NOEL_ON = true et retirer `bacOnly` de l'événement noel-2026)
+   KULTIVORE — Noël 2026 (16/11/2026, BAC À SABLE ; pour tous : NOEL_ON = true et retirer `bacOnly` de l'événement noel-2026)
    Chargé APRÈS script.js (il utilise ses fonctions ; tout est appelé après le chargement de la page).
    1) Décor de Noël tout décembre (neige, icônes, anecdotes : EVENT_BANKS.noelFacts dans evenements/noel.js).
    2) Onglet « 🎄 Noël » dans Défis (à côté de « 🏆 Défis ») du 1er au 27 décembre : calendrier de l'Avent (1er → 24) et,

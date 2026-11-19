@@ -2,7 +2,7 @@
 @font-face { font-family: 'KCoin'; src: url(data:font/otf;base64,T1RUTwALAIAAAwAwQ0ZGIJ9a/JcAAAJMAAABAkNPTFIAEgAuAAADUAAAACRDUEFMSv09iwAAA3QAAAAeT1MvMkVDSEsAAAEgAAAAYGNtYXAAHvXlAAAB3AAAAFBoZWFkMXLuzgAAALwAAAA2aGhlYQc8BBwAAAD0AAAAJGhtdHgETAAAAAADlAAAAA5tYXhwAAZQAAAAARgAAAAGbmFtZTjrOaYAAAGAAAAAWnBvc3QAAwAAAAACLAAAACAAAQAAAAEAABTCXsVfDzz1AAMD6AAAAADnB9WtAAAAAOcH1a0AS/9vBAEDJQAAAAMAAgAAAAAAAAABAAADhP84AAAETAAAAJYDtgABAAAAAAAAAAAAAAAAAAAAAQAAUAAABgAAAAMETAGQAAUABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAD8/Pz8AAP////8DhP84AAADhADIAAAAAAAAAAAAAAAAAAAAIAAAAAAABAA2AAEAAAAAAAEABQAAAAEAAAAAAAIABwAFAAMAAQQJAAEACgAMAAMAAQQJAAIADgAWS0NvaW5SZWd1bGFyAEsAQwBvAGkAbgBSAGUAZwB1AGwAYQByAAAAAAADAAAAAwAAABwAAwABAAAAHAADAAoAAAA0AAQAGAAAAAIAAgAAAAD//wAA//8AAQAAAAwAAAAAABwAAAAAAAAAAQAB+pkAAfqZAAAAAQADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAEAgABAQEGS0NvaW4AAQEBFPgeAtb7JfqV+bkFzQ+L95YS2BEABAEBBQkOE2NvaW5nb2xkc2hpbmVLQ29pbgAAAAGHAIQBiAGJAEwABgEBBAcwWYKs+uAO+uAO+uD6lffeFfea+2n3afua+5r7aftp+5r7mvdp+2n3mvea92n3afeaHg764Ppo9/QV94H7VfdV+4H7gftV+1X7gfuB91X7VfeB94H3VfdV94EeDvrg+gT4GhX3Vfsx9zH7VftV+zH7MftV+1X3Mfsx91X3Vfcx9zH3VR4O+uD3yNcV9xv3Pwabnfc1+1H3QIv7fved93P3c/s/i/s7+z8F9z/7GwcOAAAAAAABAAAADgAAABQABAABAAAABAACAAAAAwABAAQAAgAFAAMAAAAEAAEABAAAAA4AAACPyf8AuPX/O9T//wBaiv8AAARMAAAAAAAAAAAAAAAAAAA=) format('opentype'); unicode-range: U+1FA99; font-display: block; }
 
 /* ============================================================
-   KULTIVO — styles (plein écran)
+   KULTIVORE — styles (plein écran)
    ============================================================ */
 
 :root {
@@ -1128,7 +1128,7 @@ body.keyboard-open #skipBtn { box-shadow: 0 3px 0 var(--line); }
     main .page, main .map-screen { padding-bottom: calc(100px + var(--sab, env(safe-area-inset-bottom, 0px))); }
 }
 
-/* Téléphone : tout tient sur une ligne (logo + Kultivo à gauche, compteurs compacts à droite) */
+/* Téléphone : tout tient sur une ligne (logo + Kultivore à gauche, compteurs compacts à droite) */
 @media (max-width: 600px) {
     .topbar { column-gap: 8px; padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: 10px; }
     .brand { font-size: 1.2rem; gap: 6px; }
@@ -1853,7 +1853,7 @@ body.keyboard-open #skipBtn { box-shadow: 0 3px 0 var(--line); }
     --r-rare: #1899d6;
     --r-epic: #8b5cf6;
     --r-legendary: #ffb300;
-    --r-master: #46a302;   /* carte Maître (palier 5 de l'entraînement) : vert Kultivo */
+    --r-master: #46a302;   /* carte Maître (palier 5 de l'entraînement) : vert Kultivore */
     --r-event: #ff7a00;    /* carte d'événement (Halloween…) */
 }
 
@@ -3606,7 +3606,7 @@ body.event-halloween .challenges-tab[data-sub="event"] { color: var(--r-event); 
 .train-meds { margin-top: auto; }   /* médailles toujours en bas de la case : pas de blanc dessous */
 .train-foot { display: flex; flex-direction: column; gap: 4px; margin-top: auto; margin-bottom: -12px; padding-bottom: 12px; cursor: pointer; }   /* zone « médailles » jusqu'au bas de la case */
 .train-tile:has(.train-foot:active) { transform: none; box-shadow: 0 3px 0 var(--line); }
-/* Dos des cartes « signé » (2026-10-28) : cadre fin + KULTIVO en bas (grandes cartes seulement) */
+/* Dos des cartes « signé » (2026-10-28) : cadre fin + KULTIVORE en bas (grandes cartes seulement) */
 .flip-back .flip-ring { position: absolute; inset: 7px; border: 2px solid rgba(255, 255, 255, 0.35); border-radius: 7px; pointer-events: none; }
 .flip-back .flip-word { position: absolute; bottom: 9px; left: 0; right: 0; text-align: center; color: #fff; font-weight: 900; font-size: 0.72rem; letter-spacing: 0.18em; opacity: 0.9; }
 .flip:not(.is-big) .flip-back .flip-word { display: none; }

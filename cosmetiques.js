@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   KULTIVO — objets d'avatar (mise à jour du 26/10/2026) : fonds, dessins et cadres.
+   KULTIVORE — objets d'avatar (mise à jour du 26/10/2026) : fonds, dessins et cadres.
    - Couleurs unies et dessins de base : 12 couleurs et 15 dessins au départ, les autres se GAGNENT en jouant.
    - Cadres et fonds « à gagner » (exploits, événements) : jamais vendus.
    - Objets de la boutique : vendus seulement quand leur collection est dans la vitrine de la semaine (AV_COLLECTIONS).

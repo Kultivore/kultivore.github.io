@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   KULTIVO — logique de l'application
+   KULTIVORE — logique de l'application
    (les questions et les noms de niveaux sont dans questions.js)
    ============================================================ */
 
@@ -93,7 +93,7 @@ const recoveryDone = () => { try { sessionStorage.removeItem('kultivo_recovery')
 try {
     const u = new URLSearchParams(location.search);
     if (u.get('kpwa')) {
-        if (!localStorage.getItem('kultivo_pwa_seen')) localStorage.setItem('kultivo_pwa_notice', '1');
+        if (!localStorage.getItem('kultivo_pwa_seen2')) localStorage.setItem('kultivo_pwa_notice2', '1');
         u.delete('kpwa');
         history.replaceState(null, '', location.pathname + (u.toString() ? '?' + u : '') + location.hash);
     }
@@ -173,7 +173,7 @@ const TITLES = [
     // Au-delà : pour ceux qui continuent (défi du jour, sprint, révisions)
     { xp: 10000, name: 'Puits de science' },
     { xp: 15000, name: 'Oracle' },
-    { xp: 25000, name: 'Légende de Kultivo' }
+    { xp: 25000, name: 'Légende de Kultivore' }
 ];
 
 /* ---------- Structure des niveaux ---------- */
@@ -3509,7 +3509,7 @@ function questBlock(q, past) {
     const name = el('b');
     name.textContent = q.kulti ? 'Kulti' : q.partner.pseudo;
     const kind = el('small');
-    kind.textContent = q.kulti ? 'La mascotte de Kultivo' : q.friend ? 'Ton ami' : 'Joueur tiré au hasard';
+    kind.textContent = q.kulti ? 'La mascotte de Kultivore' : q.friend ? 'Ton ami' : 'Joueur tiré au hasard';
     who.append(name, kind);
     head.append(av, who);
     box.append(head);
@@ -4499,7 +4499,7 @@ function friendStreakLine() {
     return best ? `🔥🤝 Série avec ${best.f.pseudo} : ${best.s.n} jours !` : '';
 }
 
-/* ---------- 7 · Ton mois sur Kultivo (2026-10-27) ----------
+/* ---------- 7 · Ton mois sur Kultivore (2026-10-27) ----------
    Le 1er du mois : récap du mois passé, en « stories ». Bouton violet dans l'en-tête du Profil (sous l'XP), pastille rouge
    tant qu'il n'est pas vu, puis encore 7 jours ; pour toujours dans Records → « 📅 Mes récaps du mois ». */
 const MONTH_NAMES = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
@@ -4752,7 +4752,7 @@ function parcoursRecapSlides() {
     const fmt = n => n.toLocaleString('fr-FR');
     const rate = r.tries ? Math.round(r.right / r.tries * 100) : 0;
     const icon = th => (THEME_DECOR.find(t => t.theme === th) || {}).icon || '⭐';
-    const slides = [{ bg: 'linear-gradient(180deg,#070f26,#2d356d)', face: 'fier', crown: true, h: 'Ton aventure Kultivo', p: `Du niveau 1 au niveau ${MAX_LEVEL}. On revoit tout ça ensemble ?` }];
+    const slides = [{ bg: 'linear-gradient(180deg,#070f26,#2d356d)', face: 'fier', crown: true, h: 'Ton aventure Kultivore', p: `Du niveau 1 au niveau ${MAX_LEVEL}. On revoit tout ça ensemble ?` }];
     slides.push({ bg: 'linear-gradient(160deg,#0ea5e9,#2563eb)', big: plural(r.span, 'jour', 'jours'), h: 'pour atteindre le sommet',
         p: `Premier niveau le ${fmtDay(r.first)}, sommet le ${fmtDay(r.summit)}. Tu as joué ${r.played} ${r.played > 1 ? 'de ces' : 'de ces'} ${r.span} jours.`
             + (r.start ? ` Départ au niveau ${r.start}, grâce à ton test de placement.` : '') });
@@ -4814,7 +4814,7 @@ function closeRecap() {
    une image au format story (1080 × 1920) dessinée dans un canvas — logo, « Mon mois d'octobre », Kulti fier, 6 cases de
    chiffres (pas la « bête noire »), pseudo et lien du jeu — puis le menu de partage du téléphone (ou un téléchargement). */
 const RECAP_SHARE = true;   // ouvert à tous le 27/10 (essayé dans le bac à sable)
-const GAME_URL = 'https://kultivo-app.github.io/';   // 19/11 : nouvelle adresse (avant : aymericchevailler45-pixel.github.io/Kultivo/)
+const GAME_URL = 'https://kultivore.github.io/';   // 19/11 : nouvelle adresse (avant : aymericchevailler45-pixel.github.io/Kultivo/)
 const loadImg = src => new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = src; });
 async function drawRecapImage(m) {
     const P = m === 'parcours';   // récap du parcours (10/11)
@@ -4845,11 +4845,12 @@ async function drawRecapImage(m) {
     g.fill(new Path2D(K_PATH));
     g.restore();
     // logo + nom du jeu
-    try { const logo = await loadImg(LOGO_SRC); g.drawImage(logo, W / 2 - 230, 110, 96, 96); } catch (err) { /* sans logo */ }
-    g.fillStyle = '#fff';
     g.textAlign = 'left';
     g.font = font(900, 72);
-    g.fillText('Kultivo', W / 2 - 112, 182);
+    const nameW = g.measureText('Kultivore').width, logoX = W / 2 - (96 + 22 + nameW) / 2;   // logo + nom centrés ensemble
+    try { const logo = await loadImg(LOGO_SRC); g.drawImage(logo, logoX, 110, 96, 96); } catch (err) { /* sans logo */ }
+    g.fillStyle = '#fff';
+    g.fillText('Kultivore', logoX + 96 + 22, 182);
     g.textAlign = 'center';
     g.font = font(800, 54);
     g.fillStyle = 'rgba(255,255,255,0.85)';
@@ -4903,7 +4904,7 @@ async function drawRecapImage(m) {
         g.fillStyle = 'rgba(255,255,255,0.85)';
         g.fillText(label, x + cw / 2, y + 204);
     });
-    // pseudo + signature « Kultivo · joue avec moi ! » (le K du logo) + lien
+    // pseudo + signature « Kultivore · joue avec moi ! » (le K du logo) + lien
     const pseudo = cloudUser && league?.userId === cloudUser.id && league.pseudo;
     g.fillStyle = '#fff';
     g.font = font(900, 48);
@@ -4932,7 +4933,7 @@ async function openRecapShare(m) {
     if (!ov) {
         ov = el('div', 'recap-share');
         ov.id = 'recapShare';
-        ov.innerHTML = '<img class="recap-share-img" alt="Mon mois sur Kultivo"><div class="recap-share-actions"><button type="button" class="btn recap-share-go">📤 Partager</button><button type="button" class="btn btn-ghost recap-share-close">Fermer</button></div>';
+        ov.innerHTML = '<img class="recap-share-img" alt="Mon mois sur Kultivore"><div class="recap-share-actions"><button type="button" class="btn recap-share-go">📤 Partager</button><button type="button" class="btn btn-ghost recap-share-close">Fermer</button></div>';
         document.body.append(ov);
         ov.querySelector('.recap-share-close').addEventListener('click', () => { ov.hidden = true; });
         ov.querySelector('.recap-share-go').addEventListener('click', () => shareRecapImage(recapMonth));
@@ -4947,7 +4948,7 @@ async function shareRecapImage(m) {
     if (!recapShareBlob) return;
     const name = m === 'parcours' ? 'kultivo-parcours.png' : `kultivo-${monthName(m)}.png`;
     const file = new File([recapShareBlob], name, { type: 'image/png' });
-    const text = m === 'parcours' ? `J’ai terminé les ${MAX_LEVEL} niveaux de Kultivo 🏔️ À toi de jouer : ${GAME_URL}` : `Mon mois ${monthOf(m)} sur Kultivo 🧠 À toi de jouer : ${GAME_URL}`;
+    const text = m === 'parcours' ? `J’ai terminé les ${MAX_LEVEL} niveaux de Kultivore 🏔️ À toi de jouer : ${GAME_URL}` : `Mon mois ${monthOf(m)} sur Kultivore 🧠 À toi de jouer : ${GAME_URL}`;
     try {
         if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
     } catch (err) {
@@ -5434,7 +5435,7 @@ function cardFlip(card, big, shiny = false) {
     logo.src = LOGO_SRC;
     logo.alt = '';
     const word = el('span', 'flip-word');   // dos « signé » (2026-10-28, apercu-k.html version B)
-    word.textContent = 'KULTIVO';
+    word.textContent = 'KULTIVORE';
     back.append(el('span', 'flip-ring'), logo, word);
     const front = el('div', 'flip-front');
     front.append(cardFace(card, big, shiny));
@@ -8062,7 +8063,7 @@ function renderEndGoal() {
 
 // Kulti remplace le grand dessin de l'écran de fin (2026-10-27) : réussi = content, exploit = fier, raté = déçu + cœur brisé
 const END_FACES = { '🎉': 'content', '🏆': 'fier', '🏅': 'fier', '💔': 'triste' };
-/* Le K de Kultivo (2026-10-28) : même tracé que le logo (SVG, 182 × 188) */
+/* Le K de Kultivore (2026-10-28) : même tracé que le logo (SVG, 182 × 188) */
 const K_PATH = 'M0 0h52v66l64-66h66l-86 86 90 102h-66l-62-73-6 7v66h-52z';
 /** Tampon « Sans faute » posé à côté de Kulti sur l'écran de fin (niveau du parcours sans erreur). */
 function stampSans() {
@@ -9772,7 +9773,7 @@ async function sendResetLink() {
     btn.textContent = 'Envoyer le lien';
     if (error) { err.textContent = authErrorText(error); return; }
     err.classList.add('is-ok');
-    err.textContent = `📩 C’est envoyé ! Si un compte existe avec ${email}, tu vas recevoir un e-mail de Kultivo (regarde aussi dans les indésirables).`;
+    err.textContent = `📩 C’est envoyé ! Si un compte existe avec ${email}, tu vas recevoir un e-mail de Kultivore (regarde aussi dans les indésirables).`;
 }
 
 /** Arrivée depuis le lien « mot de passe oublié » reçu par e-mail. */
@@ -11899,9 +11900,9 @@ async function removeFriend(link, question) {
 /** Lien d'invitation : partage du téléphone (WhatsApp, SMS…), sinon copie du lien. */
 async function shareInvite() {
     const url = `${siteBase()}?ami=${encodeURIComponent(league.pseudo)}`;   // 17/11 : dans l'appli Android, toujours l'adresse du site
-    const text = `Viens me défier sur Kultivo, le quiz de culture G ! Mon pseudo : ${league.pseudo}`;
+    const text = `Viens me défier sur Kultivore, le quiz de culture G ! Mon pseudo : ${league.pseudo}`;
     try {
-        if (navigator.share) { await navigator.share({ title: 'Kultivo', text, url }); return; }
+        if (navigator.share) { await navigator.share({ title: 'Kultivore', text, url }); return; }
     } catch (err) { if (err.name === 'AbortError') return; }
     try {
         await navigator.clipboard.writeText(`${text} ${url}`);
@@ -12477,7 +12478,7 @@ function renderOnboard(animate = true) {
         skip.hidden = false;
     } else if (step === 0) {
         const kulti = kultiEl('clin', 'onboard-kulti kulti-blink kulti-float');   // Kulti se présente (2026-10-27)
-        title.textContent = 'Bienvenue sur Kultivo !';
+        title.textContent = 'Bienvenue sur Kultivore !';
         text.textContent = nbspPunct('Moi, c’est Kulti ! Ta culture générale, un niveau après l’autre : questions, défis, grilles à associer… Commençons par faire connaissance.');
         body.append(kulti, title, text);
         next.textContent = 'C’est parti';
@@ -13368,20 +13369,20 @@ let backExitArmedAt = 0;
 function movedNotice(tries = 0) {
     if (IS_APP) return;
     let pending = false;
-    try { pending = localStorage.getItem('kultivo_pwa_notice') === '1' && !localStorage.getItem('kultivo_pwa_seen'); } catch (err) { return; }
+    try { pending = localStorage.getItem('kultivo_pwa_notice2') === '1' && !localStorage.getItem('kultivo_pwa_seen2'); } catch (err) { return; }
     if (!pending) return;
     const busy = !state.data.onboarded || !$('studyScreen').hidden || document.querySelector('.modal-overlay:not([hidden]), #tour:not([hidden]), #streakAnim:not([hidden])');
     if (busy) { if (tries < 40) setTimeout(() => movedNotice(tries + 1), 3000); return; }
-    try { localStorage.setItem('kultivo_pwa_seen', '1'); localStorage.removeItem('kultivo_pwa_notice'); } catch (err) { /* tant pis */ }
+    try { localStorage.setItem('kultivo_pwa_seen2', '1'); localStorage.removeItem('kultivo_pwa_notice2'); } catch (err) { /* tant pis */ }
     askConfirm({
-        title: '📲 Kultivo a déménagé !',
+        title: '🧠 Kultivo devient Kultivore !',
         art: kultiEl('clin', 'kulti-blink'),
-        text: 'Ta partie a bien suivi, rien n’est perdu.\nPour retrouver le jeu en plein écran (sans la barre en haut) :\n\n1. Supprime l’icône Kultivo de ton écran d’accueil.\n2. Dans Chrome, ouvre kultivo‑app.github.io\n3. Menu ⋮ → « Installer l’appli » (ou « Ajouter à l’écran d’accueil »).',
+        text: 'Le jeu change de nom et d’adresse. Ta partie a bien suivi, rien n’est perdu.\nPour retrouver le jeu en plein écran (sans la barre en haut) :\n\n1. Supprime l’ancienne icône Kultivo de ton écran d’accueil.\n2. Dans Chrome, ouvre kultivore.github.io\n3. Menu ⋮ → « Installer l’appli » (ou « Ajouter à l’écran d’accueil »).',
         yes: '📋 Copier l’adresse',
         no: 'J’ai compris'
     }).then(copy => {
         if (!copy) return;
-        const addr = 'kultivo-app.github.io';
+        const addr = 'kultivore.github.io';
         (navigator.clipboard ? navigator.clipboard.writeText(addr) : Promise.reject()).then(
             () => showToast('✓ Adresse copiée : colle-la dans Chrome'),
             () => showToast('Adresse : ' + addr));
@@ -13599,7 +13600,7 @@ function onBackButton() {
     // Parcours : un 2e appui dans les 2,5 s quitte l'appli
     if (Date.now() - backExitArmedAt < 2500) { if (window.kultivoExitApp) window.kultivoExitApp(); else history.back(); return; }   // 17/11 : appli Android = vraie sortie
     backExitArmedAt = Date.now();
-    showToast('Appuie encore sur retour pour quitter Kultivo');
+    showToast('Appuie encore sur retour pour quitter Kultivore');
     setTimeout(() => { if (!backGuard && Date.now() - backExitArmedAt >= 2400) armBackGuard(); }, 2500);
 }
 window.addEventListener('popstate', onBackButton);
@@ -13653,7 +13654,7 @@ function init() {
     }
     hideSplash();
     setTimeout(movedNotice, 3000);
-    document.querySelector('.brand')?.addEventListener('click', () => { if (accountLost()) openAuthModal('login'); });   // 19/11 : « ! » du logo   // 19/11 : « Kultivo a déménagé » (une seule fois, site seulement)
+    document.querySelector('.brand')?.addEventListener('click', () => { if (accountLost()) openAuthModal('login'); });   // 19/11 : « ! » du logo   // 19/11 : « Kultivore a déménagé » (une seule fois, site seulement)
     checkServerClock();   // 17/11 : vraie heure (anti-triche)
     clockNotice();
     if (ENC_ON) setTimeout(() => encCode().catch(() => {}), 4000);   // 13/11 : écrans de l'encyclopédie chargés discrètement en arrière-plan

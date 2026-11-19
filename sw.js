@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   KULTIVO — service worker (application installable)
+   KULTIVORE — service worker (application installable)
    ============================================================
    Stratégie « réseau d'abord » : avec internet, on charge TOUJOURS la
    dernière version du site (les modifications apparaissent tout de
@@ -10,7 +10,7 @@
    Si tu ajoutes un nouveau fichier au jeu, ajoute-le dans FILES.
    ============================================================ */
 
-const CACHE = 'kultivo-v295';
+const CACHE = 'kultivo-v296';
 const FILES = [
     './',
     './index.html',

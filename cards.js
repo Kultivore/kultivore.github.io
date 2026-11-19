@@ -1,5 +1,5 @@
 /* ============================================================
-   KULTIVO — cartes à collectionner (gagnées dans les coffres du parcours)
+   KULTIVORE — cartes à collectionner (gagnées dans les coffres du parcours)
    12 cartes par thème depuis le 26/10/2026 : 4 communes, 4 rares, 2 épiques, 1 légendaire (tirées dans les coffres)
    + 1 carte « Maître » (rareté master), gagnée seulement au palier 5 de l'entraînement du thème.
    [id, thème, emoji (affiché en image Twemoji, dossier emoji/), nom, rareté, texte]

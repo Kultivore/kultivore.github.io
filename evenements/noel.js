@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   KULTIVO — « La tournée du Père Noël » (Semaine de Noël, 21 → 27 décembre 2026), ids 32000+.
+   KULTIVORE — « La tournée du Père Noël » (Semaine de Noël, 21 → 27 décembre 2026), ids 32000+.
    Préparé le 16/11/2026 (bac à sable). 70 questions, 11 étapes (`stop` = code du pays, ordre de la tournée dans NOEL_TOUR,
    noel-tour.js) : 7 questions pour les 4 premières, 6 pour les autres. Formats : questions, « Vrai ou faux » (tf: true),
    « Devine l'année » (year : à 5 ans près), rébus. theme = vrai thème du jeu (missions « thème »).

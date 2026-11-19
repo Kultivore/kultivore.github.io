@@ -1,6 +1,6 @@
 'use strict';
 /* ============================================================
-   KULTIVO — morceaux propres à l'APPLI ANDROID (Capacitor), 17/11/2026.
+   KULTIVORE — morceaux propres à l'APPLI ANDROID (Capacitor), 17/11/2026.
    Sur le site (navigateur), ce fichier ne fait RIEN : tout est derrière `IS_APP` (script.js).
    Chargé après script.js et escales.js. Les « plugins » de Capacitor (App, StatusBar, Keyboard, Browser, Share,
    SplashScreen) sont lus dans window.Capacitor.Plugins : rien à importer, le jeu n'a pas d'étape de construction.

@@ -16,7 +16,7 @@ window.ENC_POST_PH = {
   4193: ["monuments/pc/pc-4193.jpg", 418, 520, "Photo : Σπάρτακος (changes by Rabanus Flavus) · CC BY-SA 4.0 · Wikimedia Commons"],
   4194: ["monuments/pc/pc-4194.jpg", 520, 348, "Photo : Cristian Bortes from Cluj-Napoca, Romania · CC BY 2.0 · Wikimedia Commons"],
   4242: ["monuments/pc/pc-4242.jpg", 520, 372, "Photo : Benjamin Smith · CC BY-SA 4.0 · Wikimedia Commons"],
-  4243: ["monuments/pc/dessin-4243.svg", 300, 200, "Dessin : Kultivo"],
+  4243: ["monuments/pc/dessin-4243.svg", 300, 200, "Dessin : Kultivore"],
   4244: ["monuments/pc/pc-4244.jpg", 520, 390, "Photo : Richard Mortel from Riyadh, Saudi Arabia · CC BY 2.0 · Wikimedia Commons"],
   4292: ["monuments/pc/pc-4292.jpg", 520, 278, "Photo : Diego Delso · CC BY-SA 4.0 · Wikimedia Commons", "Le temple de Karnak"],
   4293: ["monuments/pc/pc-4293.jpg", 520, 390, "Photo : Rémih · CC BY-SA 4.0 · Wikimedia Commons", "Le phare de Cordouan"],

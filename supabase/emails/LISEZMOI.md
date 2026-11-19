@@ -1,12 +1,12 @@
-# E-mails de Kultivo (Supabase)
+# E-mails de Kultivore (Supabase)
 
 Modèles en français, prêts à coller dans **Supabase → Authentication → Emails** (onglet « Templates »).
 
 | Fichier | Modèle Supabase | Objet à mettre |
 |---|---|---|
-| `mot-de-passe-oublie.html` | Reset Password | 🔑 Ton nouveau mot de passe Kultivo |
-| `changement-adresse.html` | Change Email Address | ✉️ Confirme ta nouvelle adresse Kultivo |
-| `bienvenue-confirmation.html` | Confirm signup | 🧠 Bienvenue sur Kultivo ! (inutile tant que « Confirm email » est désactivé) |
+| `mot-de-passe-oublie.html` | Reset Password | 🔑 Ton nouveau mot de passe Kultivore |
+| `changement-adresse.html` | Change Email Address | ✉️ Confirme ta nouvelle adresse Kultivore |
+| `bienvenue-confirmation.html` | Confirm signup | 🧠 Bienvenue sur Kultivore ! (inutile tant que « Confirm email » est désactivé) |
 
 Pour chaque modèle : coller l'objet dans « Subject », puis tout le contenu du fichier dans « Message body » (le commentaire
 `<!-- … -->` du début peut rester, il ne s'affiche pas), puis « Save ».
@@ -20,7 +20,7 @@ ne marche pas pour les joueurs.
 2. Toujours dans Sécurité → **Mots de passe des applications** → créer « Supabase » → noter le code de 16 lettres.
 3. Supabase → Authentication → Emails → **SMTP Settings** → Enable custom SMTP :
    - Sender email : `appkultivo@gmail.com`
-   - Sender name : `Kultivo`
+   - Sender name : `Kultivore`
    - Host : `smtp.gmail.com`
    - Port : `465`
    - Username : `appkultivo@gmail.com`
