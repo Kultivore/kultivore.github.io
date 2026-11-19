@@ -4946,7 +4946,7 @@ async function openRecapShare(m) {
 }
 async function shareRecapImage(m) {
     if (!recapShareBlob) return;
-    const name = m === 'parcours' ? 'kultivo-parcours.png' : `kultivo-${monthName(m)}.png`;
+    const name = m === 'parcours' ? 'kultivore-parcours.png' : `kultivore-${monthName(m)}.png`;
     const file = new File([recapShareBlob], name, { type: 'image/png' });
     const text = m === 'parcours' ? `J’ai terminé les ${MAX_LEVEL} niveaux de Kultivore 🏔️ À toi de jouer : ${GAME_URL}` : `Mon mois ${monthOf(m)} sur Kultivore 🧠 À toi de jouer : ${GAME_URL}`;
     try {
