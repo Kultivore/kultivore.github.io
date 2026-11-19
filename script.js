@@ -88,6 +88,16 @@ let cloudBusy = false;
 try { if (/(^|[#&])type=recovery(&|$)/.test(location.hash)) sessionStorage.setItem('kultivo_recovery', '1'); } catch (err) { /* tant pis */ }
 const recoveryPending = () => { try { return !!sessionStorage.getItem('kultivo_recovery'); } catch (err) { return false; } };
 const recoveryDone = () => { try { sessionStorage.removeItem('kultivo_recovery'); } catch (err) { /* tant pis */ } };
+// 19/11 : joueur arrivé depuis l'ANCIENNE icône installée (la page de l'ancienne adresse ajoute ?kpwa=1) : on le notera pour lui
+// expliquer UNE fois comment réinstaller l'icône (sinon le jeu s'ouvre avec la barre de Chrome en haut). Site seulement.
+try {
+    const u = new URLSearchParams(location.search);
+    if (u.get('kpwa')) {
+        if (!localStorage.getItem('kultivo_pwa_seen')) localStorage.setItem('kultivo_pwa_notice', '1');
+        u.delete('kpwa');
+        history.replaceState(null, '', location.pathname + (u.toString() ? '?' + u : '') + location.hash);
+    }
+} catch (err) { /* tant pis */ }
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxZnFkaHN2cGtjemFpZmdvc2VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNjE2NTUsImV4cCI6MjEwNzczNzY1NX0.EGJvwXjBlSQKP2N-xTNdebuSD33IevVYe6cE7NpOZMk';
 
 // XP gagnés
@@ -13290,6 +13300,29 @@ function bindEvents() {
 let backGuard = false;
 let backExitArmedAt = 0;
 /** 17/11 : vrai dans l'appli Android (Capacitor), faux sur le site. Ce qui est propre à l'appli est dans appli.js. */
+/** 19/11 : explication UNE fois pour ceux qui ouvrent encore l'ancienne icône (barre de Chrome en haut). Jamais dans l'appli. */
+function movedNotice(tries = 0) {
+    if (IS_APP) return;
+    let pending = false;
+    try { pending = localStorage.getItem('kultivo_pwa_notice') === '1' && !localStorage.getItem('kultivo_pwa_seen'); } catch (err) { return; }
+    if (!pending) return;
+    const busy = !state.data.onboarded || !$('studyScreen').hidden || document.querySelector('.modal-overlay:not([hidden]), #tour:not([hidden]), #streakAnim:not([hidden])');
+    if (busy) { if (tries < 40) setTimeout(() => movedNotice(tries + 1), 3000); return; }
+    try { localStorage.setItem('kultivo_pwa_seen', '1'); localStorage.removeItem('kultivo_pwa_notice'); } catch (err) { /* tant pis */ }
+    askConfirm({
+        title: '📲 Kultivo a déménagé !',
+        art: kultiEl('clin', 'kulti-blink'),
+        text: 'Ta partie a bien suivi, rien n’est perdu.\nPour retrouver le jeu en plein écran (sans la barre en haut) :\n\n1. Supprime l’icône Kultivo de ton écran d’accueil.\n2. Dans Chrome, ouvre kultivo‑app.github.io\n3. Menu ⋮ → « Installer l’appli » (ou « Ajouter à l’écran d’accueil »).',
+        yes: '📋 Copier l’adresse',
+        no: 'J’ai compris'
+    }).then(copy => {
+        if (!copy) return;
+        const addr = 'kultivo-app.github.io';
+        (navigator.clipboard ? navigator.clipboard.writeText(addr) : Promise.reject()).then(
+            () => showToast('✓ Adresse copiée : colle-la dans Chrome'),
+            () => showToast('Adresse : ' + addr));
+    });
+}
 const IS_APP = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 /** Adresse à donner aux autres (invitations, mot de passe oublié) : dans l'appli, location vaut « https://localhost/ ». */
 const siteBase = () => (IS_APP ? GAME_URL : location.origin + location.pathname);
@@ -13555,6 +13588,7 @@ function init() {
         setTimeout(summitCatchUp, 2600);   // 13/11 : fête du sommet jamais vue (elle plantait à la fin du niveau 300)
     }
     hideSplash();
+    setTimeout(movedNotice, 3000);   // 19/11 : « Kultivo a déménagé » (une seule fois, site seulement)
     checkServerClock();   // 17/11 : vraie heure (anti-triche)
     clockNotice();
     if (ENC_ON) setTimeout(() => encCode().catch(() => {}), 4000);   // 13/11 : écrans de l'encyclopédie chargés discrètement en arrière-plan
