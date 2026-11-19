@@ -2658,6 +2658,15 @@ function renderBadgesV2(grid) {
                 if (x.claim) { claimBadge(x.b); return; }
                 badgeDetail = badgeDetail === x.b.id ? null : x.b.id;
                 renderProfile();
+                // 19/11 : la description s'affiche sous la rangée : on la fait remonter si elle est cachée (bas de l'écran, barre du bas)
+                if (badgeDetail) requestAnimationFrame(() => {
+                    const d = document.querySelector('#badgeGrid .bdf-detail');
+                    if (!d) return;
+                    const r = d.getBoundingClientRect();
+                    const nv = document.querySelector('nav.nav')?.getBoundingClientRect();
+                    const bottom = innerHeight - (nv && nv.top > innerHeight / 2 ? nv.height : 0) - 16;   // barre du bas (téléphone)
+                    if (r.bottom > bottom) window.scrollBy({ top: r.bottom - bottom + 40, behavior: 'smooth' });
+                });
             });
             row.append(t);
         });
