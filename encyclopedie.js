@@ -38,6 +38,8 @@ const ENC_VITRINE_DECO = {
     'Arts': ['🎨', '🗿', '🖌️', '🏛️'], 'Cinéma': ['🍿', '🎞️', '🎥', '⭐'], 'Drapeaux': ['🏁', '🚩', '🎌', '🏴'], 'Monuments': ['🗼', '🗽', '🏛️', '📮'],
     'Géographie': ['🌍', '🧭', '⛰️', '🏝️'], 'Voyages': ['📸', '✈️', '🧳', '🗺️'],
 };
+/** 19/11 : une salle visitée compte pour le badge secret, quelle que soit la porte (carte « Salle à visiter », onglet, balayage). */
+function encRoomSeen(theme, i) { secretStep('rooms', `${theme}:${i}`, ENC_ROOM_TOTAL(), 'sRooms'); }
 // 17/11 : la salle du livre « Voyages » (escales) compte aussi pour le badge secret des salles
 const ENC_ROOM_TOTAL = () => THEME_DECOR.concat(typeof escEncQuestions === 'function' && escEncQuestions().length ? [{ theme: 'Voyages' }] : []).reduce((n, { theme }) => { const sp = encSpecial(theme); return n + (!sp ? 0 : Array.isArray(sp[0]) ? sp.length : 1); }, 0);
 function encVitrine(theme) {
@@ -66,7 +68,7 @@ function encVitrine(theme) {
         go.textContent = 'Entrer ›';
         b.append(tag, big, tx, shelf, go);
         b.addEventListener('click', () => {
-            secretStep('rooms', `${theme}:${i}`, ENC_ROOM_TOTAL(), 'sRooms');   // 13/11 : badge secret « Visiteur des savoirs »
+            encRoomSeen(theme, i);   // 13/11 : badge secret « Visiteur des savoirs »
             s[3]();
         });
         box.append(b);
@@ -514,6 +516,7 @@ function encGastroTabs(active) {
     return tabs;
 }
 async function openEncMap(fromTheme, keepCc = null, kind = 'geo') {
+    if (kind === 'cuisine') encRoomSeen('Gastronomie', 1);
     const body = $('friendBody');
     try { await encLoad('carte-monde.js'); if (kind === 'cuisine') await encLoad('carte-france.js'); } catch (e) { showToast('📶 Carte indisponible hors connexion pour l’instant'); return; }
     const M = window.WORLD_MAP;
@@ -757,6 +760,7 @@ function encSpotBg(P, nodes) {
 async function openEncSpots(set, tab = null, keepId = null, keepScroll = null) {
     const cfg = ENC_SPOT_SETS[set];
     tab = tab || cfg.tab;
+    if (set === 'sci') encRoomSeen('Sciences', tab === 'espace' ? 1 : 0);   // 19/11 : la salle compte aussi par l'onglet / le balayage
     try { await encLoad(cfg.src); } catch (e) { showToast('📶 Indisponible hors connexion pour l’instant'); return; }
     cfg.tab = tab;
     const openSelf = (...x) => openEncSpots(set, ...x);
@@ -958,6 +962,7 @@ async function openEncSpots(set, tab = null, keepId = null, keepScroll = null) {
 
 /* 12/11 : « Ma France gourmande » (Gastronomie). Les 13 régions sont toujours dessinées ; elles se dorent avec les spécialités sues. */
 async function openEncFrance(keepCode = null) {
+    encRoomSeen('Gastronomie', 0);
     try { await encLoad('carte-france.js'); } catch (e) { showToast('📶 Carte indisponible hors connexion pour l’instant'); return; }
     const M = window.FRANCE_MAP;
     const all = encAll();
