@@ -462,6 +462,7 @@ function escRenderTrip(page, e) {
     flag.append(emojiImg(e.flag || e.icon));
     head.append(back, mid, flag);
     page.append(head);
+    if (V11) { const loot = escLootRow(e); if (loot) page.append(loot); }   // 23/11 (1.1) : la collection à gagner
 
     const trip = el('div', 'esc-trip');
     // Décor du pays : petites icônes, un tap = une anecdote
@@ -677,6 +678,64 @@ function escCarnet(done = x => escFinished(x.id)) {   // 17/11 : « done » = le
         pages.append(cell);
     });
     box.append(head, pages);
+    return box;
+}
+
+/* ---------- 23/11 (1.1) : COLLECTION D'AVATAR DE CHAQUE ESCALE (jamais vendue) ----------
+   Emoji à la fin de l'étape 1 (niveaux 1-5), fond à la fin de l'étape 2 (6-10), cadre avec le défi final.
+   Les objets passent par le système habituel (AV_ALL / avCheck) : pastille sur l'avatar, cadenas à ouvrir dans Mon avatar,
+   ligne « Débloqué pour ton avatar » sur l'écran de fin. Apparence : style.css (classe = id). */
+const ESC_LOOKS = {
+    japon:  [['pic', '🍣', 'Sushi'], ['bg', null, 'Cerisiers'], ['frame', null, 'Torii']],
+    italie: [['pic', '🍕', 'Pizza'], ['bg', null, 'Toscane'], ['frame', null, 'Mosaïque']],
+    usa:    [['pic', '🗽', 'Liberté'], ['bg', null, 'Skyline'], ['frame', null, 'Stars & Stripes']]
+};
+/** Étape k (1, 2, 3) d'une escale terminée ? (étape 3 = défi final réussi) */
+function escStageDone(e, k) {
+    if (k >= 3) return escFinished(e.id);
+    const done = escEntry(e)?.done || {};
+    for (let n = 1; n <= 5 * k; n++) if (!done[n]) return false;
+    return true;
+}
+const escLootItems = e => (ESC_LOOKS[e.id] || []).map((x, i) => AVI[`${x[0] === 'frame' ? 'fr' : x[0]}-esc-${e.id}`]).filter(Boolean);
+if (ESCALES_ON && V11 && typeof AV_ALL !== 'undefined') {
+    ESCALES.filter(escReady).forEach(e => (ESC_LOOKS[e.id] || []).forEach(([type, emoji, name], i) => {
+        const k = i + 1;
+        const it = { id: `${type === 'frame' ? 'fr' : type}-esc-${e.id}`, type, kind: 'earn', name, escale: e.id, step: k,
+            how: k < 3 ? `Termine l’étape ${k} de l’Escale ${e.at}` : `Termine l’Escale ${e.at} (défi final)`, test: () => escStageDone(e, k) };
+        if (emoji) it.emoji = emoji;
+        if (type === 'frame') it.fx = 'tag';
+        if (!AVI[it.id]) { AV_ALL.push(it); AVI[it.id] = it; }
+    }));
+}
+/** Ligne « 🎁 À gagner » en haut du petit parcours d'une escale : les 3 objets, avec un cadenas tant qu'ils ne sont pas gagnés. */
+function escLootRow(e) {
+    const items = escLootItems(e);
+    if (!items.length) return null;
+    const box = el('div', 'esc-loot');
+    const t = el('b', 'esc-loot-title');
+    t.textContent = '🎁 À gagner dans cette escale';
+    const row = el('div', 'esc-loot-row');
+    const look = state.data.avatar || {};
+    items.forEach(it => {
+        const got = escStageDone(e, it.step);
+        const cell = el('button', `esc-loot-cell${got ? ' is-got' : ''}`);
+        cell.type = 'button';
+        const a = el('span', 'league-avatar');
+        a.style.setProperty('--hue', String(Number.isInteger(look.hue) ? look.hue : 210));
+        if (it.type === 'pic') a.append(emojiImg(it.emoji));
+        else {
+            a.textContent = [...(myAvatarName() || 'K')][0].toUpperCase();
+            if (it.type === 'bg') a.classList.add(it.id); else a.classList.add('fr', it.id, 'fx-tag');
+        }
+        const lab = el('small');
+        lab.textContent = got ? '✓ Gagné' : it.step < 3 ? `Étape ${it.step}` : 'Défi final';
+        cell.append(a, lab);
+        if (!got) { const lk = el('span', 'esc-loot-lock'); lk.textContent = '🔒'; cell.append(lk); }
+        cell.addEventListener('click', () => showToast(got ? `${AV_TYPE_NAME[it.type]} « ${it.name} » gagné : choisis-le dans Profil → Mon avatar.` : `${AV_TYPE_NAME[it.type]} « ${it.name} » : ${it.how.charAt(0).toLowerCase()}${it.how.slice(1)}.`));
+        row.append(cell);
+    });
+    box.append(t, row);
     return box;
 }
 

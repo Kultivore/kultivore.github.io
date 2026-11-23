@@ -5705,3 +5705,33 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .modal-content .modal-tiles + p.tile-help { margin: 10px auto 14px; }
 #askInfo p.tile-help { margin: 10px auto 0; }
 .modal-stats.ask-sub { margin: 2px 0 14px; text-align: center; }
+/* 23/11 (1.1) : collections d'avatar des escales (jamais vendues) — Japon « Sakura », Italie « Dolce vita », États-Unis « Big Apple » */
+.league-avatar.fr-esc-japon::before { background: linear-gradient(160deg, #ff5a44, #c81e12); }
+.league-avatar.fr-esc-japon::after { background-image: url(emoji/26e9.svg); }
+.league-avatar.bg-esc-japon { background:
+    radial-gradient(circle at 24% 28%, #fff 0 5%, transparent 6%), radial-gradient(circle at 72% 22%, #ffe4ee 0 4%, transparent 5%),
+    radial-gradient(circle at 78% 70%, #fff 0 5%, transparent 6%), radial-gradient(circle at 30% 78%, #ffe4ee 0 4%, transparent 5%),
+    linear-gradient(165deg, #ffd0e0, #ff8fb4); }
+.league-avatar.fr-esc-italie::before { background: repeating-conic-gradient(#c8553d 0 25%, #f4e1b8 0 50%, #2f6690 0 75%, #f4e1b8 0 100%) 0 0 / 8px 8px; }
+.league-avatar.fr-esc-italie::after { background-image: url(emoji/1f3db.svg); }
+.league-avatar.bg-esc-italie { background:
+    radial-gradient(ellipse 60% 30% at 20% 72%, #7fa64a 0 98%, transparent 100%), radial-gradient(ellipse 70% 32% at 85% 78%, #5f8a35 0 98%, transparent 100%),
+    linear-gradient(180deg, #ffd27a 0%, #ffab5e 45%, #8fb35a 46%, #557a2c 100%); }
+.league-avatar.fr-esc-usa::before { background: repeating-linear-gradient(45deg, #d62839 0 5px, #fff 5px 10px); }
+.league-avatar.fr-esc-usa::after { background-image: url(emoji/1f985.svg); }
+.league-avatar.bg-esc-usa { background:
+    linear-gradient(#1a2547, #1a2547) 6% 100% / 16% 42% no-repeat, linear-gradient(#26366b, #26366b) 24% 100% / 14% 60% no-repeat,
+    linear-gradient(#1a2547, #1a2547) 44% 100% / 9% 80% no-repeat, linear-gradient(#1a2547, #1a2547) 46.5% 100% / 3% 92% no-repeat,
+    linear-gradient(#26366b, #26366b) 63% 100% / 16% 52% no-repeat, linear-gradient(#1a2547, #1a2547) 88% 100% / 18% 38% no-repeat,
+    radial-gradient(circle at 80% 22%, #fff7c2 0 9%, transparent 10%), linear-gradient(180deg, #0b1430, #46599f); }
+/* Ligne « 🎁 À gagner » en haut d'une escale */
+.esc-loot { margin: 0 auto 14px; max-width: 420px; padding: 10px 12px; border-radius: 16px; background: var(--surface); box-shadow: 0 2px 0 var(--line, #dfe6f0); }
+.esc-loot-title { display: block; font-size: 0.9rem; font-weight: 900; color: var(--ink); margin-bottom: 8px; text-align: center; }
+.esc-loot-row { display: flex; justify-content: center; gap: 18px; }
+.esc-loot-cell { position: relative; display: grid; justify-items: center; gap: 4px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; }
+.esc-loot-cell .league-avatar { width: 48px; height: 48px; font-size: 1.2rem; --fw: 4px; --bw: 3px; }
+.esc-loot-cell .league-avatar .emoji-img { width: 62%; height: 62%; }
+.esc-loot-cell small { font-size: 0.72rem; font-weight: 800; color: var(--muted); }
+.esc-loot-cell.is-got small { color: var(--ok-ink); }
+.esc-loot-cell:not(.is-got) .league-avatar { filter: grayscale(0.35) opacity(0.75); }
+.esc-loot-lock { position: absolute; top: 26px; left: 50%; transform: translate(-50%, -50%); font-size: 1rem; }
