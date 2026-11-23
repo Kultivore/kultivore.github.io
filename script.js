@@ -3116,7 +3116,7 @@ function openEventStart() {
     $('modalDesc').textContent = eventData(ev).won ? 'Pour le plaisir : la carte est déjà à toi !' : `${n} / ${ev.goal} questions trouvées pour la carte.`;
     $('modalStatsText').textContent = `${EVENT_SIZE} questions · sans gouttes 💧 ni cœurs`;
     $('modalCost').hidden = true;
-    if ($('modalTiles')) $('modalTiles').hidden = true;   // 23/11 (1.1) : cases d'un niveau refait (openStartModal)
+    if ($('modalTiles')) { $('modalTiles').hidden = true; const hp = $('modalTiles').nextElementSibling; if (hp?.classList.contains('tile-help')) hp.hidden = true; }   // 23/11 (1.1) : cases d'un niveau refait (openStartModal)
     showModal(false);
 }
 
@@ -6792,22 +6792,53 @@ function openReviewModal() {
     const bonus = dropBonusText();
     $('modalCost').textContent = bonus;
     $('modalCost').hidden = !bonus;
-    if ($('modalTiles')) $('modalTiles').hidden = true;   // 23/11 (1.1) : cases d'un niveau refait (openStartModal)
+    if ($('modalTiles')) { $('modalTiles').hidden = true; const hp = $('modalTiles').nextElementSibling; if (hp?.classList.contains('tile-help')) hp.hidden = true; }   // 23/11 (1.1) : cases d'un niveau refait (openStartModal)
     showModal(false); // Le bouton de confirmation sera vert
 }
 
 /* ---------- Popup de démarrage ---------- */
 
-/** 23/11 (1.1) : cases d'un niveau refait (parcours et escales) : gratuit, XP restante aujourd'hui, missions. */
-function replayTiles(missions) {
+/** 23/11 (1.1) : cases d'un niveau refait (parcours et escales) : gratuit, XP restante aujourd'hui, missions.
+    missions : 'yes' / 'today' (déjà compté aujourd'hui) / 'no' (pas dans les 20 derniers) / 'escale'. Vert = bon pour toi.
+    Chaque case se touche pour une explication (texte sous les cases, `replayTilesHelp`). */
+function replayTilesData(missions) {
     const xpLeft = replayXpLeft();
-    return infoTiles([
-        { big: 'gratuit', label: 'déjà réussi', tone: 'good' },
-        xpLeft > 0 ? { big: `${xpLeft} XP`, label: 'encore possibles aujourd’hui' } : { big: '0 XP', label: 'plus d’XP aujourd’hui', tone: 'warn' },
+    const tiles = [
+        { big: 'Gratuit', label: 'pas de goutte', tone: 'good', keep: true },
+        xpLeft > 0 ? { big: `${xpLeft} XP`, label: 'encore possibles aujourd’hui', tone: 'good' } : { big: '0 XP', label: 'plus d’XP aujourd’hui', tone: 'warn' },
         missions === 'yes' ? { big: '✓', label: 'compte pour tes missions', tone: 'good' }
             : missions === 'today' ? { big: '✓', label: 'déjà compté aujourd’hui' }
             : { big: '✗', label: 'ne compte pas pour les missions' }
-    ]);
+    ];
+    const helps = [
+        '💧 Refaire un niveau déjà réussi ne coûte pas de goutte.',
+        `⭐ Un niveau refait rapporte moins d’XP : 2 par bonne réponse (au lieu de 4 à 6), et ${REPLAY_XP_DAY} XP au plus par jour pour tous les niveaux refaits. `
+            + (xpLeft > 0 ? `Il t’en reste ${xpLeft} aujourd’hui.` : 'Tu les as déjà gagnés aujourd’hui : ça revient demain.'),
+        missions === 'yes' ? `🗓️ Ce niveau fait partie de tes ${REPLAY_MISSION_WINDOW} derniers : il compte pour les missions de la semaine (une fois par jour).`
+            : missions === 'today' ? '🗓️ Tu l’as déjà refait aujourd’hui : un niveau refait ne compte qu’une fois par jour pour les missions.'
+            : missions === 'escale' ? '🗓️ Les niveaux d’escale refaits ne comptent pas pour les missions (seulement la première fois).'
+            : `🗓️ Seuls tes ${REPLAY_MISSION_WINDOW} derniers niveaux comptent pour les missions quand tu les refais.`
+    ];
+    return { tiles, helps };
+}
+function replayTiles(missions) { return infoTiles(replayTilesData(missions).tiles); }
+/** Rend les cases touchables : un tap affiche l'explication juste dessous (re-tap = la cache). */
+function replayTilesHelp(row, helps) {
+    let p = row.nextElementSibling;
+    if (!p || !p.classList.contains('tile-help')) { p = el('p', 'tile-help'); row.after(p); }
+    p.hidden = true;
+    p.textContent = '';
+    [...row.children].forEach((t, i) => {
+        if (!helps[i]) return;
+        t.classList.add('is-tap');
+        t.addEventListener('click', () => {
+            const same = !p.hidden && p.dataset.i === String(i);
+            p.hidden = same;
+            p.dataset.i = String(i);
+            p.textContent = helps[i];
+            [...row.children].forEach(c => c.classList.toggle('is-sel', !same && c === t));
+        });
+    });
 }
 
 function openStartModal(n) {
@@ -6838,9 +6869,13 @@ function openStartModal(n) {
     if (!tiles) { tiles = el('div', 'modal-tiles ask-info'); tiles.id = 'modalTiles'; $('modalCost').before(tiles); }
     tiles.replaceChildren();
     tiles.hidden = !(V11 && free);
+    const helpP = tiles.nextElementSibling?.classList.contains('tile-help') ? tiles.nextElementSibling : null;
+    if (helpP) helpP.hidden = true;
     if (V11 && free) {
         $('modalCost').hidden = true;
-        tiles.append(...replayTiles(replayCountsForMissions(n) ? 'yes' : replayToday().levels[n] ? 'today' : 'no').children);
+        const rd = replayTilesData(replayCountsForMissions(n) ? 'yes' : replayToday().levels[n] ? 'today' : 'no');
+        tiles.append(...infoTiles(rd.tiles).children);
+        replayTilesHelp(tiles, rd.helps);
     }
     $('startLevelBtn').textContent = free ? 'Commencer' : 'Commencer · −1 💧';
 
@@ -6964,7 +6999,7 @@ function showModal(violet) {
 function closeStartModal() {
     $('startModal').hidden = true;
     $('modalCost').hidden = true;
-    if ($('modalTiles')) $('modalTiles').hidden = true;   // 23/11 (1.1) : cases d'un niveau refait (openStartModal)
+    if ($('modalTiles')) { $('modalTiles').hidden = true; const hp = $('modalTiles').nextElementSibling; if (hp?.classList.contains('tile-help')) hp.hidden = true; }   // 23/11 (1.1) : cases d'un niveau refait (openStartModal)
     $('startLevelBtn').textContent = 'Commencer';
     $('modalSecondaryBtn').hidden = true;
     state.pendingLevel = null;
@@ -9941,11 +9976,12 @@ async function cloudLogout() {
 /** 11/11 : chiffres importants en cases bien visibles ([{ big, label, tone }], tone : 'good' / 'bad' / 'warn'). */
 function infoTiles(list) {
     const row = el('div', 'ask-info');
-    list.filter(Boolean).forEach(({ big, label, tone }) => {
+    list.filter(Boolean).forEach(({ big, label, tone, keep }) => {
         const c = el('div', `ask-tile${tone ? ` is-${tone}` : ''}`);
         const b = el('b');
         b.textContent = big;
-        if (String(big).length > 6) b.classList.add(String(big).length > 8 ? 'is-xlong' : 'is-long');   // 17/11 : « 12 500 🪙 » rentre dans la case
+        // 17/11 : « 12 500 🪙 » rentre dans la case ; `keep` (23/11) : un mot qui tient déjà (« Gratuit ») garde la taille des autres cases
+        if (!keep && String(big).length > 6) b.classList.add(String(big).length > 8 ? 'is-xlong' : 'is-long');
         const l = el('span');
         l.textContent = label;
         c.append(b, l);

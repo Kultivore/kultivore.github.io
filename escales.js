@@ -337,8 +337,10 @@ function escRenderPage() {
         row.box.addEventListener('click', go);
         return row.box;
     };
-    // 23/11 (1.1) : « À ouvrir » avant « Mes voyages » (sinon, avec beaucoup de voyages finis, on ne voyait plus les escales à découvrir)
+    // 23/11 (1.1) : les voyages EN COURS en haut ; les voyages TERMINÉS sous « À ouvrir » (sinon, avec beaucoup de voyages finis,
+    // on ne voyait plus les escales à découvrir)
     if (!V11) section('Mes voyages', mine, mineRow);
+    else section('Mes voyages en cours', mine.filter(x => !escEntry(x).stamp), mineRow);
     section('À ouvrir avec un billet', toOpen, x => {
         const row = escRow(x);
         row.sub.textContent = x.blurb;
@@ -347,7 +349,7 @@ function escRenderPage() {
         row.box.addEventListener('click', () => escOpenWithTicket(x));
         return row.box;
     });
-    if (V11) section('Mes voyages', mine, mineRow);
+    if (V11) section('Voyages terminés', mine.filter(x => escEntry(x).stamp), mineRow);
     section('Bientôt', soon, x => {
         const row = escRow(x);
         row.sub.textContent = x.blurb;
@@ -545,20 +547,19 @@ async function escTapLevel(e, n) {
     const rv = kind === 'q' ? escReviews(e, n, escQuestionLevels(e)).length : 0;
     const what = kind === 'q' ? `${escQuestionLevels(e)[n].length} questions${rv ? ` + ${rv} à revoir` : ''}` : kind === 'pairs' ? '2 grilles de paires' : kind === 'order' ? '2 frises de 4 cartes, 2 cœurs' : '10 questions déjà vues';
     const drops = state.data.drops;
-    const xpLeft = replayXpLeft();
-    const info = done && V11   // 23/11 (1.1) : mêmes cases que le parcours (XP restante, missions)
-        ? [{ big: 'gratuit', label: 'déjà réussi', tone: 'good' },
-           xpLeft > 0 ? { big: `${xpLeft} XP`, label: 'encore possibles aujourd’hui' } : { big: '0 XP', label: 'plus d’XP aujourd’hui', tone: 'warn' },
-           { big: '✗', label: 'ne compte pas pour les missions' }]
+    const rd = done && V11 ? replayTilesData('escale') : null;   // 23/11 (1.1) : mêmes cases que le parcours (touchables)
+    const info = rd ? rd.tiles
         : done
         ? [{ big: '🔁', label: 'déjà réussi' }, { big: 'gratuit', label: 'pas de goutte', tone: 'good' }]
         : [{ big: `💧 ${drops}`, label: 'gouttes' }, { big: `💧 ${Math.max(0, drops - 1)}`, label: 'il t’en restera', tone: drops > 1 ? null : 'warn' }];
-    const ok = await askConfirm({
+    const asked = askConfirm({
         title: `${ESC_KIND_ICON[kind] || e.icon} ${kind === 'challenge' ? 'Défi final' : `Niveau ${n}`} · Escale ${e.at}`,
         info,
         text: `${what}${kind === 'challenge' ? ', 2 cœurs : réussis-le pour gagner le tampon de l’escale !' : '.'}${done && !V11 ? '\nNiveau refait : XP réduite.' : ''}`,
         yes: done ? 'Rejouer' : 'Commencer · −1 💧', no: 'Plus tard'
     });
+    if (rd) replayTilesHelp($('askInfo').firstElementChild, rd.helps);
+    const ok = await asked;
     if (!ok) return;
     startEscaleLevel(e, n);
 }
