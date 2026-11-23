@@ -464,7 +464,23 @@ function escRenderTrip(page, e) {
     mid.append(title, prog);
     const flag = el('span', 'esc-head-flag');
     flag.append(emojiImg(e.flag || e.icon));
-    head.append(back, mid, flag);
+    // 23/11 (1.1) : la collection à gagner, TOUJOURS visible dans l'en-tête collé en haut (à la place du drapeau) ;
+    // un tap ouvre le détail (quel objet à quelle étape). La grande ligne reste aussi en haut de la page.
+    const lootItems = V11 ? escLootItems(e) : [];
+    if (lootItems.length) {
+        title.textContent = `${e.icon} ${e.name}`;   // plus court (« Escale aux États-Unis » ne tenait plus à côté de la collection)
+        const mini = el('button', 'esc-head-loot');
+        mini.type = 'button';
+        mini.setAttribute('aria-label', 'Collection à gagner');
+        const gift = el('span', 'esc-head-gift');
+        gift.textContent = '🎁';
+        mini.append(gift);
+        lootItems.forEach(it => { const a = escLootAvatar(it); if (!escStageDone(e, it.step)) a.classList.add('is-locked'); mini.append(a); });
+        mini.addEventListener('click', () => askConfirm({ art: escLootRow(e), title: `🎁 Collection ${e.at}`,
+            text: 'L’emoji à la fin de l’étape 1, le fond à la fin de l’étape 2, le cadre avec le défi final. Jamais vendus dans la boutique : seulement ici !',
+            yes: 'Compris', no: null }));
+        head.append(back, mid, mini);
+    } else head.append(back, mid, flag);
     page.append(head);
     if (V11) { const loot = escLootRow(e); if (loot) page.append(loot); }   // 23/11 (1.1) : la collection à gagner
 

@@ -5744,3 +5744,20 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .ask-art .esc-loot-preview .league-avatar .emoji-img { width: 62%; height: 62%; }
 .ask-art .esc-loot-preview small { color: var(--muted); line-height: 1.2; text-align: center; }
 .ask-art .esc-loot-preview small { white-space: pre-line; }
+/* 23/11 (1.1) : collection à gagner dans l'en-tête collé de l'escale (petits ronds qui se chevauchent) */
+.esc-head-loot { position: relative; display: flex; align-items: center; flex: none; padding: 4px 6px 4px 4px; border: 0; border-radius: 14px;
+    background: var(--bg); cursor: pointer; font: inherit; }
+.esc-head-gift { font-size: 1.05rem; margin-right: 2px; }
+.esc-head-loot .league-avatar { width: 28px; height: 28px; font-size: 0.75rem; border-width: 2px; margin-left: -8px; --fw: 2px; --bw: 2px; }
+.esc-head-loot .league-avatar:first-of-type { margin-left: 0; }
+.esc-head-loot .league-avatar .emoji-img { width: 62%; height: 62%; }
+.esc-head-loot .league-avatar.fr.fx-tag::after { display: none; }
+.esc-head-loot .league-avatar.is-locked { filter: grayscale(0.6) opacity(0.6); }
+.ask-art .esc-loot { margin: 0; background: var(--bg); box-shadow: none; width: 100%; }
+.ask-art .esc-loot .league-avatar { width: 52px; height: 52px; font-size: 1.3rem; }
+.esc-head-loot { padding: 3px 4px; gap: 0; }
+.esc-head-gift { font-size: 0.9rem; margin-right: 1px; }
+.esc-head-loot .league-avatar { width: 24px; height: 24px; margin-left: -9px; }
+.v11 .esc-head-mid { min-width: 0; flex: 1 1 auto; }
+.v11 .esc-head-mid > b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.esc-head:has(.esc-head-loot) { grid-template-columns: 46px minmax(0, 1fr) auto; }
