@@ -402,7 +402,7 @@ async function escOpenWithTicket(x) {
         art: loot,
         title: `${x.icon} Partir ${x.at} ?`,
         info: [{ big: String(ESC_LEVELS), label: 'niveaux' }, { big: `✈️ ${stock}`, label: 'billets' }, { big: `✈️ ${stock - 1}`, label: 'il t’en restera', tone: 'warn' }],
-        text: loot ? `${ESC_LEVELS} niveaux, puis un tampon et une carte, et la collection d’avatar ci-dessus. L’escale reste ouverte pour toujours.`
+        text: loot ? 'À gagner aussi : un tampon et une carte. L’escale reste ouverte pour toujours.'
             : `${ESC_LEVELS} niveaux, puis un tampon, une carte et un badge. L’escale reste ouverte pour toujours.`,
         yes: '✈️ Partir · 1 billet', no: 'Plus tard'
     });
@@ -805,7 +805,7 @@ function escLootPreview(e) {
     if (!items.length) return null;
     const box = el('div', 'esc-loot-preview');
     const t = el('b');
-    t.textContent = `🎁 À gagner : la collection « ${ESC_LOOK_NAME[e.id] || e.name} »`;
+    t.textContent = `🎁 Collection « ${ESC_LOOK_NAME[e.id] || e.name} » à gagner`;
     const look = state.data.avatar || {};
     const a = el('span', 'league-avatar');
     a.style.setProperty('--hue', String(Number.isInteger(look.hue) ? look.hue : 210));
@@ -814,9 +814,7 @@ function escLootPreview(e) {
         else if (it.type === 'bg') a.classList.add(it.id);
         else a.classList.add('fr', it.id, 'fx-tag');
     });
-    const s = el('small');
-    s.textContent = 'Un emoji, un fond et un cadre : un dans chaque coffre de l’escale (après les niveaux 5, 10 et 15).';
-    box.append(t, a, s);
+    box.append(a, t);   // 23/11 : compact (la fenêtre devait tenir sans défiler)
     return box;
 }
 /** Ligne « 🎁 À gagner » en haut du petit parcours d'une escale : les 3 objets, avec un cadenas tant qu'ils ne sont pas gagnés. */

@@ -5774,3 +5774,7 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .ask-art .esc-loot-preview .league-avatar { width: 88px; height: 88px; font-size: 2rem; --fw: 6px; --bw: 4px; }
 .ask-art .esc-loot-preview .league-avatar .emoji-img { width: 62%; height: 62%; }
 .ask-art .esc-loot-preview small { font-size: 0.78rem; font-weight: 800; }
+/* 23/11 : aperçu de la collection plus compact (la fenêtre d'achat tient sans défiler) */
+.ask-art .esc-loot-preview { gap: 6px; padding: 8px; background: none; }
+.ask-art .esc-loot-preview .league-avatar { width: 68px; height: 68px; font-size: 1.6rem; --fw: 5px; --bw: 3px; }
+.ask-art .esc-loot-preview > b { font-size: 0.85rem; }
