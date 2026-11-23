@@ -311,21 +311,17 @@ function escRenderPage() {
     tk.querySelector('small').textContent = '1 billet = 1 escale de ton choix, pour toujours.';
     tk.querySelector('.esc-tickets-buy').innerHTML = `<small>Acheter</small>${fmtNum(ESC_TICKET_PRICE)} 🪙`;
     tk.addEventListener('click', () => escBuyTicket(null));
-    if (V11 && escBadgeCount() > 0) {   // 23/11 (1.1) : billet en stock et escale à ouvrir → la pastille de l'onglet se retrouve ici
-        const dot = el('span', 'esc-row-dot');
-        dot.textContent = String(escBadgeCount());
-        tk.append(dot);
-    }
     page.append(tk);
 
     const mine = ESCALES.filter(x => escEntry(x)?.open);
     if (V11) mine.sort((a, b) => !!escEntry(a).stamp - !!escEntry(b).stamp);   // 23/11 (1.1) : escales en cours d'abord, finies ensuite
     const toOpen = ESCALES.filter(x => escReady(x) && !escEntry(x)?.open);
     const soon = ESCALES.filter(x => !escReady(x));
-    const section = (title, list, fn) => {
+    const section = (title, list, fn, chip = '') => {
         if (!list.length) return;
         const h = el('div', 'esc-sec');
         h.textContent = title;
+        if (chip) { const c = el('span', 'esc-sec-chip'); c.textContent = chip; h.append(c); }   // 23/11 (1.1)
         page.append(h, ...list.map(fn));
     };
     const mineRow = x => {
@@ -372,7 +368,7 @@ function escRenderPage() {
         row.btn.className = `esc-btn${stock || state.data.coins >= ESC_TICKET_PRICE ? '' : ' is-off'}`;
         row.box.addEventListener('click', () => escOpenWithTicket(x));
         return row.box;
-    });
+    }, V11 && stock ? `✈️ ${stock > 1 ? `${stock} billets` : '1 billet'} à utiliser` : '');   // 23/11 (1.1) : ce que compte la pastille de l'onglet
     if (V11) section('Voyages terminés', mine.filter(x => escEntry(x).stamp), mineRow);
     section('Bientôt', soon, x => {
         const row = escRow(x);

@@ -5788,3 +5788,5 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .esc-tickets { position: relative; }
 .esc-dest { position: relative; }
 .esc-dest .esc-row-dot, .esc-tickets .esc-row-dot { top: 6px; right: 8px; }
+.esc-sec-chip { display: inline-block; margin-left: 8px; padding: 2px 9px; border-radius: 999px; background: var(--red, #ff4b4b); color: #fff;
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0; text-transform: none; vertical-align: 1px; }
