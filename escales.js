@@ -68,6 +68,7 @@ async function escBuyTicket(forWhat) {
     const price = ESC_TICKET_PRICE;
     if (d.coins < price) { showToast(`✈️ Un billet coûte ${fmtNum(price)} 🪙 : il te manque ${fmtNum(price - d.coins)} 🪙.`); return false; }
     const ok = await askConfirm({
+        art: forWhat ? escLootPreview(forWhat) : null,   // 23/11 (1.1) : la récompense, au moment de payer
         title: forWhat ? `${forWhat.icon} Pas de billet en stock` : '✈️ Acheter un billet ?',
         info: [{ big: `${fmtNum(price)} 🪙`, label: 'le billet' }, { big: `${fmtNum(d.coins)} 🪙`, label: 'tu as' }, { big: `${fmtNum(d.coins - price)} 🪙`, label: 'il t’en restera', tone: 'warn' }],
         text: forWhat ? `Acheter un billet pour partir ${forWhat.at} ?` : 'Il ira dans ton stock : tu pourras l’utiliser pour l’escale de ton choix, quand tu veux.',
@@ -394,10 +395,13 @@ async function escOpenWithTicket(x) {
     // Pas de billet en stock : on propose d'en acheter un (puis on part)
     if (!escStock() && !(await escBuyTicket(x))) return;
     const stock = escStock();
+    const loot = escLootPreview(x);   // 23/11 (1.1) : la collection à gagner, visible avant de partir
     const ok = await askConfirm({
+        art: loot,
         title: `${x.icon} Partir ${x.at} ?`,
         info: [{ big: String(ESC_LEVELS), label: 'niveaux' }, { big: `✈️ ${stock}`, label: 'billets' }, { big: `✈️ ${stock - 1}`, label: 'il t’en restera', tone: 'warn' }],
-        text: `${ESC_LEVELS} niveaux, puis un tampon, une carte et un badge. L’escale reste ouverte pour toujours.`,
+        text: loot ? `${ESC_LEVELS} niveaux, puis un tampon et une carte, et la collection d’avatar ci-dessus. L’escale reste ouverte pour toujours.`
+            : `${ESC_LEVELS} niveaux, puis un tampon, une carte et un badge. L’escale reste ouverte pour toujours.`,
         yes: '✈️ Partir · 1 billet', no: 'Plus tard'
     });
     if (!ok || !escStock()) { escRenderPage(); return; }
@@ -708,6 +712,37 @@ if (ESCALES_ON && V11 && typeof AV_ALL !== 'undefined') {
         if (!AVI[it.id]) { AV_ALL.push(it); AVI[it.id] = it; }
     }));
 }
+/** Rond d'avatar qui montre UN objet de la collection (sur ma couleur et mon initiale). */
+function escLootAvatar(it) {
+    const look = state.data.avatar || {};
+    const a = el('span', 'league-avatar');
+    a.style.setProperty('--hue', String(Number.isInteger(look.hue) ? look.hue : 210));
+    if (it.type === 'pic') a.append(emojiImg(it.emoji));
+    else {
+        a.textContent = [...(myAvatarName() || 'K')][0].toUpperCase();
+        if (it.type === 'bg') a.classList.add(it.id); else a.classList.add('fr', it.id, 'fx-tag');
+    }
+    return a;
+}
+/** Aperçu de la collection dans les fenêtres d'achat / de départ (« ce que tu peux gagner »). */
+function escLootPreview(e) {
+    const items = V11 ? escLootItems(e) : [];
+    if (!items.length) return null;
+    const box = el('div', 'esc-loot-preview');
+    const t = el('b');
+    t.textContent = '🎁 Collection d’avatar à gagner';
+    const row = el('div', 'esc-loot-row');
+    items.forEach(it => {
+        const c = el('div', 'esc-loot-cell is-got');
+        const lab = el('small');
+        lab.textContent = `${AV_TYPE_NAME[it.type]}
+${it.name}`;
+        c.append(escLootAvatar(it), lab);
+        row.append(c);
+    });
+    box.append(t, row);
+    return box;
+}
 /** Ligne « 🎁 À gagner » en haut du petit parcours d'une escale : les 3 objets, avec un cadenas tant qu'ils ne sont pas gagnés. */
 function escLootRow(e) {
     const items = escLootItems(e);
@@ -716,18 +751,11 @@ function escLootRow(e) {
     const t = el('b', 'esc-loot-title');
     t.textContent = '🎁 À gagner dans cette escale';
     const row = el('div', 'esc-loot-row');
-    const look = state.data.avatar || {};
     items.forEach(it => {
         const got = escStageDone(e, it.step);
         const cell = el('button', `esc-loot-cell${got ? ' is-got' : ''}`);
         cell.type = 'button';
-        const a = el('span', 'league-avatar');
-        a.style.setProperty('--hue', String(Number.isInteger(look.hue) ? look.hue : 210));
-        if (it.type === 'pic') a.append(emojiImg(it.emoji));
-        else {
-            a.textContent = [...(myAvatarName() || 'K')][0].toUpperCase();
-            if (it.type === 'bg') a.classList.add(it.id); else a.classList.add('fr', it.id, 'fx-tag');
-        }
+        const a = escLootAvatar(it);
         const lab = el('small');
         lab.textContent = got ? '✓ Gagné' : it.step < 3 ? `Étape ${it.step}` : 'Défi final';
         cell.append(a, lab);

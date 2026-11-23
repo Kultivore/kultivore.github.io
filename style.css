@@ -5735,3 +5735,12 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .esc-loot-cell.is-got small { color: var(--ok-ink); }
 .esc-loot-cell:not(.is-got) .league-avatar { filter: grayscale(0.35) opacity(0.75); }
 .esc-loot-lock { position: absolute; top: 26px; left: 50%; transform: translate(-50%, -50%); font-size: 1rem; }
+/* 23/11 (1.1) : collection d'escale dans les fenêtres d'achat / de départ */
+.ask-art .esc-loot-preview { width: 100%; max-width: 320px; padding: 10px 8px; border-radius: 16px; background: var(--bg); text-align: center; }
+.esc-loot-preview > b { display: block; font-size: 0.88rem; font-weight: 900; color: var(--ink); margin-bottom: 8px; }
+.ask-art .esc-loot-preview .esc-loot-row { gap: 14px; }
+.ask-art .esc-loot-preview .esc-loot-cell { max-width: 86px; cursor: default; }
+.ask-art .esc-loot-preview .league-avatar { width: 52px; height: 52px; font-size: 1.3rem; --fw: 4px; --bw: 3px; }
+.ask-art .esc-loot-preview .league-avatar .emoji-img { width: 62%; height: 62%; }
+.ask-art .esc-loot-preview small { color: var(--muted); line-height: 1.2; text-align: center; }
+.ask-art .esc-loot-preview small { white-space: pre-line; }
