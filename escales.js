@@ -235,10 +235,7 @@ function escApplyTab() {
     // l'interrupteur passait sous la barre du haut en revenant sur le Parcours)
     document.body.classList.toggle('in-escales', !$('mapScreen').hidden && onEsc);
     if (!onEsc && typeof updateEventBanner === 'function') updateEventBanner();
-    // Collé sous la barre du haut (et sous le bandeau d'événement s'il est là ; sur les Escales, le bandeau est caché)
-    const banner = $('eventBanner');
-    const top = !onEsc && banner && !banner.hidden ? banner.getBoundingClientRect().bottom + 6 : ($('topbar')?.getBoundingClientRect().height || 56) + 6;
-    sw.style.top = `${Math.round(top)}px`;
+    const top = escPlaceSwitch();
     $('mapScreen').classList.toggle('is-esc', onEsc);
     ESCALES.forEach(e => e.cls && $('mapScreen').classList.toggle(e.cls, onEsc && escUi.view === e.id));
     $('escPage').hidden = !onEsc;
@@ -248,6 +245,27 @@ function escApplyTab() {
     const head = document.querySelector('#escPage .esc-head');
     if (head) head.style.top = `${Math.round(top + sw.offsetHeight + 6)}px`;
 }
+/** Place l'interrupteur collé sous la barre du haut (et sous le bandeau d'événement s'il est là ; sur les Escales, le bandeau
+    est caché). 23/11 (1.1) : si la barre du haut n'est pas affichée au moment de la mesure (retour d'un niveau), sa hauteur
+    valait 0 → valeur par défaut trop petite → l'interrupteur passait sous la barre jusqu'au prochain calcul. On remesure plus tard. */
+function escPlaceSwitch(tries = 0) {
+    const sw = $('escSwitch');
+    if (!sw) return 0;
+    const onEsc = escUi.tab === 'escales';
+    const banner = $('eventBanner');
+    const bar = $('topbar');
+    const useBanner = !onEsc && banner && !banner.hidden;
+    const h = useBanner ? banner.getBoundingClientRect().bottom : (bar?.getBoundingClientRect().height || 0);
+    if (V11 && (!h || $('mapScreen').hidden)) {   // pas encore affiché : on réessaie un peu plus tard (le retour sur la carte recalcule aussi)
+        clearTimeout(escPlaceSwitch.t);
+        if (tries < 20) escPlaceSwitch.t = setTimeout(() => { const t = escPlaceSwitch(tries + 1); const hd = document.querySelector('#escPage .esc-head'); if (t && hd) hd.style.top = `${Math.round(t + sw.offsetHeight + 6)}px`; }, 250);
+        return parseFloat(sw.style.top) || 0;
+    }
+    const top = (h || 56) + 6;
+    sw.style.top = `${Math.round(top)}px`;
+    return top;
+}
+if (ESCALES_ON && V11) window.addEventListener('resize', () => escPlaceSwitch());
 const escOrigRenderMap = renderMap;
 // 18/11 : sur les Escales, le grand parcours est caché AVANT d'être dessiné (sinon il défilait jusqu'au niveau en cours
 // et on voyait un instant le bas de la page des Escales, le carnet, avant le retour en haut)
@@ -293,6 +311,7 @@ function escRenderPage() {
     page.append(tk);
 
     const mine = ESCALES.filter(x => escEntry(x)?.open);
+    if (V11) mine.sort((a, b) => !!escEntry(a).stamp - !!escEntry(b).stamp);   // 23/11 (1.1) : escales en cours d'abord, finies ensuite
     const toOpen = ESCALES.filter(x => escReady(x) && !escEntry(x)?.open);
     const soon = ESCALES.filter(x => !escReady(x));
     const section = (title, list, fn) => {
@@ -301,7 +320,7 @@ function escRenderPage() {
         h.textContent = title;
         page.append(h, ...list.map(fn));
     };
-    section('Mes voyages', mine, x => {
+    const mineRow = x => {
         const row = escRow(x);
         const done = escDoneCount(x);
         const fin = !!escEntry(x).stamp;
@@ -317,7 +336,9 @@ function escRenderPage() {
         const go = () => { escUi.view = x.id; escApplyTab(); window.scrollTo(0, 0); setTimeout(escScrollToCurrent, 60); };
         row.box.addEventListener('click', go);
         return row.box;
-    });
+    };
+    // 23/11 (1.1) : « À ouvrir » avant « Mes voyages » (sinon, avec beaucoup de voyages finis, on ne voyait plus les escales à découvrir)
+    if (!V11) section('Mes voyages', mine, mineRow);
     section('À ouvrir avec un billet', toOpen, x => {
         const row = escRow(x);
         row.sub.textContent = x.blurb;
@@ -326,10 +347,11 @@ function escRenderPage() {
         row.box.addEventListener('click', () => escOpenWithTicket(x));
         return row.box;
     });
+    if (V11) section('Mes voyages', mine, mineRow);
     section('Bientôt', soon, x => {
         const row = escRow(x);
         row.sub.textContent = x.blurb;
-        row.btn.textContent = `🔒 ${x.soon || 'Bientôt'}`;
+        row.btn.textContent = `🔒 ${V11 ? 'Bientôt' : x.soon || 'Bientôt'}`;   // 23/11 (1.1) : « Bientôt » pour toutes (le Maghreb disait « Plus tard »)
         row.btn.className = 'esc-btn is-ghost';
         row.box.classList.add('is-soon');
         return row.box;
@@ -523,13 +545,18 @@ async function escTapLevel(e, n) {
     const rv = kind === 'q' ? escReviews(e, n, escQuestionLevels(e)).length : 0;
     const what = kind === 'q' ? `${escQuestionLevels(e)[n].length} questions${rv ? ` + ${rv} à revoir` : ''}` : kind === 'pairs' ? '2 grilles de paires' : kind === 'order' ? '2 frises de 4 cartes, 2 cœurs' : '10 questions déjà vues';
     const drops = state.data.drops;
-    const info = done
+    const xpLeft = replayXpLeft();
+    const info = done && V11   // 23/11 (1.1) : mêmes cases que le parcours (XP restante, missions)
+        ? [{ big: 'gratuit', label: 'déjà réussi', tone: 'good' },
+           xpLeft > 0 ? { big: `${xpLeft} XP`, label: 'encore possibles aujourd’hui' } : { big: '0 XP', label: 'plus d’XP aujourd’hui', tone: 'warn' },
+           { big: '✗', label: 'ne compte pas pour les missions' }]
+        : done
         ? [{ big: '🔁', label: 'déjà réussi' }, { big: 'gratuit', label: 'pas de goutte', tone: 'good' }]
         : [{ big: `💧 ${drops}`, label: 'gouttes' }, { big: `💧 ${Math.max(0, drops - 1)}`, label: 'il t’en restera', tone: drops > 1 ? null : 'warn' }];
     const ok = await askConfirm({
         title: `${ESC_KIND_ICON[kind] || e.icon} ${kind === 'challenge' ? 'Défi final' : `Niveau ${n}`} · Escale ${e.at}`,
         info,
-        text: `${what}${kind === 'challenge' ? ', 2 cœurs : réussis-le pour gagner le tampon de l’escale !' : '.'}${done ? '\nNiveau refait : XP réduite.' : ''}`,
+        text: `${what}${kind === 'challenge' ? ', 2 cœurs : réussis-le pour gagner le tampon de l’escale !' : '.'}${done && !V11 ? '\nNiveau refait : XP réduite.' : ''}`,
         yes: done ? 'Rejouer' : 'Commencer · −1 💧', no: 'Plus tard'
     });
     if (!ok) return;
@@ -544,7 +571,9 @@ showCard = function () {
     const e = escById(state.escale.id);
     const tag = $('challengeTag');
     tag.hidden = false;
-    tag.textContent = `${e.icon} Escale ${e.at}${state.mode === 'challenge' ? ` · Défi final ${state.done + 1}/${state.total}` : ''}`;
+    // 23/11 (1.1) : défi final = seulement « 🏆 Défi final · 3/10 » (le nom de l'escale est déjà en haut ; le thème reste visible)
+    tag.textContent = V11 && state.mode === 'challenge' ? `🏆 Défi final · ${state.done + 1}/${state.total}`
+        : `${e.icon} Escale ${e.at}${state.mode === 'challenge' ? ` · Défi final ${state.done + 1}/${state.total}` : ''}`;
 };
 
 /* ---------- Fin d'un niveau d'escale ---------- */
@@ -601,7 +630,7 @@ endSession = function (win) {
         emoji: kind === 'challenge' ? '🏆' : '🎉',
         face: kind === 'challenge' || state.errors === 0 ? 'fier' : 'content',
         title: finished ? `Escale ${e.at} terminée !` : kind === 'challenge' ? 'Défi final relevé !' : `Niveau ${n} terminé !`,
-        text: finished ? `📕 Tampon dans ton carnet de voyage\n🃏 Carte « ${e.card.name} »\n🏅 Badge « ${e.name} »` : next,
+        text: finished ? `📕 Tampon dans ton carnet de voyage\n🃏 Carte « ${e.card.name} »${V11 ? '' : `\n🏅 Badge « ${e.name} »`}` : next,
         stamp: !finished && state.errors === 0,
         stats: [statXp(), statAccuracy(), statTime()],
         extra: rewardSummary(),
@@ -632,11 +661,12 @@ function escStamp(e, cls) {
 function escCarnet(done = x => escFinished(x.id)) {   // 17/11 : « done » = le carnet d'un ami
     const box = el('div', 'esc-carnet');
     const head = el('div', 'esc-carnet-head');
-    const got = ESCALES.filter(done);
+    const list = V11 ? ESCALES.filter(x => escReady(x) || done(x)) : ESCALES;   // 23/11 (1.1) : seulement les escales déjà sorties
+    const got = list.filter(done);
     head.innerHTML = '<b>📕 Mon carnet de voyage</b><small></small>';
-    head.querySelector('small').textContent = `${got.length} / ${ESCALES.length} tampons`;
+    head.querySelector('small').textContent = `${got.length} / ${list.length} tampons`;
     const pages = el('div', 'esc-carnet-pages');
-    ESCALES.forEach((x, i) => {
+    list.forEach((x, i) => {
         const cell = el('div', `esc-carnet-cell${i % 2 ? ' is-l' : ' is-r'}`);
         cell.dataset.id = x.id;
         if (done(x)) cell.append(escStamp(x));
@@ -652,13 +682,16 @@ if (ESCALES_ON) {
     ESCALES.filter(x => x.card && escReady(x)).forEach(x => { if (!EVENT_CARDS.some(c => c.id === x.card.id)) EVENT_CARDS.push(x.card); });
     if (typeof BADGES_NEW !== 'undefined') {
         BADGES_NEW.push(
-            ...ESCALES.filter(x => x.card && escReady(x)).map(x => ({ id: `esc-${x.id}`, icon: x.icon, name: x.name, desc: `Terminer l’Escale ${x.at}`, test: () => escFinished(x.id) })),
+            // 23/11 (1.1) : plus un badge par escale (il y en aurait des dizaines), mais « 1 escale » dans la famille Globe-trotter
+            ...(V11 ? [{ id: 'trot1', icon: '✈️', name: 'Premier voyage', desc: 'Terminer 1 escale', test: () => escFinishedCount() >= 1 }]
+                : ESCALES.filter(x => x.card && escReady(x)).map(x => ({ id: `esc-${x.id}`, icon: x.icon, name: x.name, desc: `Terminer l’Escale ${x.at}`, test: () => escFinished(x.id) }))),
             { id: 'trot3', icon: '🧳', name: 'Globe-trotter', desc: 'Terminer 3 escales', test: () => escFinishedCount() >= 3 },
             { id: 'trot6', icon: '🌍', name: 'Baroudeur', desc: 'Terminer 6 escales', test: () => escFinishedCount() >= 6 },
             { id: 'trot10', icon: '🌐', name: 'Tour du monde', desc: 'Terminer 10 escales', test: () => escFinishedCount() >= 10 });
     }
     if (typeof BADGE_FAMS !== 'undefined') {
-        BADGE_FAMS.push(['🧳', 'Globe-trotter', 'escales finies', [...ESCALES.filter(x => x.card && escReady(x)).map(x => [`esc-${x.id}`, x.name, 1, () => +escFinished(x.id)]),
+        BADGE_FAMS.push(['🧳', 'Globe-trotter', 'escales finies', [...(V11 ? [['trot1', '1 escale', 1, escFinishedCount]]
+            : ESCALES.filter(x => x.card && escReady(x)).map(x => [`esc-${x.id}`, x.name, 1, () => +escFinished(x.id)])),
             ['trot3', '3 escales', 3, escFinishedCount], ['trot6', '6 escales', 6, escFinishedCount], ['trot10', '10 escales', 10, escFinishedCount]]]);
     }
 }

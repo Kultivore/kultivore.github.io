@@ -17,6 +17,9 @@ const REVIEW_SESSION_SIZE = 10;  // taille de la session « Réviser mes erreurs
 // Bac à sable (?bac=1, 2026-10-25) : copie de la vraie partie dans une sauvegarde à part, toutes les nouveautés actives,
 // RIEN envoyé en ligne (sauvegarde, classement, duels, statistiques). Pour essayer avant les autres.
 const BAC = (() => { try { return new URLSearchParams(location.search).get('bac') === '1'; } catch (err) { return false; } })();
+// 23/11 : MISE À JOUR 1.1 (titres, phrases gourmandes de Kulti, compteur des défis, escales…) : d'abord dans le bac à sable ; pour tous : true
+const V11 = BAC;
+if (V11) document.documentElement.classList.add('v11');
 const AV_TONE_ON = true;   // 13/11 : interrupteur « Vif | Pastel » des couleurs unies d'avatar (EN LIGNE POUR TOUS)
 const STORAGE_KEY = BAC ? 'kultivo_bac' : 'cultureG_v2';
 // 14/11 : copie de secours sur l'appareil = la partie telle qu'elle était avant la 1re sauvegarde du jour (« la veille »),
@@ -175,6 +178,11 @@ const TITLES = [
     { xp: 15000, name: 'Oracle' },
     { xp: 25000, name: 'Légende de Kultivore' }
 ];
+// 23/11 (1.1) : quelques titres « Kultivore » (mêmes seuils d'XP, seul le nom change)
+if (V11) {
+    const TITLE_V11 = { 'Apprenti': 'Grignoteur', 'Savant': 'Fin gourmet', 'Puits de science': 'Dévoreur de livres', 'Oracle': 'Ogre de culture' };
+    TITLES.forEach(t => { if (TITLE_V11[t.name]) t.name = TITLE_V11[t.name]; });
+}
 
 /* ---------- Structure des niveaux ---------- */
 
@@ -1835,7 +1843,7 @@ async function checkStreakDanger(demo = null) {
         title: '🔥 Ta série est en danger !',
         info: [{ big: String(missed), label: missed > 1 ? 'jours manqués' : 'jour manqué', tone: 'warn' }, { big: `🧊 ${data.inv.freeze}`, label: 'gels en stock' },
             { big: `🧊 ${need}`, label: need > 1 ? 'gels manquants' : 'gel manquant', tone: 'bad' }],
-        text: `Pour sauver ta série de ${days}.\n`
+        text: (V11 ? `Kulti a faim 🍽️ ! Pour sauver ta série de ${days} :\n` : `Pour sauver ta série de ${days}.\n`)
             + (enough ? `Tu as ${data.coins} 🪙 : il t’en restera ${data.coins - price}. Termine ensuite une leçon pour la garder.`
                       : `Il faut ${price} 🪙, tu en as ${data.coins}. Gagne des pièces en jouant, puis achète un gel à la boutique avant ta prochaine leçon.`),
         yes: enough ? `Acheter · ${price} 🪙` : 'Compris',
@@ -3108,6 +3116,7 @@ function openEventStart() {
     $('modalDesc').textContent = eventData(ev).won ? 'Pour le plaisir : la carte est déjà à toi !' : `${n} / ${ev.goal} questions trouvées pour la carte.`;
     $('modalStatsText').textContent = `${EVENT_SIZE} questions · sans gouttes 💧 ni cœurs`;
     $('modalCost').hidden = true;
+    if ($('modalTiles')) $('modalTiles').hidden = true;   // 23/11 (1.1) : cases d'un niveau refait (openStartModal)
     showModal(false);
 }
 
@@ -6062,6 +6071,7 @@ function renderProfile() {
         ['📅 Meilleur défi du jour', bestDaily],
         ['✅ Réussies du premier coup', `${data.totals.right} / ${data.totals.tries} réponses`],   // y = réponses données, pas des questions (29/10)
         ['🗺️ Niveaux terminés', `${doneCount} / ${MAX_LEVEL}`],
+        ...(V11 ? [['✨ Niveaux sans faute', String(data.totals.flawless || 0)]] : []),   // 23/11 (1.1)
         ['🎯 Jours d’objectif atteint', String(Object.keys(data.goalDays).length)],
         ['🏆 Semaines 1er de la ligue', String(leagueWins())],
         ['⚔️ Duels gagnés', String(data.totals.duelsWon || 0)],
@@ -6782,10 +6792,23 @@ function openReviewModal() {
     const bonus = dropBonusText();
     $('modalCost').textContent = bonus;
     $('modalCost').hidden = !bonus;
+    if ($('modalTiles')) $('modalTiles').hidden = true;   // 23/11 (1.1) : cases d'un niveau refait (openStartModal)
     showModal(false); // Le bouton de confirmation sera vert
 }
 
 /* ---------- Popup de démarrage ---------- */
+
+/** 23/11 (1.1) : cases d'un niveau refait (parcours et escales) : gratuit, XP restante aujourd'hui, missions. */
+function replayTiles(missions) {
+    const xpLeft = replayXpLeft();
+    return infoTiles([
+        { big: 'gratuit', label: 'déjà réussi', tone: 'good' },
+        xpLeft > 0 ? { big: `${xpLeft} XP`, label: 'encore possibles aujourd’hui' } : { big: '0 XP', label: 'plus d’XP aujourd’hui', tone: 'warn' },
+        missions === 'yes' ? { big: '✓', label: 'compte pour tes missions', tone: 'good' }
+            : missions === 'today' ? { big: '✓', label: 'déjà compté aujourd’hui' }
+            : { big: '✗', label: 'ne compte pas pour les missions' }
+    ]);
+}
 
 function openStartModal(n) {
     syncDrops();
@@ -6810,6 +6833,15 @@ function openStartModal(n) {
     $('modalCost').textContent = free ? `💧 Déjà réussi : gratuit · ${xpLeft > 0 ? `XP réduite, encore ${xpLeft} XP possibles aujourd’hui` : 'plus d’XP aujourd’hui (revient demain)'} · ${replayCountsForMissions(n) ? '✓ compte pour tes missions' : replayToday().levels[n] ? 'déjà compté pour tes missions aujourd’hui' : 'ne compte pas pour les missions'}`
         : `💧 −1 goutte · il t’en restera ${left}`;
     $('modalCost').hidden = false;
+    // 23/11 (1.1) : niveau refait = des cases claires (comme les escales) au lieu d'une longue phrase
+    let tiles = $('modalTiles');
+    if (!tiles) { tiles = el('div', 'modal-tiles ask-info'); tiles.id = 'modalTiles'; $('modalCost').before(tiles); }
+    tiles.replaceChildren();
+    tiles.hidden = !(V11 && free);
+    if (V11 && free) {
+        $('modalCost').hidden = true;
+        tiles.append(...replayTiles(replayCountsForMissions(n) ? 'yes' : replayToday().levels[n] ? 'today' : 'no').children);
+    }
     $('startLevelBtn').textContent = free ? 'Commencer' : 'Commencer · −1 💧';
 
     showModal(info.challenge);
@@ -6932,6 +6964,7 @@ function showModal(violet) {
 function closeStartModal() {
     $('startModal').hidden = true;
     $('modalCost').hidden = true;
+    if ($('modalTiles')) $('modalTiles').hidden = true;   // 23/11 (1.1) : cases d'un niveau refait (openStartModal)
     $('startLevelBtn').textContent = 'Commencer';
     $('modalSecondaryBtn').hidden = true;
     state.pendingLevel = null;
@@ -7567,6 +7600,7 @@ function showCard() {
                     : state.mode === 'daily' ? `Défi du jour · ${state.done + 1}/${state.total}`
                     : state.mode === 'sprint' ? 'Sprint'
                     : state.mode === 'placement' ? `Placement · étape ${state.placeStep + 1}/${PLACEMENT_STEPS}`
+                    : V11 && state.mode === 'challenge' ? `🏆 Défi · ${state.done + 1}/${state.total}`   // 23/11 (1.1) : avancement, comme le défi du jour
                     : 'Défi';
     $('questionText').textContent = item.q.q;
     const said = $('kultiSaid');   // « Kulti s'est trompé » : sa fausse réponse dans une bulle, à part de la question
@@ -7743,6 +7777,7 @@ const KULTI_CHANCE = 0.3;   // phrase « au hasard » sur une bonne / mauvaise r
 const pickOne = list => list[Math.floor(Math.random() * list.length)];
 // Phrases de la carte : 22 caractères au plus (sinon le titre passe sur 2 lignes et la carte grandit)
 const KULTI_RIGHT = ['Bien vu !', 'Exactement !', 'Neurones validés !', 'Tu le savais, hein ?', 'Joli coup !', 'Je le savais aussi !', 'Rien à redire !'];
+if (V11) KULTI_RIGHT.push('Miam, bien vu !', 'Délicieux !', 'Je me régale !');   // 23/11 (1.1) : touche gourmande, mélangée aux autres
 const KULTI_WRONG = ['Elle était piégeuse !', 'Elle m’a eu aussi…', 'Presque ! Ou pas…', 'Retiens-la bien !'];
 const KULTI_COMBO = { 3: 'Tu chauffes !', 5: 'Rien ne t’arrête !', 7: 'Je suis bluffé !', 10: 'Un vrai génie !' };   // la pastille dit déjà « N d'affilée »
 function kultiFeedbackLine(verdict, skipped) {
@@ -7765,11 +7800,12 @@ function kultiFeedbackLine(verdict, skipped) {
 const nbspPunct = s => String(s).replace(/ ([!?:;»…])/g, ' $1').replace(/« /g, '« ');
 function kultiEndLine(mood, stamp) {
     const h = new Date().getHours();
-    if (mood === 'triste') return pickOne(['Pas grave, on réessaie ?', 'Elles m’ont eu aussi, la première fois.', 'On se relève, on recommence !']);
+    if (mood === 'triste') return pickOne(['Pas grave, on réessaie ?', 'Elles m’ont eu aussi, la première fois.', 'On se relève, on recommence !', ...(V11 ? ['J’ai encore faim… On réessaie ?'] : [])]);
+    if (V11 && state.goalReached) return 'Miam, ration du jour avalée ! 😋';   // 23/11 (1.1) : objectif du jour atteint pendant cette partie
     if (stamp) return pickOne(['Tu m’impressionnes, et je suis un cerveau !', 'Sans faute ! Je suis fier de toi.', 'Zéro faute. Chapeau !']);
     const pct = state.total ? state.correct / state.total : 1;
     if (pct < 0.7) return pickOne(['Ouf ! De justesse, mais on l’a !', 'Gagné ! On a eu chaud…']);
-    const list = ['Mes neurones applaudissent !', 'Encore un dans la poche !', 'Chaque bonne réponse me fait pousser un neurone.', 'Bien joué ! On continue ?'];
+    const list = ['Mes neurones applaudissent !', 'Encore un dans la poche !', 'Chaque bonne réponse me fait pousser un neurone.', 'Bien joué ! On continue ?', ...(V11 ? ['Miam, quel festin !', 'Je me suis régalé !'] : [])];
     if (h >= 21 || h < 5) list.push('Un dernier avant de dormir ?');
     else if (h < 11) list.push('Belle façon de commencer la journée !');
     return pickOne(list);

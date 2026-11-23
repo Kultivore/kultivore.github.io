@@ -5676,3 +5676,18 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .lost-banner .btn { flex: none; width: auto; padding: 10px 14px; font-size: 0.9rem; }
 :root[data-theme="dark"] .lost-banner { background: #3a2a10; color: #ffd77a; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lost-banner { background: #3a2a10; color: #ffd77a; } }
+
+/* ============================================================
+   23/11 — MISE À JOUR 1.1 (html.v11 : bac à sable d'abord ; pour tous : V11 = true dans script.js)
+   ============================================================ */
+/* Entraînement : toujours 2 thèmes par ligne sur téléphone, même si l'écran paraît étroit (zoom d'affichage agrandi) */
+@media (max-width: 700px) {
+    .v11 .train-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .v11 .train-tile { min-width: 0; }
+    .v11 .train-tile * { overflow-wrap: anywhere; }
+}
+/* Escales : même coche que le parcours (rond blanc, ✓ doré, anneau doré) */
+.v11 .esc-node-check { background: var(--surface); color: var(--gold-deep); box-shadow: 0 0 0 3px var(--gold), 0 2px 4px rgba(0, 0, 0, 0.15);
+    width: 28px; height: 28px; line-height: 28px; display: grid; place-items: center; font-size: 0.95rem; font-weight: 900; }
+/* Fenêtre de départ d'un niveau refait : cases (gratuit, XP restante, missions) */
+.modal-tiles { margin: 10px 0 14px; }
