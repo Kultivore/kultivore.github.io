@@ -13530,6 +13530,15 @@ function initBac() {
         const more = await askConfirm({ title: '🧪 Bac à sable', text: `Une copie de ta partie : tout ce que tu fais ici reste ici. Rien n’est envoyé en ligne, ton vrai jeu ne change pas. ${realLv ? `Copie : niveau ${Math.min(state.data.unlocked, MAX_LEVEL)} (vraie partie : niveau ${Math.min(realLv, MAX_LEVEL)}).` : 'Ta vraie partie n’est pas sur ce navigateur : ouvre le bac à sable dans le navigateur où tu joues.'}`,
             yes: '+1 000 🪙 pour tester', no: 'Plus d’options' });
         if (more) { state.data.coins += 1000; saveData(); renderHeader(); if (!$('shopScreen').hidden) renderShop(); return; }
+        // 23/11 (1.1) : appli d'essai « Kultivore TEST » : voir les notifications tout de suite (dans 1 minute)
+        if (typeof window.kultivoNotifTest === 'function') {
+            const nt = await askConfirm({ title: '🧪 Bac à sable', text: '🔔 Essayer les notifications ? Elles arrivent dans 1 minute : sors de l’appli (bouton d’accueil) pour bien les voir.', yes: 'Essayer', no: 'Plus d’options' });
+            if (nt) {
+                const serie = await askConfirm({ title: '🔔 Quelle notification ?', text: 'Le rappel du soir (« Kulti a faim ! ») ou les gouttes rechargées (ta 5e goutte arrive dans 1 minute) ?', yes: 'Rappel du soir', no: 'Gouttes rechargées' });
+                window.kultivoNotifTest(serie ? 'serie' : 'gouttes');
+                return;
+            }
+        }
         // 16/11 : Noël (calendrier de l'Avent, tournée du Père Noël, rayon de la boutique) : choisir un jour de décembre
         const noel = await askConfirm({ title: '🧪 Bac à sable', text: `🎄 Essayer Noël : choisir un faux jour de décembre (calendrier, tournée, boutique).${noelSimDay() ? ` Jour simulé : ${shortDate(noelSimDay())}.` : ''}`, yes: 'Choisir le jour', no: 'Plus d’options' });
         if (noel) { openNoelBacMenu(); return; }

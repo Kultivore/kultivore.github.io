@@ -158,6 +158,26 @@
             try { await LN.schedule({ notifications: list }); } catch (e) { /* refusé : tant pis */ }
         };
         window.kultivoNotifPlan = notifPlan;
+        // Bac à sable de l'appli d'essai (menu 🧪) : une notification dans 1 minute pour la voir sans attendre le soir
+        if (BAC) window.kultivoNotifTest = async kind => {
+            if (!(await allowed())) { try { await LN.requestPermissions(); } catch (e) { /* */ } }
+            if (!(await allowed())) { showToast('🔔 Notifications refusées : autorise-les dans les paramètres du téléphone.'); return; }
+            const at = new Date(Date.now() + 60000);
+            const streak = typeof currentStreak === 'function' ? currentStreak() : 0;
+            let n;
+            if (kind === 'serie') {
+                n = { id: 201, channelId: 'serie', title: '🍽️ Kulti a faim !',
+                    body: streak >= 1 ? `Ta série de ${plural(streak, 'jour', 'jours')} t’attend 🔥 Un petit niveau ?` : 'Un petit niveau de culture G aujourd’hui ?' };
+            } else {
+                const d = state.data;   // la 5e goutte arrive dans 1 minute (pour de vrai dans la copie du bac à sable)
+                d.drops = DROPS_MAX - 1;
+                d.dropsAt = Date.now() - DROP_MS + 60000;
+                saveData(); renderHeader();
+                n = { id: 202, channelId: 'gouttes', title: '💧 Gouttes rechargées !', body: `Tes ${DROPS_MAX} gouttes sont pleines : de quoi faire ${DROPS_MAX} niveaux. Kulti a faim !` };
+            }
+            try { await LN.schedule({ notifications: [{ ...n, schedule: { at, allowWhileIdle: true }, isExactNotification: false }] }); showToast('🔔 Notification dans 1 minute : sors de l’appli pour la voir.'); }
+            catch (e) { showToast('🔔 Impossible de programmer la notification.'); }
+        };
         // Fenêtre du jeu AVANT la demande d'Android (une seule fois) : à la fin d'une partie, quand rien d'autre n'est ouvert
         const askOnce = async () => {
             try { if (localStorage.getItem(ASK_KEY)) return; } catch (e) { return; }
