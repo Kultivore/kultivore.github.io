@@ -5778,3 +5778,13 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .ask-art .esc-loot-preview { gap: 6px; padding: 8px; background: none; }
 .ask-art .esc-loot-preview .league-avatar { width: 68px; height: 68px; font-size: 1.6rem; --fw: 5px; --bw: 3px; }
 .ask-art .esc-loot-preview > b { font-size: 0.85rem; }
+/* 23/11 (1.1) : ce que compte la pastille de l'onglet Escales, visible dans la page (coffres à ouvrir, billet à utiliser) */
+.esc-chest-chip { display: inline-block; margin-top: 6px; padding: 2px 10px; border-radius: 999px; background: #fff1c2; color: #7a5200;
+    font-size: 0.78rem; font-weight: 900; }
+:root[data-theme="dark"] .esc-chest-chip { background: #3a2a10; color: #ffd77a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .esc-chest-chip { background: #3a2a10; color: #ffd77a; } }
+.esc-row-dot { position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--red, #ff4b4b);
+    color: #fff; font-size: 0.78rem; font-weight: 900; line-height: 22px; text-align: center; box-shadow: 0 0 0 2px var(--surface); z-index: 2; }
+.esc-tickets { position: relative; }
+.esc-dest { position: relative; }
+.esc-dest .esc-row-dot, .esc-tickets .esc-row-dot { top: 6px; right: 8px; }

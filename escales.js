@@ -311,6 +311,11 @@ function escRenderPage() {
     tk.querySelector('small').textContent = '1 billet = 1 escale de ton choix, pour toujours.';
     tk.querySelector('.esc-tickets-buy').innerHTML = `<small>Acheter</small>${fmtNum(ESC_TICKET_PRICE)} 🪙`;
     tk.addEventListener('click', () => escBuyTicket(null));
+    if (V11 && escBadgeCount() > 0) {   // 23/11 (1.1) : billet en stock et escale à ouvrir → la pastille de l'onglet se retrouve ici
+        const dot = el('span', 'esc-row-dot');
+        dot.textContent = String(escBadgeCount());
+        tk.append(dot);
+    }
     page.append(tk);
 
     const mine = ESCALES.filter(x => escEntry(x)?.open);
@@ -336,7 +341,23 @@ function escRenderPage() {
         row.btn.textContent = fin ? 'Revoir' : 'Continuer';
         row.btn.className = `esc-btn${fin ? ' is-ghost' : ''}`;
         if (fin) { row.box.classList.add('is-done'); row.box.append(escStamp(x, 'esc-mini-stamp')); }
-        const go = () => { escUi.view = x.id; escApplyTab(); window.scrollTo(0, 0); setTimeout(escScrollToCurrent, 60); };
+        // 23/11 (1.1) : coffre(s) de collection à ouvrir dans ce voyage → c'est écrit ici (sinon la pastille de l'onglet était un mystère)
+        const chests = V11 ? [1, 2, 3].filter(k => escStageDone(x, k) && !escEntry(x)?.chests?.[k] && escLootItems(x).length).length : 0;
+        if (chests) {
+            const chip = el('span', 'esc-chest-chip');
+            chip.textContent = `🎁 ${chests > 1 ? `${chests} coffres` : '1 coffre'} à ouvrir`;
+            row.text.append(chip);
+            const dot = el('span', 'esc-row-dot');
+            dot.textContent = String(chests);
+            row.box.append(dot);
+        }
+        const go = () => {
+            escUi.view = x.id; escApplyTab(); window.scrollTo(0, 0);
+            setTimeout(() => {   // coffre à ouvrir : on descend jusqu'à lui et il brille ; sinon, le niveau en cours
+                const ch = chests && document.querySelector('#escPage .chest-node.is-ready');
+                if (ch) { ch.scrollIntoView({ block: 'center' }); ch.classList.add('notif-flash'); } else escScrollToCurrent();
+            }, 60);
+        };
         row.box.addEventListener('click', go);
         return row.box;
     };
