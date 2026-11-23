@@ -6446,7 +6446,8 @@ async function buyAvItem(it) {
     if (d.av.owned[it.id]) return;
     if (d.coins < it.price) { showToast(`Il te manque ${it.price - d.coins} 🪙.`); return; }
     const ok = await askConfirm({ title: `Acheter « ${it.name} » ?`, art: avBeforeAfter(it),
-        text: `${AV_TYPE_NAME[it.type]} · ${it.price} 🪙 (il t’en restera ${d.coins - it.price}). Ton avatar avant → après : il ira tout de suite dessus.`,
+        text: V11 ? `${AV_TYPE_NAME[it.type]} · ${it.price} 🪙 (il t’en restera ${d.coins - it.price}). Ton avatar avant → après.`
+            : `${AV_TYPE_NAME[it.type]} · ${it.price} 🪙 (il t’en restera ${d.coins - it.price}). Ton avatar avant → après : il ira tout de suite dessus.`,
         yes: `Acheter · ${it.price} 🪙` });
     if (!ok || d.coins < it.price) return;
     d.coins -= it.price;
@@ -6454,14 +6455,18 @@ async function buyAvItem(it) {
     d.av.opened[it.id] = 1;
     d.av.known[it.id] = 1;
     d.totals.purchases++;
-    avWear(it);
+    if (!V11) avWear(it);
     saveData();
-    pushAvatar();
     renderHeader();
     renderShop();
     playSound('win');
-    showToast('✓ C’est à toi ! Change-le quand tu veux dans « Mon avatar ».');
     checkBadges();
+    if (!V11) { pushAvatar(); showToast('✓ C’est à toi ! Change-le quand tu veux dans « Mon avatar ».'); return; }
+    // 23/11 (1.1) : on propose de le mettre (on peut acheter un objet pour plus tard, sans changer de look tout de suite)
+    const wear = await askConfirm({ title: '✓ C’est à toi !', art: avPreview(it),
+        text: `${AV_TYPE_NAME[it.type]} « ${it.name} » : le mettre sur ton avatar maintenant ? Sinon, il t’attend dans Profil → Mon avatar.`,
+        yes: 'Le mettre maintenant', no: 'Plus tard' });
+    if (wear) { avWear(it); saveData(); pushAvatar(); renderShop(); if (typeof renderProfile === 'function') renderProfile(); showToast('✓ C’est sur ton avatar !'); }
 }
 async function buyCollection(items, price) {
     const d = state.data;
@@ -6473,19 +6478,24 @@ async function buyCollection(items, price) {
     arrow.textContent = '→';
     art.append(avatarEl(myAvatarName(), avEnsureLook()), arrow, avatarEl(myAvatarName(), look));
     const ok = await askConfirm({ title: 'Toute la collection ?', art,
-        text: `${items.map(it => it.name).join(' + ')} · ${price} 🪙 (il t’en restera ${d.coins - price}). Tout ira sur ton avatar.`, yes: `Acheter · ${price} 🪙` });
+        text: `${items.map(it => it.name).join(' + ')} · ${price} 🪙 (il t’en restera ${d.coins - price}).${V11 ? '' : ' Tout ira sur ton avatar.'}`, yes: `Acheter · ${price} 🪙` });
     if (!ok || d.coins < price) return;
     d.coins -= price;
-    items.forEach(it => { d.av.owned[it.id] = 1; d.av.opened[it.id] = 1; d.av.known[it.id] = 1; avWear(it); });
+    items.forEach(it => { d.av.owned[it.id] = 1; d.av.opened[it.id] = 1; d.av.known[it.id] = 1; if (!V11) avWear(it); });
     d.totals.purchases++;
     saveData();
-    pushAvatar();
+    if (!V11) pushAvatar();
     renderHeader();
     renderShop();
     playSound('win');
     launchConfetti();
-    showToast('✓ Toute la collection est à toi !');
     checkBadges();
+    if (!V11) { showToast('✓ Toute la collection est à toi !'); return; }
+    // 23/11 (1.1) : on propose de la mettre
+    const wear = await askConfirm({ title: '✓ Toute la collection est à toi !', art: avatarEl(myAvatarName(), look),
+        text: 'La mettre sur ton avatar maintenant ? Sinon, elle t’attend dans Profil → Mon avatar.',
+        yes: 'La mettre maintenant', no: 'Plus tard' });
+    if (wear) { items.forEach(avWear); saveData(); pushAvatar(); renderShop(); if (typeof renderProfile === 'function') renderProfile(); showToast('✓ C’est sur ton avatar !'); }
 }
 async function buyVitrineCard() {
     const d = state.data;
