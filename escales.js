@@ -555,7 +555,9 @@ async function escTapLevel(e, n) {
     const asked = askConfirm({
         title: `${ESC_KIND_ICON[kind] || e.icon} ${kind === 'challenge' ? 'Défi final' : `Niveau ${n}`} · Escale ${e.at}`,
         info,
-        text: `${what}${kind === 'challenge' ? ', 2 cœurs : réussis-le pour gagner le tampon de l’escale !' : '.'}${done && !V11 ? '\nNiveau refait : XP réduite.' : ''}`,
+        sub: V11 ? what : '',   // 23/11 (1.1) : en bleu au-dessus des cases, comme le parcours
+        text: V11 ? (kind === 'challenge' ? '2 cœurs : réussis-le pour gagner le tampon de l’escale !' : '')
+            : `${what}${kind === 'challenge' ? ', 2 cœurs : réussis-le pour gagner le tampon de l’escale !' : '.'}${done ? '\nNiveau refait : XP réduite.' : ''}`,
         yes: done ? 'Rejouer' : 'Commencer · −1 💧', no: 'Plus tard'
     });
     if (rd) replayTilesHelp($('askInfo').firstElementChild, rd.helps);

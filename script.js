@@ -9981,7 +9981,8 @@ function infoTiles(list) {
         const b = el('b');
         b.textContent = big;
         // 17/11 : « 12 500 🪙 » rentre dans la case ; `keep` (23/11) : un mot qui tient déjà (« Gratuit ») garde la taille des autres cases
-        if (!keep && String(big).length > 6) b.classList.add(String(big).length > 8 ? 'is-xlong' : 'is-long');
+        if (keep) b.classList.add('is-keep');
+        else if (String(big).length > 6) b.classList.add(String(big).length > 8 ? 'is-xlong' : 'is-long');
         const l = el('span');
         l.textContent = label;
         c.append(b, l);
@@ -9989,12 +9990,17 @@ function infoTiles(list) {
     });
     return row;
 }
-function askConfirm({ title, text = '', yes = 'Oui', no = 'Annuler', danger = false, art = null, info = null }) {
+function askConfirm({ title, text = '', yes = 'Oui', no = 'Annuler', danger = false, art = null, info = null, sub = '' }) {
     const nbsp = t => t.replace(/ ([?!:»])/g, ' $1');   // « ? » jamais seul en début de ligne
     $('askArt').replaceChildren(...(art ? [art] : []));
     $('askArt').hidden = !art;
     let box = $('askInfo');
     if (!box) { box = el('div'); box.id = 'askInfo'; $('askText').before(box); }
+    // 23/11 (1.1) : ligne bleue « 6 questions + 2 à revoir » au-dessus des cases, comme la fenêtre de départ du parcours
+    let subEl = $('askSub');
+    if (!subEl) { subEl = el('div', 'modal-stats ask-sub'); subEl.id = 'askSub'; box.before(subEl); }
+    subEl.textContent = sub;
+    subEl.hidden = !sub;
     box.replaceChildren(...(info ? [infoTiles(info)] : []));
     box.hidden = !info;
     $('askTitle').textContent = nbsp(title);
