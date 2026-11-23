@@ -61,7 +61,9 @@ const escTicketsUsed = () => Object.values(escAll()).filter(x => x && x.open).le
 const escBought = () => Math.max(0, Number(state.data.escBought) || 0);
 const escStock = () => Math.max(0, 1 + escBought() - escTicketsUsed());
 /** Pastille de l'onglet Escales : des billets en stock ET une escale à ouvrir. */
-const escBadgeCount = () => (ESCALES.some(e => escReady(e) && !escEntry(e)?.open) ? escStock() : 0);
+// 23/11 (1.1) : la pastille ne rappelle plus que le billet OFFERT jamais utilisé (pour découvrir les escales) ; ensuite, un billet en
+// stock est seulement signalé dans la page (« ✈️ 1 billet à utiliser »), sans pastille sur l'onglet
+const escBadgeCount = () => (ESCALES.some(e => escReady(e) && !escEntry(e)?.open) && (!V11 || escTicketsUsed() === 0) ? escStock() : 0);
 // 23/11 (1.1) : coffres de collection prêts à ouvrir (pastille de l'onglet Escales)
 const escChestsReady = () => V11 ? ESCALES.filter(e => escReady(e) && escEntry(e)?.open).reduce((s, e) => s + [1, 2, 3].filter(k => escStageDone(e, k) && !escEntry(e)?.chests?.[k] && (typeof escLootItems !== 'function' || escLootItems(e).length)).length, 0) : 0;
 /** Acheter un billet (carte des billets, ou au moment d'ouvrir une escale sans billet). Renvoie true si c'est fait. */
