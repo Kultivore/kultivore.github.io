@@ -62,6 +62,8 @@ const escBought = () => Math.max(0, Number(state.data.escBought) || 0);
 const escStock = () => Math.max(0, 1 + escBought() - escTicketsUsed());
 /** Pastille de l'onglet Escales : des billets en stock ET une escale à ouvrir. */
 const escBadgeCount = () => (ESCALES.some(e => escReady(e) && !escEntry(e)?.open) ? escStock() : 0);
+// 23/11 (1.1) : coffres de collection prêts à ouvrir (pastille de l'onglet Escales)
+const escChestsReady = () => V11 ? ESCALES.filter(e => escReady(e) && escEntry(e)?.open).reduce((s, e) => s + [1, 2, 3].filter(k => escStageDone(e, k) && !escEntry(e)?.chests?.[k] && (typeof escLootItems !== 'function' || escLootItems(e).length)).length, 0) : 0;
 /** Acheter un billet (carte des billets, ou au moment d'ouvrir une escale sans billet). Renvoie true si c'est fait. */
 async function escBuyTicket(forWhat) {
     const d = state.data;
@@ -226,9 +228,9 @@ function escApplyTab() {
         b.classList.toggle('is-active', on);
         b.setAttribute('aria-selected', String(on));
         b.querySelector('.esc-dot')?.remove();
-        if (b.dataset.tab === 'escales' && escBadgeCount() > 0) {
+        if (b.dataset.tab === 'escales' && escBadgeCount() + escChestsReady() > 0) {
             const dot = el('span', 'esc-dot');
-            dot.textContent = String(escBadgeCount());
+            dot.textContent = String(escBadgeCount() + escChestsReady());
             b.append(dot);
         }
     });
@@ -464,25 +466,8 @@ function escRenderTrip(page, e) {
     mid.append(title, prog);
     const flag = el('span', 'esc-head-flag');
     flag.append(emojiImg(e.flag || e.icon));
-    // 23/11 (1.1) : la collection à gagner, TOUJOURS visible dans l'en-tête collé en haut (à la place du drapeau) ;
-    // un tap ouvre le détail (quel objet à quelle étape). La grande ligne reste aussi en haut de la page.
-    const lootItems = V11 ? escLootItems(e) : [];
-    if (lootItems.length) {
-        title.textContent = `${e.icon} ${e.name}`;   // plus court (« Escale aux États-Unis » ne tenait plus à côté de la collection)
-        const mini = el('button', 'esc-head-loot');
-        mini.type = 'button';
-        mini.setAttribute('aria-label', 'Collection à gagner');
-        const gift = el('span', 'esc-head-gift');
-        gift.textContent = '🎁';
-        mini.append(gift);
-        lootItems.forEach(it => { const a = escLootAvatar(it); if (!escStageDone(e, it.step)) a.classList.add('is-locked'); mini.append(a); });
-        mini.addEventListener('click', () => askConfirm({ art: escLootRow(e), title: `🎁 Collection ${e.at}`,
-            text: 'L’emoji à la fin de l’étape 1, le fond à la fin de l’étape 2, le cadre avec le défi final. Jamais vendus dans la boutique : seulement ici !',
-            yes: 'Compris', no: null }));
-        head.append(back, mid, mini);
-    } else head.append(back, mid, flag);
+    head.append(back, mid, flag);
     page.append(head);
-    if (V11) { const loot = escLootRow(e); if (loot) page.append(loot); }   // 23/11 (1.1) : la collection à gagner
 
     const trip = el('div', 'esc-trip');
     // Décor du pays : petites icônes, un tap = une anecdote
@@ -502,9 +487,11 @@ function escRenderTrip(page, e) {
     const qLevels = escQuestionLevels(e);
     for (let n = ESC_LEVELS; n >= 1; n--) {
         const kind = ESC_LAYOUT[n - 1];
+        if (V11 && n % 5 === 0 && escLootItems(e).length) list.append(escChestStop(e, n / 5));   // 23/11 (1.1) : coffre de la collection après les niveaux 5, 10, 15
         const li = el('li', `esc-stop is-${kind}-stop${kind === 'challenge' ? ' is-final' : ''}`);
         li.style.setProperty('--x', kind === 'challenge' ? '0px' : `${Math.round(Math.sin(n * 1.3) * 52)}px`);
         const done = !!ed.done[n];
+        if (done) li.dataset.done = '1';
         const locked = !done && n > unlocked;
         const btn = el('button', `esc-node is-${kind}${done ? ' is-done' : locked ? ' is-locked' : ' is-current'}`);
         btn.type = 'button';
@@ -544,6 +531,75 @@ function escRenderTrip(page, e) {
     }
     trip.append(list);
     page.append(trip);
+    if (V11) { requestAnimationFrame(() => escDrawTrail(list)); setTimeout(() => escDrawTrail(list), 400); }   // 23/11 (1.1) : pointillés
+}
+/** 23/11 (1.1) : pointillés entre les niveaux (et les coffres), comme sur le grand parcours ; dorés derrière soi. */
+function escDrawTrail(list) {
+    if (!list.isConnected) return;
+    list.querySelector('.map-trail')?.remove();
+    const base = list.getBoundingClientRect();
+    if (!base.height) return;
+    const pts = [...list.children].filter(li => li.querySelector('.esc-node, .chest-node')).map(li => {
+        const box = li.querySelector('.esc-node, .chest-node').getBoundingClientRect();
+        return { cx: box.left + box.width / 2 - base.left, top: box.top - base.top, bottom: box.bottom - base.top, done: li.dataset.done === '1' };
+    });
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'map-trail');
+    svg.setAttribute('width', base.width);
+    svg.setAttribute('height', base.height);
+    for (let i = 1; i < pts.length; i++) {   // la liste va du haut (niveau 15) vers le bas (niveau 1) : i est SOUS i − 1
+        const a = pts[i - 1], b = pts[i];
+        const line = document.createElementNS(ns, 'line');
+        line.setAttribute('x1', b.cx); line.setAttribute('y1', b.top - 6);
+        line.setAttribute('x2', a.cx); line.setAttribute('y2', a.bottom + 6);
+        line.setAttribute('class', b.done ? 'is-done' : '');
+        svg.append(line);
+    }
+    list.prepend(svg);
+}
+/** 23/11 (1.1) : coffre de la collection d'avatar (étape k = 1, 2, 3), posé après les niveaux 5, 10 et 15. */
+function escChestStop(e, k) {
+    const it = escLootItems(e)[k - 1];
+    const ready = escStageDone(e, k) && !escEntry(e)?.chests?.[k];
+    const opened = !!escEntry(e)?.chests?.[k];
+    const li = el('li', 'esc-stop esc-chest-stop');
+    li.style.setProperty('--x', `${Math.round(Math.sin((5 * k + 0.5) * 1.3) * 52)}px`);
+    if (opened || ready) li.dataset.done = '1';
+    const btn = el('button', `chest-node ${ready ? 'is-ready' : opened ? 'is-open' : 'is-locked'}`);
+    btn.type = 'button';
+    btn.textContent = '🎁';
+    btn.setAttribute('aria-label', ready ? 'Coffre à ouvrir' : opened ? 'Coffre déjà ouvert' : `Coffre : termine le niveau ${5 * k}`);
+    btn.addEventListener('click', () => {
+        if (escStageDone(e, k) && !escEntry(e)?.chests?.[k]) escOpenLootChest(e, k);
+        else if (escEntry(e)?.chests?.[k]) showToast(`🎁 Déjà ouvert : ${AV_TYPE_NAME[it.type].toLowerCase()} « ${it.name} », dans Profil → Mon avatar.`);
+        else showToast(k < 3 ? `🎁 Termine le niveau ${5 * k} pour ouvrir ce coffre.` : '🎁 Réussis le défi final pour ouvrir ce coffre.');
+    });
+    li.append(btn);
+    return li;
+}
+/** Ouvre le coffre : l'objet est donné tout de suite (déjà « ouvert » : pas de pastille dans le Profil), puis montré en grand. */
+async function escOpenLootChest(e, k) {
+    const it = escLootItems(e)[k - 1];
+    const d = state.data;
+    const ed = escEntry(e);
+    ed.chests = ed.chests || {};
+    ed.chests[k] = todayKey();
+    d.av.grant[it.id] = 1; d.av.known[it.id] = 1; d.av.opened[it.id] = 1;
+    saveData();
+    if (typeof avCheck === 'function') avCheck();
+    updateNavNotifications();
+    playSound('unlock');
+    launchConfetti();
+    const art = escLootAvatar(it);
+    art.classList.add('esc-chest-reveal');
+    const wear = await askConfirm({
+        art, title: '🎁 Nouveau pour ton avatar !',
+        text: `${AV_TYPE_NAME[it.type]} « ${it.name} » de la collection « ${ESC_LOOK_NAME[e.id] || e.name} ». Il t’attend dans Profil → Mon avatar.`,
+        yes: 'Le mettre maintenant', no: 'Plus tard'
+    });
+    if (wear) { avWear(it); saveData(); if (typeof pushAvatar === 'function') pushAvatar(); showToast('✓ C’est sur ton avatar !'); }
+    escRenderPage();
 }
 function escScrollToCurrent() {
     if (!$("escPage") || $("escPage").hidden) return;
@@ -650,11 +706,13 @@ endSession = function (win) {
     const finished = kind === 'challenge' && !ed.stamp;
     if (finished) { ed.stamp = todayKey(); escUi.view = null; escUi.landing = e.id; }   // 17/11 : « Continuer » mène au carnet, où le tampon se pose
     const next = n < ESC_LEVELS ? `Le niveau ${n + 1} de l’escale est ouvert.` : '';
+    // 23/11 (1.1) : fin d'une étape (niveaux 5, 10, 15) → le coffre de la collection attend sur le chemin
+    const chestLine = V11 && n % 5 === 0 && escLootItems(e).length && !escEntry(e)?.chests?.[n / 5] ? '\n🎁 Un coffre t’attend sur le chemin de l’escale !' : '';
     setEnd({
         emoji: kind === 'challenge' ? '🏆' : '🎉',
         face: kind === 'challenge' || state.errors === 0 ? 'fier' : 'content',
         title: finished ? `Escale ${e.at} terminée !` : kind === 'challenge' ? 'Défi final relevé !' : `Niveau ${n} terminé !`,
-        text: finished ? `📕 Tampon dans ton carnet de voyage\n🃏 Carte « ${e.card.name} »${V11 ? '' : `\n🏅 Badge « ${e.name} »`}` : next,
+        text: (finished ? `📕 Tampon dans ton carnet de voyage\n🃏 Carte « ${e.card.name} »${V11 ? '' : `\n🏅 Badge « ${e.name} »`}` : next) + chestLine,
         stamp: !finished && state.errors === 0,
         stats: [statXp(), statAccuracy(), statTime()],
         extra: rewardSummary(),
@@ -710,6 +768,7 @@ const ESC_LOOKS = {
     italie: [['pic', '🍕', 'Pizza'], ['bg', null, 'Toscane'], ['frame', null, 'Mosaïque']],
     usa:    [['pic', '🗽', 'Liberté'], ['bg', null, 'Skyline'], ['frame', null, 'Stars & Stripes']]
 };
+const ESC_LOOK_NAME = { japon: 'Sakura', italie: 'Dolce vita', usa: 'Big Apple' };
 /** Étape k (1, 2, 3) d'une escale terminée ? (étape 3 = défi final réussi) */
 function escStageDone(e, k) {
     if (k >= 3) return escFinished(e.id);
@@ -722,7 +781,7 @@ if (ESCALES_ON && V11 && typeof AV_ALL !== 'undefined') {
     ESCALES.filter(escReady).forEach(e => (ESC_LOOKS[e.id] || []).forEach(([type, emoji, name], i) => {
         const k = i + 1;
         const it = { id: `${type === 'frame' ? 'fr' : type}-esc-${e.id}`, type, kind: 'earn', name, escale: e.id, step: k,
-            how: k < 3 ? `Termine l’étape ${k} de l’Escale ${e.at}` : `Termine l’Escale ${e.at} (défi final)`, test: () => escStageDone(e, k) };
+            how: k < 3 ? `Ouvre le coffre de l’étape ${k} de l’Escale ${e.at}` : `Ouvre le coffre du défi final de l’Escale ${e.at}`, test: () => !!escEntry(e)?.chests?.[k] };   // donné en ouvrant le coffre sur le chemin (escOpenLootChest)
         if (emoji) it.emoji = emoji;
         if (type === 'frame') it.fx = 'tag';
         if (!AVI[it.id]) { AV_ALL.push(it); AVI[it.id] = it; }
@@ -740,23 +799,24 @@ function escLootAvatar(it) {
     }
     return a;
 }
-/** Aperçu de la collection dans les fenêtres d'achat / de départ (« ce que tu peux gagner »). */
+/** Aperçu de la collection dans les fenêtres d'achat / de départ : la collection COMPLÈTE portée par un seul avatar. */
 function escLootPreview(e) {
     const items = V11 ? escLootItems(e) : [];
     if (!items.length) return null;
     const box = el('div', 'esc-loot-preview');
     const t = el('b');
-    t.textContent = '🎁 Collection d’avatar à gagner';
-    const row = el('div', 'esc-loot-row');
+    t.textContent = `🎁 À gagner : la collection « ${ESC_LOOK_NAME[e.id] || e.name} »`;
+    const look = state.data.avatar || {};
+    const a = el('span', 'league-avatar');
+    a.style.setProperty('--hue', String(Number.isInteger(look.hue) ? look.hue : 210));
     items.forEach(it => {
-        const c = el('div', 'esc-loot-cell is-got');
-        const lab = el('small');
-        lab.textContent = `${AV_TYPE_NAME[it.type]}
-${it.name}`;
-        c.append(escLootAvatar(it), lab);
-        row.append(c);
+        if (it.type === 'pic') a.append(emojiImg(it.emoji));
+        else if (it.type === 'bg') a.classList.add(it.id);
+        else a.classList.add('fr', it.id, 'fx-tag');
     });
-    box.append(t, row);
+    const s = el('small');
+    s.textContent = 'Un emoji, un fond et un cadre : un dans chaque coffre de l’escale (après les niveaux 5, 10 et 15).';
+    box.append(t, a, s);
     return box;
 }
 /** Ligne « 🎁 À gagner » en haut du petit parcours d'une escale : les 3 objets, avec un cadenas tant qu'ils ne sont pas gagnés. */
