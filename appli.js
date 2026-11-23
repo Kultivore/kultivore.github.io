@@ -107,4 +107,82 @@
             vv.dispatchEvent(new Event('resize'));
         };
     }
+
+    /* 7) 23/11 : appli d'essai « Kultivore TEST » (installée par le câble, identifiant fr.kultivore.app.test) : toujours ouverte en
+          BAC À SABLE (copie, rien envoyé en ligne), pour essayer une mise à jour sans toucher à la vraie partie. */
+    if (P.App && P.App.getInfo && !BAC) {
+        call(() => P.App.getInfo().then(info => { if (info && /\.test$/.test(info.id || '')) location.replace(`${location.pathname}?bac=1`); }));
+    }
+
+    /* 8) 23/11 (1.1) : NOTIFICATIONS LOCALES (programmées par le téléphone, sans serveur), 2 au plus par jour :
+          - « Rappel de série » : le soir (19 h, ou 21 h si on ouvre l'appli entre 19 h et 21 h sans avoir joué), seulement si on n'a
+            pas joué ce jour-là ; reprogrammé à chaque sortie de l'appli et à chaque fin de partie (une partie jouée → demain) ;
+          - « Gouttes rechargées » : quand les 5 gouttes sont pleines (jamais la nuit : décalé à 9 h).
+          Chaque sorte a sa catégorie Android (réglable dans les paramètres du téléphone). Autorisation demandée UNE fois, à la fin
+          d'une partie, avec une fenêtre du jeu d'abord. Pas d'alarme exacte (Google la réserve aux réveils) : à quelques minutes près. */
+    const LN = P.LocalNotifications;
+    if (LN && typeof V11 !== 'undefined' && V11) {
+        const ID_SERIE = 101, ID_DROPS = 102;
+        const ASK_KEY = 'kultivo_notif_asked';
+        call(() => LN.createChannel({ id: 'serie', name: 'Rappel de série', description: 'Le soir, si tu n’as pas encore joué', importance: 4 }));
+        call(() => LN.createChannel({ id: 'gouttes', name: 'Gouttes rechargées', description: 'Quand tes 5 gouttes sont pleines', importance: 3 }));
+        const allowed = async () => { try { return (await LN.checkPermissions()).display === 'granted'; } catch (e) { return false; } };
+        const notifPlan = async () => {
+            if (!(await allowed())) return;
+            try { await LN.cancel({ notifications: [{ id: ID_SERIE }, { id: ID_DROPS }] }); } catch (e) { /* rien à annuler */ }
+            const d = state.data;
+            if (!d || !d.onboarded) return;
+            const now = new Date();
+            const played = (d.activeDays && d.activeDays[todayKey()]) > 0;
+            const at = new Date(now);
+            at.setHours(19, 0, 0, 0);
+            if (played) at.setDate(at.getDate() + 1);
+            else if (now >= at) { at.setHours(21, 0, 0, 0); if (now >= at) { at.setDate(at.getDate() + 1); at.setHours(19, 0, 0, 0); } }
+            const streak = typeof currentStreak === 'function' ? currentStreak() : 0;
+            const list = [{
+                id: ID_SERIE, channelId: 'serie', title: '🍽️ Kulti a faim !',
+                body: streak >= 1 ? `Ta série de ${plural(streak, 'jour', 'jours')} t’attend 🔥 Un petit niveau ?` : 'Un petit niveau de culture G aujourd’hui ?',
+                schedule: { at, allowWhileIdle: true }, isExactNotification: false
+            }];
+            if (typeof syncDrops === 'function') syncDrops();
+            if (d.drops < DROPS_MAX && d.dropsAt) {
+                const full = new Date(d.dropsAt + (DROPS_MAX - d.drops) * DROP_MS);
+                if (full.getHours() >= 22 || full.getHours() < 8) {   // jamais la nuit : le lendemain matin à 9 h
+                    if (full.getHours() >= 22) full.setDate(full.getDate() + 1);
+                    full.setHours(9, 0, 0, 0);
+                }
+                if (full - now > 60000) list.push({ id: ID_DROPS, channelId: 'gouttes', title: '💧 Gouttes rechargées !',
+                    body: `Tes ${DROPS_MAX} gouttes sont pleines : de quoi faire ${DROPS_MAX} niveaux. Kulti a faim !`,
+                    schedule: { at: full, allowWhileIdle: true }, isExactNotification: false });
+            }
+            try { await LN.schedule({ notifications: list }); } catch (e) { /* refusé : tant pis */ }
+        };
+        window.kultivoNotifPlan = notifPlan;
+        // Fenêtre du jeu AVANT la demande d'Android (une seule fois) : à la fin d'une partie, quand rien d'autre n'est ouvert
+        const askOnce = async () => {
+            try { if (localStorage.getItem(ASK_KEY)) return; } catch (e) { return; }
+            if (await allowed()) { try { localStorage.setItem(ASK_KEY, '1'); } catch (e) { /* */ } notifPlan(); return; }
+            const busy = !$('askModal').hidden || document.querySelector('#streakAnim:not([hidden]), #tour:not([hidden]), .recap-overlay');
+            if (busy) return;   // on réessaiera à la prochaine fin de partie
+            try { localStorage.setItem(ASK_KEY, '1'); } catch (e) { /* */ }
+            const yes = await askConfirm({
+                art: kultiEl('parle', 'kulti-blink kulti-float'),
+                title: '🔔 Un petit rappel ?',
+                text: 'Kulti peut te prévenir le soir si tu n’as pas encore joué (pour garder ta série), et quand tes gouttes sont rechargées. Jamais plus de 2 fois par jour.',
+                yes: 'Oui, préviens-moi', no: 'Non merci'
+            });
+            if (!yes) return;
+            try { await LN.requestPermissions(); } catch (e) { /* */ }
+            notifPlan();
+        };
+        const origSetEnd = setEnd;
+        setEnd = function (...args) {   // eslint-disable-line no-global-assign
+            const r = origSetEnd.apply(this, args);
+            setTimeout(notifPlan, 500);
+            if (state.data && (state.data.streak || 0) >= 1) setTimeout(askOnce, 2500);
+            return r;
+        };
+        if (P.App) call(() => P.App.addListener('appStateChange', st => { if (!st.isActive) notifPlan(); }));
+        setTimeout(notifPlan, 4000);
+    }
 })();
