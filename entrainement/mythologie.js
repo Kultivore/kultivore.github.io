@@ -150,7 +150,7 @@ TRAINING_QUESTIONS.push(
     { id: 22133, theme: "Mythologie", d: 3.0, q: "Quel dieu grec personnifie la mort ?", a: ["Thanatos"], exp: "Il emportait les âmes des défunts." },
     { id: 22134, theme: "Mythologie", d: 3.0, q: "Quel dieu hindou crée le monde, avec ses quatre visages ?", a: ["Brahma", "Brahmā"], exp: "Avec Vishnou et Shiva, il forme la « Trimurti »." },
     { id: 22135, theme: "Mythologie", d: 3.1, q: "Quelle déesse nordique de l’amour se déplace sur un char tiré par des chats ?", a: ["Freyja", "Freya", "Freia"], exp: "Elle pleure des larmes d’or." },
-    { id: 22136, theme: "Mythologie", d: 3.2, q: "Quel fauve à la peau impénétrable Héraclès a-t-il étouffé lors de son premier travail ?", a: ["Le lion de Némée", "Lion de Némée", "Némée"], exp: "Il en porte ensuite la peau comme armure." },
+    { id: 22136, theme: "Mythologie", d: 3.2, q: "Quel lion à la peau impénétrable Héraclès a-t-il étouffé lors de son premier travail ?", a: ["Le lion de Némée", "Lion de Némée", "Némée"], exp: "Il en porte ensuite la peau comme armure." },
     { id: 22137, theme: "Mythologie", d: 3.2, q: "Quel devin aveugle de Thèbes a vécu sept ans en femme ?", a: ["Tirésias", "Tiresias"], exp: "Héra l’aurait rendu aveugle." },
     { id: 22138, theme: "Mythologie", d: 3.3, q: "Quelle déesse mésopotamienne de l’amour et de la guerre a une porte célèbre à Babylone ?", a: ["Ishtar", "Inanna"], exp: "Sa porte bleue est reconstituée au musée de Pergame, à Berlin." },
     { id: 22139, theme: "Mythologie", d: 3.4, q: "Quelle chasseuse grecque, la plus rapide, a été battue grâce à des pommes d’or ?", a: ["Atalante", "Atalanta"], exp: "Elle s’arrêtait pour ramasser les pommes lancées par son rival." },
