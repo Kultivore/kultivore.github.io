@@ -18,7 +18,7 @@ const REVIEW_SESSION_SIZE = 10;  // taille de la session « Réviser mes erreurs
 // RIEN envoyé en ligne (sauvegarde, classement, duels, statistiques). Pour essayer avant les autres.
 const BAC = (() => { try { return new URLSearchParams(location.search).get('bac') === '1'; } catch (err) { return false; } })();
 // 23/11 : MISE À JOUR 1.1 (titres, phrases gourmandes de Kulti, compteur des défis, escales…) : d'abord dans le bac à sable ; pour tous : true
-const V11 = BAC;
+const V11 = true;   // 24/11 : 1.1 EN LIGNE POUR TOUS (site + appli 1.1)
 if (V11) document.documentElement.classList.add('v11');
 const AV_TONE_ON = true;   // 13/11 : interrupteur « Vif | Pastel » des couleurs unies d'avatar (EN LIGNE POUR TOUS)
 const STORAGE_KEY = BAC ? 'kultivo_bac' : 'cultureG_v2';
@@ -13650,12 +13650,14 @@ function initBac() {
 
 /* « Quoi de neuf ? » (2026-11-09 : 10 paliers d'entraînement, texte validé par l'utilisateur, sans la ligne sur la correction).
    NOTES_DAY = date de la dernière annonce (indépendante de PATCH_DAY, qui active encore la mise à jour du 26/10). */
-const NOTES_DAY = '2026-11-12';   // 12/11 : l'encyclopédie des savoirs pour tous
+const NOTES_DAY = '2026-11-24';   // 24/11 : mise à jour 1.1 (avant : 12/11, l'encyclopédie des savoirs)
 const PATCH_NOTES = [
-    ['📚', 'Ton encyclopédie des savoirs', 'Dans ton Profil, onglet Thèmes : chaque question que tu as réussie devient une fiche, rangée par thème et par chapitre. Elle y reste pour toujours.'],
-    ['🗺️', 'Un décor pour chaque thème', 'Carte du monde, frise de l’Histoire, arbre des dieux, corps humain, bibliothèque, musée, vinyles, salle des trophées… Touche un livre pour l’ouvrir.'],
-    ['🔁', 'Réviser sans risque', 'Dans un chapitre, retourne les cartes de ce que tu sais. Tes erreurs ne comptent pas.'],
-    ['✨', 'À toi de tout compléter', 'Les cases « ? » attendent d’être découvertes. Un chapitre complet reçoit son tampon, une étagère ou une salle pleine se pare d’or.']
+    ['🍽️', 'Kulti a de l’appétit', 'De nouveaux titres (Grignoteur, Fin gourmet, Dévoreur de livres, Ogre de culture…) et des petites phrases gourmandes. Ton XP ne change pas, seuls les noms changent.'],
+    ...(IS_APP ? [['🎁', 'Des coffres dans les escales', 'Après les niveaux 5, 10 et 15 de chaque escale, un coffre t’offre une collection d’avatar du pays. Escale déjà finie ? Tes coffres t’attendent.'],
+        ['🔔', 'Un petit rappel', 'Si tu le veux, Kultivore te prévient le soir quand ta série est en danger, et quand tes gouttes sont pleines.']] : []),
+    ['🔁', 'Rejouer, c’est plus clair', 'Avant de refaire un niveau, des cases te disent ce qu’il rapporte. Touche une case pour l’explication.'],
+    ['🏔️', 'Parcours terminé ?', 'L’entraînement peut maintenant te rapporter autant d’XP qu’un niveau, contre 1 goutte.'],
+    ['✨', 'Niveaux sans faute', 'Ils sont maintenant comptés dans tes Records.']
 ];
 function maybeShowPatchNotes() {
     const d = state.data;

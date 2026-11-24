@@ -969,7 +969,7 @@ const ESC_NEWS_DAY = BAC ? '2099-01-01' : '2026-11-18';   // à mettre au jour d
 const ESC_PATCH_NOTES = [
     ['🧳', 'Les Escales', 'Nouvel onglet en haut du Parcours : de petits voyages de 15 niveaux au Japon, en Italie et aux États-Unis.'],
     ['✈️', 'Ton premier billet est offert', 'Choisis ta première escale gratuitement. Les billets suivants s’achètent 1 000 🪙, en touchant la carte des billets.'],
-    ['📕', 'Ton carnet de voyage', 'Chaque escale terminée te donne un tampon, une carte et un badge. Tes amis peuvent voir ton carnet dans ton profil.'],
+    ['📕', 'Ton carnet de voyage', 'Chaque escale terminée te donne un tampon et une carte, et ses coffres une collection d’avatar. Tes amis peuvent voir ton carnet dans ton profil.'],
     ['🎩', 'Chaque pays a son décor', 'Ses étapes, ses paires, ses frises, ses couleurs… et Kulti change même de chapeau !']
 ];
 function escNews() {
