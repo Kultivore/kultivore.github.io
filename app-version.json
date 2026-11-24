@@ -1,1 +1,0 @@
-{ "min": 0, "note": "Version minimum de l'appli Android (versionCode). Une appli plus ancienne doit se mettre à jour (fenêtre Google qu'on ne peut pas passer). 0 = jamais obligatoire." }
