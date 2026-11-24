@@ -3453,14 +3453,10 @@ async function questLoad(force = false) {
         const r = Array.isArray(data) ? data[0] : data;
         if (!r) return;
         const week = String(r.week).slice(0, 10);
-        await c.rpc('quest_push', { p_xp: Math.min(15000, weekXp(week)) });
+        await questPush(c, Math.min(15000, weekXp(week)), true);   // forcé : la quête vient peut-être d'être créée
         const { data: old } = await c.from('quests').select('*').eq('week', shiftDays(week, -7)).maybeSingle();
         const ids = [r, old].filter(Boolean).map(x => (x.a === cloudUser.id ? x.b : x.a)).filter(Boolean);
-        const profs = {};
-        if (ids.length) {
-            const { data: ps } = await c.from('profiles').select('*').in('user_id', ids);
-            (ps || []).forEach(p => { profs[p.user_id] = p; });
-        }
+        const profs = ids.length ? await fetchProfiles(c, ids) : {};   // 24/11 : cache de 3 min
         quest = questFrom(r, profs);
         questPrev = old ? questFrom(old, profs) : null;
         questReady = true;
@@ -9513,7 +9509,7 @@ function cloudClient() {
 /** À chaque sauvegarde locale : on note qu'il y a du nouveau. 16/11 (trafic et journaux Supabase) : envoi au plus une fois toutes
     les 40 s (avant : 5 s après CHAQUE sauvegarde, presque à chaque réponse, 3 requêtes à chaque fois) ; en fin de partie et quand
     l'appli passe en arrière-plan, l'envoi est immédiat (`cloudSoon`, visibilitychange). */
-const CLOUD_PUSH_MS = 40000;
+const CLOUD_PUSH_MS = 60000;   // 24/11 (1.2) : 60 s (avant 40 s) ; toujours tout de suite en fin de partie et en arrière-plan
 function cloudChanged() {
     setCloudMeta({ dirty: true });
     if (!cloudUser || cloudPushTimer) return;
@@ -11163,6 +11159,7 @@ async function pushAvatar() {
     if (!c || !cloudUser || !look || !league?.pseudo || league.userId !== cloudUser.id) return;
     try {
         await c.from('profiles').update({ avatar_hue: look.hue, avatar_emoji: look.emoji }).eq('user_id', cloudUser.id);
+        profForget(cloudUser.id);
     } catch (err) { /* hors ligne, ou colonnes pas encore créées */ }
 }
 
@@ -11232,8 +11229,16 @@ async function leaguePushScore() {
             const { error } = await c.from('scores').upsert(attempt);
             if (!error) break;   // sinon : colonnes pas encore créées, on réessaie avec moins
         }
-        await c.rpc('quest_push', { p_xp: row.week_xp });   // quête en duo (sans effet si pas de quête)
+        await questPush(c, row.week_xp);   // quête en duo (sans effet si pas de quête)
     } catch (err) { /* hors ligne : au prochain envoi */ }
+}
+/** 24/11 (1.2) : l'XP de la quête n'est envoyée que si elle a changé (même semaine, même compte). */
+let questPushed = '';
+async function questPush(c, xp, force = false) {
+    const key = `${cloudUser?.id}|${weekStart()}|${xp}`;
+    if (key === questPushed && !force) return;
+    const { error } = await c.rpc('quest_push', { p_xp: xp });
+    if (!error) questPushed = key;
 }
 
 /** Cadeaux déposés depuis Supabase (table « gifts », supabase/cadeaux.sql) : on supprime la ligne
@@ -11747,6 +11752,28 @@ function clockNotice() {
     } catch (err) { /* tant pis */ }
 }
 
+/** 24/11 (1.2, moins d'appels Supabase) : profils (pseudo, avatar) gardés 3 min. Seuls ceux qui manquent ou sont
+    trop vieux sont redemandés ; une liste d'amis qui change fait venir tout de suite les nouveaux. */
+const PROFILE_TTL = 180000;
+const profCache = {};   // user_id -> { at, p }
+function profForget(id) { if (id) delete profCache[id]; else Object.keys(profCache).forEach(k => delete profCache[k]); }
+async function fetchProfiles(c, ids) {
+    const now = Date.now();
+    const want = [...new Set(ids.filter(Boolean))];
+    const stale = want.filter(id => !profCache[id] || now - profCache[id].at > PROFILE_TTL);
+    if (stale.length) {
+        const { data, error } = await c.from('profiles').select('*').in('user_id', stale);
+        if (!error) {
+            const got = new Set();
+            (data || []).forEach(p => { profCache[p.user_id] = { at: now, p }; got.add(p.user_id); });
+            stale.filter(id => !got.has(id)).forEach(id => { profCache[id] = { at: now, p: null }; });
+        }
+    }
+    const out = {};
+    want.forEach(id => { if (profCache[id]?.p) out[id] = profCache[id].p; });
+    return out;
+}
+
 /** Recharge pseudo, amis, demandes et scores (un seul chargement à la fois : les autres appels l'attendent). */
 let leaguePromise = null;
 let leagueStartedAt = 0;
@@ -11767,15 +11794,13 @@ async function leagueFetch() {
     leagueBusy = true;
     try {
         const me = cloudUser.id;
-        const { data: mine } = await c.from('profiles').select('*').eq('user_id', me).maybeSingle();
         const { data: links, error } = await c.from('friendships').select('id, requester, addressee, status');
         if (error) return;
         const others = [...new Set((links || []).map(l => l.requester === me ? l.addressee : l.requester))];
-        const pseudos = {};
+        const pseudos = await fetchProfiles(c, [me, ...others]);   // 24/11 : cache de 3 min
+        const mine = pseudos[me] || null;
         const scores = {};
         if (others.length) {
-            const { data: profs } = await c.from('profiles').select('*').in('user_id', others);
-            (profs || []).forEach(p => { pseudos[p.user_id] = p; });
             const { data: sc } = await c.from('scores').select('*').in('user_id', others);
             (sc || []).forEach(s => { scores[s.user_id] = s; });
         }
@@ -11982,6 +12007,7 @@ async function setPseudo(raw) {
     if (!PSEUDO_RE.test(pseudo)) return 'Ce pseudo n’est pas valide.';
     const { error } = await c.from('profiles').upsert({ user_id: cloudUser.id, pseudo });
     if (error) return error.code === '23505' ? 'Ce pseudo est déjà pris, choisis-en un autre.' : 'Impossible pour le moment. Réessaie.';
+    profForget(cloudUser.id);
     league = { ...(league || {}), userId: cloudUser.id, pseudo, friends: league?.friends || [], incoming: league?.incoming || [], outgoing: league?.outgoing || [] };
     saveLeagueCache();
     pushAvatar();
