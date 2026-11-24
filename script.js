@@ -7980,7 +7980,7 @@ function commit(ok) {
         // Seule une réussite du premier coup, sans indice, réduit le compteur d'erreurs
         if (firstTry && !assisted) recordResult(id, true);
         const clean = firstTry && !forced && !assisted;
-        addXp(mode === 'training' || mode === 'event' ? (clean ? XP_TRAINING : XP_RETRY)
+        addXp(mode === 'training' || mode === 'event' ? (clean ? (mode === 'training' && state.trainFull ? xpFirstTry(item.q) : XP_TRAINING) : XP_RETRY)
             : replayXp(clean ? (state.replay ? XP_REPLAY : xpFirstTry(item.q)) : XP_RETRY));
         if (state.replayCounts) {   // niveau refait déjà compté aujourd'hui : ses bonnes réponses ne comptent plus pour les missions
             missionEvent('correct');
@@ -10000,7 +10000,7 @@ function infoTiles(list) {
     });
     return row;
 }
-function askConfirm({ title, text = '', yes = 'Oui', no = 'Annuler', danger = false, art = null, info = null, sub = '' }) {
+function askConfirm({ title, text = '', yes = 'Oui', no = 'Annuler', danger = false, art = null, info = null, sub = '', alt = '' }) {
     const nbsp = t => t.replace(/ ([?!:»])/g, ' $1');   // « ? » jamais seul en début de ligne
     $('askArt').replaceChildren(...(art ? [art] : []));
     $('askArt').hidden = !art;
@@ -10020,14 +10020,20 @@ function askConfirm({ title, text = '', yes = 'Oui', no = 'Annuler', danger = fa
     $('askYes').classList.toggle('btn-red', danger);
     $('askYes').classList.toggle('btn-green', !danger);
     $('askNo').textContent = no || '';
-    $('askNo').hidden = !no;   // no: null → un seul bouton (simple information)
+    $('askNo').hidden = !no;
+    // 24/11 (1.1) : 3e choix facultatif (« alt », bouton entre les deux) : la promesse renvoie alors 'alt'
+    let altBtn = $('askAlt');
+    if (!altBtn) { altBtn = el('button', 'btn btn-ghost btn-full ask-alt'); altBtn.type = 'button'; altBtn.id = 'askAlt'; $('askNo').before(altBtn); }
+    altBtn.textContent = alt || '';
+    altBtn.hidden = !alt;   // no: null → un seul bouton (simple information)
     $('askModal').hidden = false;
     return new Promise(resolve => {
         const done = answer => {
             $('askModal').hidden = true;
-            $('askYes').onclick = $('askNo').onclick = $('askModal').onclick = null;
+            $('askYes').onclick = $('askNo').onclick = $('askModal').onclick = $('askAlt').onclick = null;
             resolve(answer);
         };
+        $('askAlt').onclick = () => done('alt');
         $('askYes').onclick = () => done(true);
         $('askNo').onclick = () => done(false);
         $('askModal').onclick = e => { if (e.target === $('askModal')) done(false); };   // tap à côté = non
@@ -10072,6 +10078,10 @@ const TRAIN_MAX_REVIEWS = 2;
 const TRAIN_CATCHUP = 3;   // rattrapage : questions jamais vues des paliers validés à la conversion (par session)
 const TRAIN_TIER_NAMES = ['Découverte', 'Curieux', 'Initié', 'Amateur', 'Confirmé', 'Averti', 'Expert', 'Érudit', 'Virtuose', 'Maître'];
 const XP_TRAINING = 2;
+// 24/11 (1.1) : parcours TERMINÉ → l'entraînement peut rapporter l'XP d'un niveau (4 à 6 par bonne réponse) contre 1 goutte, comme
+// un niveau ; sans goutte, il reste gratuit à 2 XP. Pas de goutte « gagnée » en fin de session à XP complète (sinon ce serait gratuit).
+const summitReached = () => !!state.data.done[MAX_LEVEL];
+const trainFullOffer = () => V11 && summitReached();
 
 /* 16/11 : difficulté RÉELLE de 72 questions d'entraînement beaucoup plus ratées que leur note (stats Supabase question_stats du 16/11 :
    réussite du 1er coup comparée à la moyenne de leur note ; nouvelle note tempérée selon le nombre de réponses). Sert SEULEMENT à ranger
@@ -10337,12 +10347,37 @@ async function confirmTraining(theme, icon) {
     const info = [{ big: `${pr.tier} / ${TRAIN_TIERS}`, label: TRAIN_TIER_NAMES[pr.tier - 1] },
         pr.won || pr.ready ? { big: '✅', label: 'palier réussi', tone: 'good' }
             : { big: `${Math.min(pr.right, pr.needRight)} / ${pr.needRight}`, label: `réussies · encore ${pr.needRight - pr.right}`, tone: 'warn' }];
-    const ok = await askConfirm({ title: `${icon} ${theme}`, info, text: lines.slice(1).filter(l => !l.startsWith('Pour réussir ce palier')).join('\n'), yes: pr.blockedToday ? 'Continuer quand même' : 'Commencer', no: 'Plus tard' });
+    const baseText = lines.slice(1).filter(l => !l.startsWith('Pour réussir ce palier')).join('\n');
+    if (trainFullOffer()) {   // 24/11 (1.1) : après le sommet, XP complète contre 1 goutte, ou sans goutte (XP réduite)
+        const d = state.data;
+        if (!d.tipSummitTrain) {
+            d.tipSummitTrain = true;
+            saveData();
+            await askConfirm({ art: kultiEl('fier', 'kulti-blink kulti-float', false, 'crown'), title: '🏔️ Parcours terminé !',
+                text: 'Maintenant, l’entraînement peut te rapporter autant d’XP qu’un niveau du parcours : ça coûte 1 goutte, comme un niveau. Sans goutte, tu peux toujours t’entraîner, avec moins d’XP.',
+                yes: 'Compris', no: null });
+        }
+        syncDrops();
+        const drops = d.drops;
+        const wait = Math.ceil(nextDropMs() / 60000);
+        const full = [...info, { big: `💧 ${drops}`, label: 'gouttes', tone: drops ? null : 'warn' }];
+        const ok = await askConfirm({ title: `${icon} ${theme}`, info: full,
+            text: [baseText.split('\n').filter(l => !l.startsWith('💧')).join('\n'), drops ? '⭐ XP complète : autant qu’un niveau (4 à 6 XP par bonne réponse).'
+                : `Plus de goutte : XP réduite (2 par bonne réponse). Prochaine goutte dans ${wait >= 60 ? `${Math.floor(wait / 60)} h ${String(wait % 60).padStart(2, '0')}` : `${wait} min`}.`].filter(Boolean).join('\n'),
+            yes: drops ? '⭐ XP complète · −1 💧' : 'S’entraîner (XP réduite)', alt: drops ? 'Sans goutte (XP réduite)' : '', no: 'Plus tard' });
+        if (ok === true) startTraining(theme, drops > 0);
+        else if (ok === 'alt') startTraining(theme, false);
+        return;
+    }
+    const ok = await askConfirm({ title: `${icon} ${theme}`, info, text: baseText, yes: pr.blockedToday ? 'Continuer quand même' : 'Commencer', no: 'Plus tard' });
     if (ok) startTraining(theme);
 }
 
-function startTraining(theme) {
+function startTraining(theme, full = false) {
     if (!trainingBank(theme).length) { showToast('Questions bientôt disponibles pour ce thème.'); return; }
+    if (full && !spendDrop()) { openDropsModal(); return; }   // 24/11 (1.1) : XP complète après le sommet = 1 goutte
+    state.trainFull = !!full;
+    if (full) renderHeader();
     trainAdvance(theme);
     state.trainTheme = theme;
     state.trainTierBefore = trainTierOf(theme);
@@ -10403,8 +10438,10 @@ function endTraining() {
         const { next } = medalInfo(theme);
         if (next && next.left > 0) text += `\n${next.m.icon} Plus que ${plural(next.left, 'question maîtrisée', 'questions maîtrisées')} pour la médaille d’${next.m.name}.`;
     }
-    const dropLine = earnPracticeDrop();
+    const dropLine = state.trainFull ? '' : earnPracticeDrop();   // 24/11 (1.1) : pas de goutte gagnée quand on en a dépensé une
+    if (trainFullOffer()) text += state.trainFull ? '\n⭐ XP complète (1 goutte)' : '\n🔹 XP réduite (sans goutte)';
     const toThemes = () => { returnToMap(); setChallengesTab('training'); };
+    const again = () => (trainFullOffer() ? confirmTraining(theme, icon) : startTraining(theme));   // après le sommet : on redemande (goutte ou pas)
     const later = (won && tier < TRAIN_TIERS) || waitTomorrow;   // la suite est pour demain
     setEnd({
         emoji,
@@ -10414,9 +10451,9 @@ function endTraining() {
         extra: [rewardSummary(), dropLine].filter(Boolean).join('\n'),
         primary: later ? 'Choisir un autre thème' : 'Encore 10 questions',
         primaryClass: 'btn-green',
-        onPrimary: later ? toThemes : () => startTraining(theme),
+        onPrimary: later ? toThemes : again,
         secondary: later ? 'Continuer quand même' : 'Retour aux thèmes',
-        onSecondary: later ? () => startTraining(theme) : toThemes
+        onSecondary: later ? again : toThemes
     });
     // Coffre du palier réussi (1 carte du thème, 2 aux paliers 5 et 10 ; au dernier palier, la carte Maître)
     const boxes = trainChestBoxes(theme);
@@ -13530,6 +13567,19 @@ function initBac() {
         const more = await askConfirm({ title: '🧪 Bac à sable', text: `Une copie de ta partie : tout ce que tu fais ici reste ici. Rien n’est envoyé en ligne, ton vrai jeu ne change pas. ${realLv ? `Copie : niveau ${Math.min(state.data.unlocked, MAX_LEVEL)} (vraie partie : niveau ${Math.min(realLv, MAX_LEVEL)}).` : 'Ta vraie partie n’est pas sur ce navigateur : ouvre le bac à sable dans le navigateur où tu joues.'}`,
             yes: '+1 000 🪙 pour tester', no: 'Plus d’options' });
         if (more) { state.data.coins += 1000; saveData(); renderHeader(); if (!$('shopScreen').hidden) renderShop(); return; }
+        // 24/11 (1.1) : pour essayer l'entraînement « après le sommet » sans finir les 300 niveaux (dans la copie seulement)
+        if (V11 && !summitReached()) {
+            const sum = await askConfirm({ title: '🧪 Bac à sable', text: '🏔️ Faire comme si tu avais fini le parcours (dans la copie) ? Pour essayer l’entraînement « après le sommet » (XP complète contre 1 goutte).', yes: 'Oui, sommet atteint', no: 'Plus d’options' });
+            if (sum) {
+                const d = state.data;
+                for (let n = 1; n <= MAX_LEVEL; n++) d.done[n] = d.done[n] || todayKey();
+                d.unlocked = MAX_LEVEL;
+                d.summitSeen = true; d.parcoursRecapSeen = true;
+                saveData(); renderMap(); renderHeader();
+                showToast('🏔️ Sommet atteint (copie) : va dans S’entraîner.');
+                return;
+            }
+        }
         // 23/11 (1.1) : appli d'essai « Kultivore TEST » : voir les notifications tout de suite (dans 1 minute)
         if (typeof window.kultivoNotifTest === 'function') {
             const nt = await askConfirm({ title: '🧪 Bac à sable', text: '🔔 Essayer les notifications ? Elles arrivent dans 1 minute : sors de l’appli (bouton d’accueil) pour bien les voir.', yes: 'Essayer', no: 'Plus d’options' });
