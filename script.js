@@ -11007,7 +11007,7 @@ function renderAvatarModalV2() {
     const tabs = $('avatarTabs');
     tabs.hidden = false;
     tabs.replaceChildren();
-    [['bg', '🎨', 'Fond'], ['pic', '🐱', 'Emoji'], ['frame', '⭕', 'Cadre']].forEach(([t, icon, label]) => {
+    [['bg', '🎨', 'Fond'], ['pic', '🐱', 'Emoji'], ['frame', '⭕', 'Cadre'], ...(AV_OUTFITS_ON ? [['outfit', '👔', 'Tenues']] : [])].forEach(([t, icon, label]) => {
         const b = el('button', `avatar-tab${avTab === t ? ' is-active' : ''}`);
         b.type = 'button';
         const i = el('span', 'avatar-tab-icon');
@@ -11024,6 +11024,7 @@ function renderAvatarModalV2() {
     grid.hidden = false;
     grid.className = `avatar-grid${avTab === 'frame' ? ' is-frames' : ''}`;
     grid.replaceChildren();
+    if (avTab === 'outfit') { renderAvOutfits(grid, look, name, st); return; }
     const tile = (cls, child, onClick) => {
         const b = el('button', `av-tile ${cls}`);
         b.type = 'button';
@@ -11097,6 +11098,77 @@ function renderAvatarModalV2() {
         b.append(pr);
         grid.append(b);
     });
+}
+/* 25/11 (BAC À SABLE ; pour tous : AV_OUTFITS_ON = true) : onglet « 👔 Tenues » de Mon avatar = les collections dont on a au moins
+   un objet ; complète = un tap met les 3 objets d'un coup (la lettre / l'emoji porté change seulement si la collection a un emoji) ;
+   pas complète = grise avec « 2 / 3 », un tap dit ce qui manque et où le trouver. Pas de « tenue perso » (choix de l'utilisateur). */
+const AV_OUTFITS_ON = BAC;
+function avOutfitList() {
+    const list = AV_COLLECTIONS.map(c => ({ id: c.id, name: c.name, icon: c.icon, items: c.items.map(id => AVI[id]).filter(Boolean) }));
+    const noel = AV_ALL.filter(it => it.rayon === 'noel');
+    if (noel.length) list.push({ id: 'rayon-noel', name: 'Rayon de Noël', icon: '🎄', items: noel });
+    if (typeof ESCALES !== 'undefined' && typeof escLootItems === 'function' && typeof ESCALES_ON !== 'undefined' && ESCALES_ON) {
+        ESCALES.filter(e => typeof escReady !== 'function' || escReady(e)).forEach(e => {
+            const items = escLootItems(e);
+            if (items.length) list.push({ id: `esc-${e.id}`, name: (typeof ESC_LOOK_NAME !== 'undefined' && ESC_LOOK_NAME[e.id]) || e.name, icon: '🧳', items });
+        });
+    }
+    return list.filter(o => o.items.length);
+}
+function avOutfitLook(o, look) {
+    const l = { hue: look.hue, tone: look.tone, emoji: look.emoji, bg: look.bg, frame: look.frame };
+    for (const it of o.items) {
+        if (it.type === 'frame') l.frame = it.id;
+        else if (it.type === 'pic') l.emoji = it.emoji;
+        else if (it.hue !== undefined) { l.hue = it.hue; l.bg = null; }
+        else l.bg = it.id;
+    }
+    return l;
+}
+function avOutfitWhere(it) {
+    if (it.kind === 'shop') return it.rayon === 'noel' ? 'au rayon de Noël de la boutique (en décembre)' : 'à la boutique, quand sa collection est en vitrine';
+    return it.how ? it.how.replace(/^./, ch => ch.toLowerCase()) : 'à gagner en jouant';
+}
+function renderAvOutfits(grid, look, name, st) {
+    grid.className = 'avatar-grid is-outfits';
+    const d = state.data;
+    const outfits = avOutfitList().map(o => ({ ...o, have: o.items.filter(it => avHas(it, st)) })).filter(o => o.have.length);
+    outfits.sort((a, b) => (b.have.length === b.items.length) - (a.have.length === a.items.length));
+    if (!outfits.length) {
+        const p = el('p', 'av-outfit-empty');
+        p.textContent = 'Ici, tu pourras mettre une collection complète d’un seul tap. Trouve ses objets à la boutique, dans les escales ou pendant les événements.';
+        grid.append(p);
+        return;
+    }
+    for (const o of outfits) {
+        const full = o.have.length === o.items.length;
+        const wl = avOutfitLook(o, look);
+        const worn = full && wl.frame === look.frame && wl.bg === look.bg && wl.emoji === look.emoji && wl.hue === look.hue;
+        const b = el('button', `av-outfit${full ? '' : ' is-partial'}${worn ? ' is-active' : ''}`);
+        b.type = 'button';
+        const av = el('span', 'av-outfit-art');
+        av.append(avatarEl(name, wl));
+        const nm = el('b');
+        nm.textContent = `${o.icon} ${o.name}`;
+        const sub = el('small');
+        sub.textContent = worn ? '✓ Portée' : full ? 'Mettre' : `${o.have.length} / ${o.items.length}`;
+        b.append(av, nm, sub);
+        b.addEventListener('click', () => {
+            if (!full) {
+                const miss = o.items.filter(it => !avHas(it, st));
+                showToast(`🔒 Il te manque : ${miss.map(it => `${AV_TYPE_NAME[it.type].toLowerCase()} « ${it.name} » (${avOutfitWhere(it)})`).join(' ; ')}.`);
+                return;
+            }
+            if (worn) return;
+            for (const it of o.items) { avWear(it); d.av.opened[it.id] = 1; }
+            saveData();
+            avCheck();
+            updateNavNotifications();
+            playSound('win');
+            renderAvatarModalV2();
+        });
+        grid.append(b);
+    }
 }
 /** Un objet gagné : on le touche, le cadenas s'envole, il s'allume. */
 function avOpenTile(it, b) {

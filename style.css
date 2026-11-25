@@ -5791,3 +5791,17 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .esc-sec-chip { display: inline-block; margin-left: 8px; padding: 2px 9px; border-radius: 999px; background: var(--red, #ff4b4b); color: #fff;
     font-size: 0.72rem; font-weight: 900; letter-spacing: 0; text-transform: none; vertical-align: 1px; }
 .ask-art .esc-loot-preview { gap: 12px; }
+
+/* 25/11 (bac à sable) : onglet « 👔 Tenues » de Mon avatar = collections à mettre d'un tap */
+.avatar-grid.is-outfits { grid-template-columns: repeat(3, 1fr); gap: 12px 8px; align-content: start; }
+.av-outfit { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; padding: 10px 4px 8px; border: 2px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.av-outfit-art { display: flex; width: 62px; height: 62px; align-items: center; justify-content: center; }
+.av-outfit-art .league-avatar { width: 54px; height: 54px; font-size: 1.1rem; box-shadow: none; }
+.av-outfit b { max-width: 100%; font-size: 0.74rem; line-height: 1.15; text-align: center; overflow-wrap: anywhere; }
+.av-outfit small { font-size: 0.68rem; font-weight: 900; color: var(--green); }
+.av-outfit.is-active { border-color: var(--green); background: var(--green-tint); box-shadow: 0 0 0 2px var(--green); }
+.av-outfit.is-active small { color: var(--ok-ink, var(--green)); }
+.av-outfit.is-partial .av-outfit-art { filter: grayscale(0.8); opacity: 0.5; }
+.av-outfit.is-partial small { color: var(--muted); }
+.av-outfit-empty { grid-column: 1 / -1; margin: 8px 4px; color: var(--muted); font-size: 0.9rem; text-align: center; line-height: 1.4; }
+.avatar-tabs .avatar-tab { min-width: 0; }
