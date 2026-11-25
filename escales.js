@@ -267,7 +267,7 @@ function escPlaceSwitch(tries = 0) {
         if (tries < 20) escPlaceSwitch.t = setTimeout(() => { const t = escPlaceSwitch(tries + 1); const hd = document.querySelector('#escPage .esc-head'); if (t && hd) hd.style.top = `${Math.round(t + sw.offsetHeight + 6)}px`; }, 250);
         return parseFloat(sw.style.top) || 0;
     }
-    const top = (h || 56) + 6 - escStickK;
+    const top = (h || 56) + 6 - (useBanner ? escStickK : 0);   // l'écart rattrapé ne sert QUE sous le bandeau d'un événement
     sw.style.top = `${Math.round(top)}px`;
     return top;
 }
@@ -290,7 +290,10 @@ function escStickFix(sw) {
         if (!sw.offsetParent || $('mapScreen').hidden || window.scrollY < 300) return;
         const banner = $('eventBanner');
         const useBanner = escUi.tab !== 'escales' && banner && !banner.hidden;   // (même règle qu'escPlaceSwitch)
-        const want = (useBanner ? banner.getBoundingClientRect().bottom : ($('topbar')?.getBoundingClientRect().bottom || 0)) + 6;
+        // SEULEMENT avec le bandeau d'un événement (demande de l'utilisateur) : sans événement, l'interrupteur marche bien,
+        // on n'y touche pas du tout.
+        if (!useBanner) { if (escStickK) { escStickK = 0; escPlaceSwitch(); } return; }
+        const want = banner.getBoundingClientRect().bottom + 6;
         const err = sw.getBoundingClientRect().top - want;
         if (Math.abs(err) > 2 && Math.abs(err) < 200) {
             escStickK += err;
