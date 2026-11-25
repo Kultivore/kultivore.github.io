@@ -1063,6 +1063,9 @@ function normalizeData(data) {
     const base = defaultData();
     for (const key of ['dayXp', 'totals', 'best', 'inv']) data[key] = { ...base[key], ...data[key] };
     for (const key of ['goalDays', 'daily', 'badges', 'claimedBadges', 'claimedGoals', 'stats', 'done', 'pairStats', 'orderStats', 'cards', 'chests', 'podium', 'trainTier', 'trainTierDay', 'trainTierWon', 'trainChests', 'trainMedals', 'trainCatchup', 'shinyCards', 'themeComplete', 'activeDays', 'frozenDays', 'events', 'duelsSeen', 'duelAnswers', 'duelsViewed', 'questDone', 'duelStarted', 'secrets', 'secretProg']) data[key] = data[key] || {};
+    // 25/11 : les questions maîtrisées AVANT le 09/11 (série ≥ 2, sans le drapeau) n'avaient jamais reçu `mastered` →
+    // une erreur les faisait redescendre (299 → 298). On pose le drapeau à chaque ouverture tant que la série le dit.
+    for (const s of Object.values(data.stats)) if (s && !s.mastered && (s.streak || 0) >= 2) s.mastered = true;
     if (OLD_GOALS[data.goal]) data.goal = OLD_GOALS[data.goal];
     if (!GOAL_CHOICES.some(c => c.xp === data.goal)) data.goal = GOAL_CHOICES[1].xp;
     backfillActiveDays(data);
