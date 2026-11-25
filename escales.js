@@ -253,6 +253,7 @@ function escApplyTab() {
 /** Place l'interrupteur collé sous la barre du haut (et sous le bandeau d'événement s'il est là ; sur les Escales, le bandeau
     est caché). 23/11 (1.1) : si la barre du haut n'est pas affichée au moment de la mesure (retour d'un niveau), sa hauteur
     valait 0 → valeur par défaut trop petite → l'interrupteur passait sous la barre jusqu'au prochain calcul. On remesure plus tard. */
+let escStickK = 0;   // écart de place de l'interrupteur collé, rattrapé en défilant (voir plus bas)
 function escPlaceSwitch(tries = 0) {
     const sw = $('escSwitch');
     if (!sw) return 0;
@@ -266,9 +267,37 @@ function escPlaceSwitch(tries = 0) {
         if (tries < 20) escPlaceSwitch.t = setTimeout(() => { const t = escPlaceSwitch(tries + 1); const hd = document.querySelector('#escPage .esc-head'); if (t && hd) hd.style.top = `${Math.round(t + sw.offsetHeight + 6)}px`; }, 250);
         return parseFloat(sw.style.top) || 0;
     }
-    const top = (h || 56) + 6;
+    const top = (h || 56) + 6 - escStickK;
     sw.style.top = `${Math.round(top)}px`;
     return top;
+}
+/* 25/11 : sur certains téléphones (appli), l'interrupteur collé restait trop bas sous le bandeau de Noël, sans qu'on sache
+   pourquoi (décalage entre la mesure et l'endroit où il se colle). Correction qui se règle toute seule : quand on a bien défilé
+   (l'interrupteur est forcément collé), on compare sa VRAIE place à la place voulue (juste sous le bandeau / la barre) et on
+   rattrape l'écart (escStickK). */
+let escStickRaf = 0;
+if (ESCALES_ON && V11) window.addEventListener('scroll', () => {
+    if (escStickRaf) return;
+    escStickRaf = requestAnimationFrame(() => {
+        escStickRaf = 0;
+        const sw = $('escSwitch');
+        if (!sw || $('mapScreen').hidden || !sw.offsetParent || window.scrollY < 300) return;
+        escPlaceSwitch();   // d'abord la place normale (si la mesure était seulement ancienne) …
+        requestAnimationFrame(() => escStickFix(sw));   // … puis on rattrape l'écart qui reste
+    });
+}, { passive: true });
+function escStickFix(sw) {
+        if (!sw.offsetParent || $('mapScreen').hidden || window.scrollY < 300) return;
+        const banner = $('eventBanner');
+        const useBanner = escUi.tab !== 'escales' && banner && !banner.hidden;   // (même règle qu'escPlaceSwitch)
+        const want = (useBanner ? banner.getBoundingClientRect().bottom : ($('topbar')?.getBoundingClientRect().bottom || 0)) + 6;
+        const err = sw.getBoundingClientRect().top - want;
+        if (Math.abs(err) > 2 && Math.abs(err) < 200) {
+            escStickK += err;
+            const t = escPlaceSwitch();
+            const hd = document.querySelector('#escPage .esc-head');
+            if (t && hd) hd.style.top = `${Math.round(t + sw.offsetHeight + 6)}px`;
+        }
 }
 if (ESCALES_ON && V11) window.addEventListener('resize', () => escPlaceSwitch());
 // 25/11 : pendant un événement (bandeau rouge de Noël…), l'interrupteur se calait parfois trop bas : il avait été mesuré avant que la

@@ -261,8 +261,10 @@ function adventReveal(fromBtn, day, g, card, onDone) {
     if (card) { back.classList.add('is-card'); back.append(cardFace(card, true, false)); stage.classList.add('has-card'); }
     else if (g.star) {   // 25/11 : le cadre porté par SON avatar (+ le billet / les pièces de la grosse surprise)
         back.classList.add('is-star');
-        const look = { ...(state.data.avatar || {}), frame: 'fr-advent-2026' };
-        back.append(avatarEl(myAvatarName(), look, 'advent-pop-av'));
+        const frame = typeof AVI !== 'undefined' && AVI['fr-advent-2026'];   // comme dans la boutique : fond neutre + lettre
+        const av = frame ? avAlone(frame) : avatarEl(myAvatarName(), { frame: 'fr-advent-2026' });
+        av.classList.add('advent-pop-av');
+        back.append(av);
         const bonus = adventData().bonus;
         if (bonus) {
             const chip = el('span', 'advent-pop-bonus');
