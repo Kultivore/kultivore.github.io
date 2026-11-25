@@ -5808,3 +5808,4 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .avatar-tab.is-outfit { flex: 1.45; }
 .avatar-tab.is-outfit > span:last-child { font-size: 0.86em; letter-spacing: -0.2px; }
 @media (max-width: 340px) { .avatar-tabs { gap: 4px; } .avatar-tab.is-outfit > span:last-child { font-size: 0.78em; } }
+.av-outfit-art { margin-bottom: 6px; }
