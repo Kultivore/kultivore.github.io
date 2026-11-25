@@ -5805,3 +5805,6 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .av-outfit.is-partial small { color: var(--muted); }
 .av-outfit-empty { grid-column: 1 / -1; margin: 8px 4px; color: var(--muted); font-size: 0.9rem; text-align: center; line-height: 1.4; }
 .avatar-tabs .avatar-tab { min-width: 0; }
+.avatar-tab.is-outfit { flex: 1.45; }
+.avatar-tab.is-outfit > span:last-child { font-size: 0.86em; letter-spacing: -0.2px; }
+@media (max-width: 340px) { .avatar-tabs { gap: 4px; } .avatar-tab.is-outfit > span:last-child { font-size: 0.78em; } }

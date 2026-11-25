@@ -11007,8 +11007,8 @@ function renderAvatarModalV2() {
     const tabs = $('avatarTabs');
     tabs.hidden = false;
     tabs.replaceChildren();
-    [['bg', '🎨', 'Fond'], ['pic', '🐱', 'Emoji'], ['frame', '⭕', 'Cadre'], ...(AV_OUTFITS_ON ? [['outfit', '👔', 'Tenues']] : [])].forEach(([t, icon, label]) => {
-        const b = el('button', `avatar-tab${avTab === t ? ' is-active' : ''}`);
+    [['bg', '🎨', 'Fond'], ['pic', '🐱', 'Emoji'], ['frame', '⭕', 'Cadre'], ...(AV_OUTFITS_ON ? [['outfit', '🧩', 'Collections']] : [])].forEach(([t, icon, label]) => {
+        const b = el('button', `avatar-tab is-${t}${avTab === t ? ' is-active' : ''}`);
         b.type = 'button';
         const i = el('span', 'avatar-tab-icon');
         i.textContent = icon;
@@ -11099,7 +11099,7 @@ function renderAvatarModalV2() {
         grid.append(b);
     });
 }
-/* 25/11 (BAC À SABLE ; pour tous : AV_OUTFITS_ON = true) : onglet « 👔 Tenues » de Mon avatar = les collections dont on a au moins
+/* 25/11 (BAC À SABLE ; pour tous : AV_OUTFITS_ON = true) : onglet « 🧩 Collections » de Mon avatar = les collections dont on a au moins
    un objet ; complète = un tap met les 3 objets d'un coup (la lettre / l'emoji porté change seulement si la collection a un emoji) ;
    pas complète = grise avec « 2 / 3 », un tap dit ce qui manque et où le trouver. Pas de « tenue perso » (choix de l'utilisateur). */
 const AV_OUTFITS_ON = BAC;
@@ -11150,9 +11150,8 @@ function renderAvOutfits(grid, look, name, st) {
         av.append(avatarEl(name, wl));
         const nm = el('b');
         nm.textContent = `${o.icon} ${o.name}`;
-        const sub = el('small');
-        sub.textContent = worn ? '✓ Portée' : full ? 'Mettre' : `${o.have.length} / ${o.items.length}`;
-        b.append(av, nm, sub);
+        b.append(av, nm);
+        if (!full) { const sub = el('small'); sub.textContent = `${o.have.length} / ${o.items.length}`; b.append(sub); }
         b.addEventListener('click', () => {
             if (!full) {
                 const miss = o.items.filter(it => !avHas(it, st));
