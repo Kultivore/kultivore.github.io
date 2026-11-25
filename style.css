@@ -5822,3 +5822,7 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 @media (max-width: 340px) {
     .v11 .train-tile .train-name { font-size: 0.78rem; }
 }
+/* 25/11 : promesse de la grosse surprise du 24 (calendrier de l'Avent) */
+.advent-foot.is-promise { color: #b07a00; font-weight: 800; }
+:root[data-theme="dark"] .advent-foot.is-promise { color: #ffd77a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .advent-foot.is-promise { color: #ffd77a; } }

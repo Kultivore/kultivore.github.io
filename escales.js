@@ -59,7 +59,7 @@ function escUnlocked(e) {
    plusieurs escales peuvent être ouvertes en même temps). Stock = 1 + billets achetés (data.escBought) − escales ouvertes. ---------- */
 const escTicketsUsed = () => Object.values(escAll()).filter(x => x && x.open).length;
 const escBought = () => Math.max(0, Number(state.data.escBought) || 0);
-const escStock = () => Math.max(0, 1 + escBought() - escTicketsUsed());
+const escStock = () => Math.max(0, 1 + escBought() + (Math.max(0, Number(state.data.escGift) || 0)) - escTicketsUsed());   // escGift : billets offerts (calendrier de l'Avent)
 /** Pastille de l'onglet Escales : des billets en stock ET une escale à ouvrir. */
 // 23/11 (1.1, choix de l'utilisateur) : PLUS DE PASTILLE pour les billets (même offerts) : un billet en stock est seulement signalé
 // dans la page (« ✈️ 1 billet à utiliser »). La pastille de l'onglet ne compte plus que les coffres de collection à ouvrir.

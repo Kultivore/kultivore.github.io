@@ -71,7 +71,15 @@ const ADVENT_INV = { hintLetter: ['🅰️', 'Indice', 'un indice « initiales �
     heart: ['💖', 'Cœur', 'un cœur de secours dans ton sac'], nudge: ['👆', 'Coup de pouce', 'un coup de pouce dans ton sac'] };
 /** Icône d'un cadeau : la pièce est dessinée par la police du jeu (pas d'image Twemoji). */
 const giftIcon = icon => { if (icon !== '🪙') return emojiImg(icon); const s = el('span', 'advent-coin'); s.textContent = '🪙'; return s; };
-function adventGiftInfo(g) {   // [icône, texte court, ce que tu as reçu]
+/* 25/11 (demande de l'utilisateur) : GROSSE SURPRISE DU 24 pour ceux qui ont ouvert les 24 cases sans en rater une. On ne dit PAS
+   ce que c'est (seulement « une grosse surprise t'attend le 24 ») : dans l'appli = un billet d'escale (data.escGift), sur le site
+   (pas d'escales) = 300 🪙. Gardé dans advent.bonus ('ticket' / 'coins'). */
+const ADVENT_BONUS_COINS = 300;
+const adventBonusKind = () => (typeof ESCALES_ON !== 'undefined' && ESCALES_ON ? 'ticket' : 'coins');
+const adventAllSoFar = (ad, day) => { for (let n = 1; n < day; n++) if (!ad.open[n]) return false; return true; };
+function adventGiftInfo(g, ad) {   // [icône, texte court, ce que tu as reçu]
+    if (g.star && ad && ad.bonus === 'ticket') return ['✈️', 'Billet', 'un billet d’escale, le cadre « Étoile de l’Avent » (dans « Mon avatar ») et 20 🪙'];
+    if (g.star && ad && ad.bonus === 'coins') return ['🌟', 'Cadre', `le cadre « Étoile de l’Avent » (dans « Mon avatar ») et ${20 + ADVENT_BONUS_COINS} 🪙`];
     if (g.star) return ['🌟', 'Cadre', 'le cadre « Étoile de l’Avent » (dans « Mon avatar ») et 20 🪙'];
     if (g.coins) return ['🪙', `+${g.coins}`, `${g.coins} pièces`];
     if (g.card) return ['🃏', 'Carte', g.rare ? 'une carte rare ou mieux' : 'une carte'];
@@ -135,7 +143,11 @@ function adventSection() {
     const grid = el('div', 'advent-board');
     for (let n = 1; n <= 24; n++) grid.append(adventDoor(n, day, ad, setStatus));
     const foot = el('p', 'advent-foot');
-    foot.textContent = nbspPunct('Chaque case ne s’ouvre que le jour même : une case ratée est perdue.');   // 16/11 : on ne dit pas d'avance ce qu'il y a le 24
+    const allOk = adventAllSoFar(ad, day || 25);
+    if (ad.bonus) foot.textContent = nbspPunct('🎉 Tu as ouvert les 24 cases : bravo, et joyeux Noël !');
+    else if (allOk) foot.textContent = nbspPunct('🎁 Ouvre une case chaque jour, sans en rater une : une grosse surprise t’attend le 24 ! Une case ratée est perdue.');
+    else foot.textContent = nbspPunct('Chaque case ne s’ouvre que le jour même : une case ratée est perdue. (La grosse surprise du 24 était pour ceux qui n’en ratent aucune.)');
+    if (allOk && !ad.bonus) foot.classList.add('is-promise');
     card.append(hero, status, grid, foot);
     return card;
 }
@@ -151,7 +163,7 @@ function adventDoor(n, day, ad, setStatus) {
         b.addEventListener('click', () => {
             const c = ad.cards[n] && CARDS.find(x => x.id === ad.cards[n]);
             if (c) openCardView(c);
-            else setStatus(`Case du ${n} : ${adventGiftInfo(g)[2]}.`);
+            else setStatus(`Case du ${n} : ${adventGiftInfo(g, ad)[2]}.`);
         });
         return b;
     }
@@ -174,7 +186,7 @@ function adventDoor(n, day, ad, setStatus) {
 /** Case ouverte : le cadeau dedans (la carte tirée, s'il y en a une). */
 function adventFillOpen(b, n, ad) {
     const g = ADVENT_GIFTS[n];
-    const [icon, short] = adventGiftInfo(g);
+    const [icon, short] = adventGiftInfo(g, ad);
     b.className = `advent-door is-open${n === 24 ? ' is-24' : ''}`;
     b.replaceChildren();
     const num = el('span', 'advent-open-num');
@@ -201,13 +213,18 @@ function adventOpenDoor(btn, setStatus) {
     if (g.boost) d.inv.boost = (d.inv.boost || 0) + 1;
     if (g.drops) { syncDrops(); addDrops(DROPS_MAX); }
     if (g.star) ad.star = true;
+    if (g.star && adventAllSoFar(ad, day)) {   // la grosse surprise
+        ad.bonus = adventBonusKind();
+        if (ad.bonus === 'ticket') d.escGift = (Math.max(0, Number(d.escGift) || 0)) + 1;
+        else d.coins += ADVENT_BONUS_COINS;
+    }
     let card = null;
     if (g.card) { card = adventDrawCard(!!g.rare); ad.cards[day] = card.id; }
     saveData();
     adventReveal(btn, day, g, card, () => {
         adventFillOpen(btn, day, ad);
         btn.classList.add('is-new');
-        const got = card ? `la carte « ${card.name} », touche-la pour la revoir` : adventGiftInfo(g)[2];
+        const got = card ? `la carte « ${card.name} », touche-la pour la revoir` : adventGiftInfo(g, ad)[2];
         setStatus(`✅ Case du ${day} : ${got}. La suivante demain !`, 'done');
         const sub = btn.closest('.advent-card')?.querySelector('.advent-hero-text p');
         if (sub) sub.textContent = `${Object.keys(ad.open).length} / 24 cases ouvertes`;
@@ -236,13 +253,15 @@ function adventReveal(fromBtn, day, g, card, onDone) {
     front.append(el('i', 'advent-ribbon'), num);
     const back = el('div', 'advent-pop-back');
     if (card) { back.classList.add('is-card'); back.append(cardFace(card, true, false)); stage.classList.add('has-card'); }
-    else { const a = el('span', 'advent-pop-gift'); a.append(giftIcon(adventGiftInfo(g)[0])); back.append(a); }
+    else { const a = el('span', 'advent-pop-gift'); a.append(giftIcon(adventGiftInfo(g, adventData())[0])); back.append(a); }
     box.append(front, back);
     stage.append(box);
     const info = el('div', 'advent-pop-info');
     const t = el('b');
     const p = el('p');
     if (card) { t.textContent = card.name; p.textContent = `Carte ${CARD_RARITIES[card.rarity].name.toLowerCase()} · ajoutée à ta collection`; }
+    else if (g.star && adventData().bonus === 'ticket') { t.textContent = '🎉 Grosse surprise : un billet d’escale !'; p.textContent = 'Pour avoir ouvert les 24 cases ! Il t’attend dans Parcours → Escales. Et aussi le cadre « Étoile de l’Avent » et 20 🪙. Joyeux Noël !'; }
+    else if (g.star && adventData().bonus === 'coins') { t.textContent = `🎉 Grosse surprise : +${ADVENT_BONUS_COINS} 🪙 !`; p.textContent = `Pour avoir ouvert les 24 cases ! Et aussi le cadre « Étoile de l’Avent » (dans « Mon avatar ») et 20 🪙. Joyeux Noël !`; }
     else if (g.star) { t.textContent = 'Le cadre « Étoile de l’Avent » !'; p.textContent = 'Et 20 🪙. Le cadre t’attend dans « Mon avatar ». Joyeux Noël !'; }
     else if (g.coins) { t.textContent = `+${g.coins} 🪙`; p.textContent = 'Ajoutées à tes pièces.'; }
     else if (g.boost) { t.textContent = '⚡ Pièces ×2 · 15 min'; p.textContent = 'Dans ton sac : active-le dans la boutique quand tu veux.'; }
