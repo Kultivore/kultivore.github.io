@@ -5809,3 +5809,16 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .avatar-tab.is-outfit > span:last-child { font-size: 0.86em; letter-spacing: -0.2px; }
 @media (max-width: 340px) { .avatar-tabs { gap: 4px; } .avatar-tab.is-outfit > span:last-child { font-size: 0.78em; } }
 .av-outfit-art { margin-bottom: 6px; }
+/* 25/11 : 2 thèmes par ligne sans couper les noms au milieu (« Gastronom/ie » à 360 px) : mots entiers, police un peu plus petite */
+@media (max-width: 700px) {
+    .v11 .train-tile .train-name { overflow-wrap: normal; word-break: normal; hyphens: none; }
+}
+@media (max-width: 390px) {
+    .v11 .train-tile { padding: 11px 9px 11px 11px; }
+    .v11 .train-head { gap: 6px; }
+    .v11 .train-icon { font-size: 1.3rem; }
+    .v11 .train-tile .train-name { font-size: 0.86rem; letter-spacing: -0.2px; }
+}
+@media (max-width: 340px) {
+    .v11 .train-tile .train-name { font-size: 0.78rem; }
+}
