@@ -10181,9 +10181,9 @@ function claimPendingTrainChests() {
 
 /* Médailles par thème : bronze (1/3 des questions maîtrisées), argent (2/3), or (toutes). */
 const TRAIN_MEDALS = [
-    { icon: '🥉', name: 'bronze', part: 1 / 3 },
-    { icon: '🥈', name: 'argent', part: 2 / 3 },
-    { icon: '🥇', name: 'or', part: 1 }
+    { icon: '🥉', name: 'bronze', of: 'de bronze', part: 1 / 3 },
+    { icon: '🥈', name: 'argent', of: 'd’argent', part: 2 / 3 },
+    { icon: '🥇', name: 'or', of: 'd’or', part: 1 }
 ];
 function trainMedalOf(theme) {
     const pr = trainingProgress(theme);
@@ -10433,13 +10433,13 @@ function endTraining() {
     if (medal > (state.data.trainMedals[theme] || 0)) {
         state.data.trainMedals[theme] = medal;
         const m = TRAIN_MEDALS[medal - 1];
-        text += `\n${m.icon} Médaille d’${m.name} en ${theme} !`;
+        text += `\n${m.icon} Médaille ${m.of} en ${theme} !`;
         saveData();
         const mastered = trainingProgress(theme).totalMastered;
         celebrate(() => showMedalAnim({ theme, icon, medal, mastered }));   // la fête, juste après l'écran de fin
     } else {
         const { next } = medalInfo(theme);
-        if (next && next.left > 0) text += `\n${next.m.icon} Plus que ${plural(next.left, 'question maîtrisée', 'questions maîtrisées')} pour la médaille d’${next.m.name}.`;
+        if (next && next.left > 0) text += `\n${next.m.icon} Plus que ${plural(next.left, 'question maîtrisée', 'questions maîtrisées')} pour la médaille ${next.m.of}.`;
     }
     const dropLine = state.trainFull ? '' : earnPracticeDrop();   // 24/11 (1.1) : pas de goutte gagnée quand on en a dépensé une
     if (trainFullOffer()) text += state.trainFull ? '\n⭐ XP complète (1 goutte)' : '\n🔹 XP réduite (sans goutte)';
@@ -11509,7 +11509,7 @@ function openFriendProfile(f) {
             list.forEach(([theme, n]) => {
                 const m = el('span', 'friend-medal');
                 m.textContent = `${TRAIN_MEDALS[n - 1].icon}${(THEME_DECOR.find(t => t.theme === theme) || {}).icon || ''}`;
-                m.title = `Médaille d’${TRAIN_MEDALS[n - 1].name} · ${theme}`;
+                m.title = `Médaille ${TRAIN_MEDALS[n - 1].of} · ${theme}`;
                 ml.append(m);
             });
             if (!list.length) ml.textContent = 'Aucune médaille pour l’instant.';
