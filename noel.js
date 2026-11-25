@@ -652,6 +652,13 @@ function renderNoelPage(ev, page) {
             if (!cal) return;
             cal.scrollIntoView({ behavior: 'smooth', block: 'start' });
             const door = cal.querySelector('.advent-door.is-today, .advent-door.is-wait');
+            // 25/11 : si la case peut s'ouvrir, toucher le bandeau l'OUVRE (avant : il descendait seulement jusqu'à elle)
+            if (door && door.classList.contains('is-today') && playedToday()) {
+                const st = cal.querySelector('.advent-status');
+                const setStatus = (text, tone = '') => { if (st) { st.textContent = nbspPunct(text); st.className = `advent-status${tone ? ' is-' + tone : ''}`; } };
+                setTimeout(() => adventOpenDoor(door, setStatus), 450);
+                return;
+            }
             if (door) { door.classList.remove('notif-flash'); void door.offsetWidth; door.classList.add('notif-flash'); }
         });
         page.append(c);

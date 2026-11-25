@@ -271,6 +271,18 @@ function escPlaceSwitch(tries = 0) {
     return top;
 }
 if (ESCALES_ON && V11) window.addEventListener('resize', () => escPlaceSwitch());
+// 25/11 : pendant un événement (bandeau rouge de Noël…), l'interrupteur se calait parfois trop bas : il avait été mesuré avant que la
+// barre du haut ait sa taille finale, et le bandeau était replacé ensuite sans lui. Maintenant, à chaque placement du bandeau et à
+// chaque changement de taille de la barre du haut, l'interrupteur suit.
+if (ESCALES_ON && V11 && typeof updateEventBanner === 'function') {
+    const escOrigBanner = updateEventBanner;
+    updateEventBanner = function () { escOrigBanner.apply(this, arguments); if (!$('mapScreen').hidden) escPlaceSwitch(); };
+    const escWatchBar = () => {
+        const bar = $('topbar');
+        if (bar && window.ResizeObserver) new ResizeObserver(() => { if (!$('mapScreen').hidden) updateEventBanner(); }).observe(bar, { box: 'border-box' });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', escWatchBar); else escWatchBar();
+}
 const escOrigRenderMap = renderMap;
 // 18/11 : sur les Escales, le grand parcours est caché AVANT d'être dessiné (sinon il défilait jusqu'au niveau en cours
 // et on voyait un instant le bas de la page des Escales, le carnet, avant le retour en haut)
