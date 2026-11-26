@@ -1364,6 +1364,9 @@ const state = {
 
 const cardsOfLevel = n => QUESTIONS.filter(q => q.niveau === n);
 const missCount = id => state.data.stats[id]?.miss || 0;
+// 26/11 : entraînement, « ratée à refaire » = DERNIÈRE réponse fausse (avant : il restait des erreurs anciennes à éponger une par une,
+// d'où « 40 ratées à refaire » avec la médaille d'or). Réussie une fois depuis = plus à refaire.
+const trainMissed = id => missCount(id) > 0 && streakOf(id) === 0;
 /** Ratée 2 fois dans la même révision / le même entraînement : mise de côté jusqu'au lendemain. */
 const isLater = id => (state.data.stats[id]?.later || '') > todayKey();
 function tomorrowKey() {
@@ -10294,8 +10297,8 @@ function pickTrainingCards(theme) {
     const take = (list, max) => { for (const q of list) { if (picked.length >= TRAIN_SESSION || max <= 0) break; if (!picked.includes(q)) { picked.push(q); max--; } } };
 
     // 1) Révisions de l'entraînement (2 au plus) : erreurs d'abord, puis questions arrivées à échéance
-    const missed = shuffle(open.filter(q => missCount(q.id) > 0 && !isLater(q.id))).sort((a, b) => missCount(b.id) - missCount(a.id));
-    const due = shuffle(open.filter(q => seen(q) && missCount(q.id) === 0 && isDue(q) && !isMastered(q.id) && !isLater(q.id)));
+    const missed = shuffle(open.filter(q => trainMissed(q.id) && !isLater(q.id))).sort((a, b) => missCount(b.id) - missCount(a.id));
+    const due = shuffle(open.filter(q => seen(q) && !trainMissed(q.id) && isDue(q) && !isMastered(q.id) && !isLater(q.id)));
     take([...missed, ...due], TRAIN_MAX_REVIEWS);
     // 2) Rattrapage (2026-11-10, joueurs convertis de 5 à 10 paliers) : jusqu'à 3 questions jamais vues des paliers validés
     if (state.data.trainCatchup[theme]) {
@@ -10672,7 +10675,7 @@ function renderTraining() {
                 today.textContent = '✅ Palier du jour réussi · suite demain';
                 foot.append(today);
             }
-            const errors = bank.filter(q => missCount(q.id) > 0).length;
+            const errors = bank.filter(q => trainMissed(q.id)).length;
             if (errors) {
                 const rev = el('span', 'train-errors');
                 rev.textContent = `🔁 ${errors} ${errors > 1 ? 'ratées' : 'ratée'} à refaire`;   // 11/11 : pas dans « ↻ à revoir » du parcours
