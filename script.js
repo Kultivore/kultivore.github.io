@@ -616,7 +616,10 @@ function wordClose(t, a) {
     const cost = typoCost(t, a);
     if (len === 4 ? cost <= 0.5 || (cost === 1 && t.length === 4 && [...t].sort().join('') === [...a].sort().join('')) : cost <= (len >= 9 ? 2 : 1)) return true;
     // Même prononciation (mots longs seulement, et assez de lettres en commun)
-    return len >= 6 && t.length >= 5 && soundKey(t) === soundKey(a) && commonLetters(t, a) >= Math.ceil(len / 2);
+    if (len >= 6) return t.length >= 5 && soundKey(t) === soundKey(a) && commonLetters(t, a) >= Math.ceil(len / 2);
+    // 26/11 (plaintes de joueurs : « schreck » pour Shrek) : mots de 4-5 lettres qui se prononcent pareil, avec plus de sécurités
+    // (même 1re lettre, toutes les lettres en commun sauf une) : sans elles, « hammam » passait pour Amman, « henné » pour hand.
+    return len >= 4 && t.length >= 4 && t[0] === a[0] && soundKey(t) === soundKey(a) && commonLetters(t, a) >= len - 1;
 }
 /** Réponse entière proche (mot par mot si le nombre de mots est le même, sinon sur toute la réponse). */
 function answerClose(typed, ans) {
