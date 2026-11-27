@@ -1,0 +1,22 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "fr.kultivore.app",
+      "sha256_cert_fingerprints": [
+        "B4:1F:9B:21:C9:D8:DD:08:C7:57:6E:2A:41:F5:27:64:03:9E:11:42:D0:41:22:0C:FC:1C:82:4C:51:78:FA:89"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "fr.kultivore.app.test",
+      "sha256_cert_fingerprints": [
+        "30:2F:5B:4C:EC:11:F5:06:50:05:24:30:15:20:FE:84:CC:AD:68:87:DD:00:3B:75:55:19:C0:07:91:A8:B2:E9"
+      ]
+    }
+  }
+]

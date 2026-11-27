@@ -9931,7 +9931,8 @@ async function sendResetLink() {
     const btn = $('authSubmit');
     btn.disabled = true;
     btn.textContent = 'Envoi…';
-    const { error } = await c.auth.resetPasswordForEmail(email, { redirectTo: siteBase() });
+    // 27/11 : lien vers /mdp/ (liens d'appli Android : ce chemin ouvre l'appli si elle est installée ; sinon la page renvoie au jeu)
+    const { error } = await c.auth.resetPasswordForEmail(email, { redirectTo: siteBase() + 'mdp/' });
     btn.disabled = false;
     btn.textContent = 'Envoyer le lien';
     if (error) { err.textContent = authErrorText(error); return; }

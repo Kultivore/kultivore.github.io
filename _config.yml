@@ -1,0 +1,2 @@
+# GitHub Pages (Jekyll) : publier aussi le dossier caché .well-known (liens d'appli Android, assetlinks.json)
+include: [".well-known"]

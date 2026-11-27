@@ -22,13 +22,25 @@
         // Retour dans l'appli (après l'avoir mise en arrière-plan) : comme « visibilitychange » sur le site
         call(() => P.App.addListener('appStateChange', st => { if (st.isActive && typeof checkServerClock === 'function') checkServerClock(); }));
         // Lien « …/Kultivo/?ami=pseudo » ouvert dans l'appli (plus tard, avec les « App Links » et assetlinks.json)
-        call(() => P.App.addListener('appUrlOpen', ev => {
+        const openLink = url => {
             try {
-                const u = new URL(ev.url);
+                const u = new URL(url);
+                // 27/11 : lien « mot de passe oublié » (kultivore.github.io/mdp/#…type=recovery) ouvert par l'appli : on recharge le jeu
+                // avec le jeton du lien, comme sur le site (Supabase le lit au démarrage et la fenêtre « Nouveau mot de passe » s'ouvre)
+                if (/\/mdp\/?$/.test(u.pathname) && /access_token|type=recovery|code=/.test(u.hash + u.search)) {
+                    // déjà traité (après le rechargement, getLaunchUrl redonne le même lien ; Supabase a effacé le jeton de l'adresse)
+                    try { if (sessionStorage.getItem('kultivo_link_done') === url) return; sessionStorage.setItem('kultivo_link_done', url); } catch (e) { return; }
+                    try { sessionStorage.setItem('kultivo_recovery', '1'); } catch (e) { /* stockage bloqué */ }
+                    location.replace(location.origin + '/' + u.search + u.hash);
+                    return;
+                }
                 const ami = u.searchParams.get('ami');
                 if (ami) { history.replaceState(null, '', `${location.pathname}?ami=${encodeURIComponent(ami)}`); readInviteFromUrl(); }
             } catch (e) { /* lien illisible */ }
-        }));
+        };
+        call(() => P.App.addListener('appUrlOpen', ev => openLink(ev.url)));
+        // appli FERMÉE quand on touche le lien : elle démarre directement sur lui (pas d'événement appUrlOpen)
+        call(() => P.App.getLaunchUrl().then(r => { if (r && r.url) openLink(r.url); }).catch(() => {}));
     }
 
     /* 2) Barre d'état du téléphone (heure, batterie). 18/11 : sur les Android récents elle est TRANSPARENTE (on voit le fond
