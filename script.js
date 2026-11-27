@@ -3186,7 +3186,8 @@ const MISSION_POOL = [
     { id: 'correct',  icon: '✅', goal: 60, goal2: 100, text: n => `Donne ${n} bonnes réponses` },
     { id: 'theme',    icon: '🎓', goal: 12, goal2: 20, text: (n, theme) => `Donne ${n} bonnes réponses en ${theme}` },
     { id: 'training', icon: '🎯', goal: 3,  goal2: 5,  text: n => `Termine ${n} entraînements` },
-    { id: 'reviews',  icon: '🔁', goal: 3,  goal2: 4,  text: n => `Termine ${n} révisions` },
+    // 27/11 : après le sommet il n'y a presque plus de « à revoir » → un entraînement terminé compte aussi (missionAfterTraining)
+    { id: 'reviews',  icon: '🔁', goal: 3,  goal2: 4,  text: n => (state.data.done[MAX_LEVEL] ? `Termine ${n} révisions ou entraînements` : `Termine ${n} révisions`) },
     { id: 'sprint',   icon: '⚡', goal: 12, goal2: 8, text: n => `Fais ${n} bonnes réponses en un seul sprint`, max: true },
     { id: 'days',     icon: '🔥', goal: 5,  text: n => `Joue ${n} jours différents cette semaine` }
 ];
@@ -10398,6 +10399,7 @@ function endTraining() {
     const theme = state.trainTheme;
     state.data.totals.trainings = (state.data.totals.trainings || 0) + 1;
     missionEvent('training');
+    if (state.data.done[MAX_LEVEL]) missionEvent('reviews');   // 27/11 : parcours fini → l'entraînement compte comme une révision
     const tier = trainTierOf(theme);
     const won = updateTrainingTier(theme);   // palier en cours réussi pendant cette session ?
     const pr = trainingProgress(theme);
