@@ -2963,11 +2963,28 @@ function updateEventBanner() {
     const banner = $('eventBanner');
     banner.hidden = !ev || $('mapScreen').hidden;
     if (banner.hidden) return;
-    banner.textContent = `${ev.icon} ${ev.title} · jusqu’au ${shortDate(ev.end)} · Jouer ›`;
-    // 27/11 : en revenant sur le Parcours, la barre du haut était mesurée pendant que la page n'avait pas encore retrouvé sa place
-    // (bas de la barre à −65 000 px) → bandeau et interrupteur hors de l'écran jusqu'au 1er défilement. On garde au moins sa hauteur.
-    const tb = $('topbar').getBoundingClientRect();
-    banner.style.top = `${Math.round(Math.max(tb.bottom, tb.height)) + 8}px`;
+    const txt = `${ev.icon} ${ev.title} · jusqu’au ${shortDate(ev.end)} · Jouer ›`;
+    if (banner.textContent !== txt) banner.textContent = txt;
+    // 27/11 : placé d'après la HAUTEUR de la barre du haut, retenue (topbarHeight) : la mesurer à chaque arrivée sur le Parcours
+    // obligeait le téléphone à recalculer les 300 niveaux d'un coup (blocage de ~150 ms au balayage pendant Noël).
+    const top = `${Math.round(topbarHeight()) + 8}px`;
+    if (banner.style.top !== top) banner.style.top = top;
+}
+/** Hauteur de la barre du haut, retenue (mise à jour quand elle change de taille) : la mesurer coûte cher sur le parcours. */
+let topbarH = 0;
+function topbarHeight() {
+    if (!topbarH) {
+        const bar = $('topbar');
+        topbarH = bar ? bar.getBoundingClientRect().height : 0;
+        if (bar && window.ResizeObserver && !topbarHeight.ro) {
+            topbarHeight.ro = new ResizeObserver(en => {
+                const h = en[0].borderBoxSize?.[0]?.blockSize ?? en[0].target.getBoundingClientRect().height;
+                if (h > 0 && Math.abs(h - topbarH) > 0.5) { topbarH = h; if (!$('mapScreen').hidden) updateEventBanner(); }
+            });
+            topbarHeight.ro.observe(bar, { box: 'border-box' });
+        }
+    }
+    return topbarH || 56;
 }
 
 /** Anecdote d'une icône du décor de l'événement. */
@@ -13299,6 +13316,7 @@ function bindEvents() {
     // 27/11 : le bandeau était DANS la page du Parcours → pendant l'animation d'arrivée sur la page, il glissait avec elle et
     // n'apparaissait qu'une seconde après. Sorti de la page : vraiment fixé à l'écran, comme la barre du haut.
     document.body.append($('eventBanner'));
+    requestAnimationFrame(() => topbarHeight());   // hauteur de la barre du haut retenue dès le départ (puis suivie si elle change)
     window.addEventListener('resize', updateEventBanner);
     window.addEventListener('resize', () => { if (PAL_ELEC) drawMapTrail(); });   // pointillés du parcours (bac à sable)
     $('missionsRow').addEventListener('click', openMissionsModal);

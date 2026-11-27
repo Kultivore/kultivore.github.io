@@ -253,7 +253,9 @@ function escApplyTab() {
 /** Place l'interrupteur collé sous la barre du haut (et sous le bandeau d'événement s'il est là ; sur les Escales, le bandeau
     est caché). 23/11 (1.1) : si la barre du haut n'est pas affichée au moment de la mesure (retour d'un niveau), sa hauteur
     valait 0 → valeur par défaut trop petite → l'interrupteur passait sous la barre jusqu'au prochain calcul. On remesure plus tard. */
-const escBannerBottom = b => (parseFloat(b.style.top) || b.getBoundingClientRect().top) + b.offsetHeight;
+// 27/11 : hauteur du bandeau RETENUE (la mesurer à chaque arrivée sur le parcours bloquait le balayage ~150 ms pendant Noël)
+let escBannerH = 0;
+const escBannerBottom = b => (parseFloat(b.style.top) || topbarHeight() + 8) + (escBannerH || (escBannerH = b.offsetHeight) || 38);
 let escStickK = 0;   // écart de place de l'interrupteur collé, rattrapé en défilant (voir plus bas)
 function escPlaceSwitch(tries = 0) {
     const sw = $('escSwitch');
@@ -264,7 +266,9 @@ function escPlaceSwitch(tries = 0) {
     const useBanner = !onEsc && banner && !banner.hidden;
     // 27/11 : le bandeau est DANS la page du Parcours : pendant l'animation d'arrivée sur la page, il défile avec elle (sa place à
     // l'écran est fausse, −2 700 px vu sur le téléphone). On part donc de sa place VOULUE (style.top) + sa hauteur.
-    const h = useBanner ? escBannerBottom(banner) : (bar?.getBoundingClientRect().height || 0);
+    // 27/11 : hauteur de la barre RETENUE (topbarH, script.js) : la remesurer forçait le recalcul des 300 niveaux (~85 ms à chaque
+    // arrivée sur le Parcours, d'où un petit blocage au balayage). Même valeur, mesurée seulement si on ne l'a pas encore.
+    const h = useBanner ? escBannerBottom(banner) : (topbarH || bar?.getBoundingClientRect().height || 0);
     if (V11 && (!h || $('mapScreen').hidden)) {   // pas encore affiché : on réessaie un peu plus tard (le retour sur la carte recalcule aussi)
         clearTimeout(escPlaceSwitch.t);
         if (tries < 20) escPlaceSwitch.t = setTimeout(() => { const t = escPlaceSwitch(tries + 1); const hd = document.querySelector('#escPage .esc-head'); if (t && hd) hd.style.top = `${Math.round(t + sw.offsetHeight + 6)}px`; }, 250);
@@ -284,7 +288,9 @@ if (ESCALES_ON && V11) window.addEventListener('scroll', () => {
     escStickRaf = requestAnimationFrame(() => {
         escStickRaf = 0;
         const sw = $('escSwitch');
-        if (!sw || $('mapScreen').hidden || !sw.offsetParent || window.scrollY < 300) return;
+        if (!sw || $('mapScreen').hidden || window.scrollY < 300) return;
+        const bn = $('eventBanner');
+        if (escUi.tab === 'escales' || !bn || bn.hidden) { if (escStickK) { escStickK = 0; escPlaceSwitch(); } return; }   // hors événement : rien (comme avant le 25/11)
         escPlaceSwitch();   // d'abord la place normale (si la mesure était seulement ancienne) …
         requestAnimationFrame(() => escStickFix(sw));   // … puis on rattrape l'écart qui reste
     });
@@ -312,11 +318,7 @@ if (ESCALES_ON && V11) window.addEventListener('resize', () => escPlaceSwitch())
 if (ESCALES_ON && V11 && typeof updateEventBanner === 'function') {
     const escOrigBanner = updateEventBanner;
     updateEventBanner = function () { escOrigBanner.apply(this, arguments); if (!$('mapScreen').hidden) escPlaceSwitch(); };
-    const escWatchBar = () => {
-        const bar = $('topbar');
-        if (bar && window.ResizeObserver) new ResizeObserver(() => { if (!$('mapScreen').hidden) updateEventBanner(); }).observe(bar, { box: 'border-box' });
-    };
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', escWatchBar); else escWatchBar();
+    // (27/11 : la barre du haut est surveillée par topbarHeight dans script.js)
 }
 const escOrigRenderMap = renderMap;
 // 18/11 : sur les Escales, le grand parcours est caché AVANT d'être dessiné (sinon il défilait jusqu'au niveau en cours
