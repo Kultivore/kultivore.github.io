@@ -13264,6 +13264,8 @@ function bindEvents() {
         if (!$('authModal').hidden || !$('cloudConflictModal').hidden || !$('accountModal').hidden) return;
         if (!$('chestModal').hidden || !$('askModal').hidden || !$('avatarModal').hidden || !$('friendModal').hidden) return;
         if (!$('titlesModal').hidden) return;
+        // 27/11 : pas de changement d'onglet pendant une bulle d'explication de Kulti (#tour), ni sous une autre fenêtre ou une fête
+        if (document.querySelector(KULTI_HOP_WAIT)) return;
         if (e.target.closest('input, textarea')) return;
         const t = e.touches[0];
         if (t.clientX < 24 || t.clientX > window.innerWidth - 24) return;   // bords : geste « retour » du téléphone
