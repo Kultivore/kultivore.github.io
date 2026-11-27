@@ -2964,7 +2964,10 @@ function updateEventBanner() {
     banner.hidden = !ev || $('mapScreen').hidden;
     if (banner.hidden) return;
     banner.textContent = `${ev.icon} ${ev.title} · jusqu’au ${shortDate(ev.end)} · Jouer ›`;
-    banner.style.top = `${Math.round($('topbar').getBoundingClientRect().bottom) + 8}px`;
+    // 27/11 : en revenant sur le Parcours, la barre du haut était mesurée pendant que la page n'avait pas encore retrouvé sa place
+    // (bas de la barre à −65 000 px) → bandeau et interrupteur hors de l'écran jusqu'au 1er défilement. On garde au moins sa hauteur.
+    const tb = $('topbar').getBoundingClientRect();
+    banner.style.top = `${Math.round(Math.max(tb.bottom, tb.height)) + 8}px`;
 }
 
 /** Anecdote d'une icône du décor de l'événement. */
