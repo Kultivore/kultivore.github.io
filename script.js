@@ -1309,7 +1309,9 @@ function logCoins() {
     }
     coinSeen = { data: d, coins: d.coins };
 }
+var mapDirty = true;   // 27/11 (var : pas de piège si saveData est appelée pendant le chargement) : parcours à redessiner (voir renderMap / mapReuse) — déclaré ICI, avant tout appel de saveData
 function saveData() {
+    mapDirty = true;   // 27/11 : le parcours devra être redessiné
     try { logCoins(); } catch (e) { /* jamais bloquant */ }
     keepDailyBackup();
     const json = JSON.stringify(state.data);
@@ -3774,7 +3776,7 @@ function showScreen(name) {
     markNav(name);
 
     if (name === 'map') {
-        renderMap();
+        renderMap({ reuse: true });   // 27/11 : rien n'a changé depuis le dernier dessin → on garde le parcours tel quel
         // Première arrivée sur le parcours après l'accueil : petit tutoriel
         if (state.data.onboarded && !state.data.tourDone) setTimeout(startTour, 500);
     }
@@ -4048,11 +4050,32 @@ function showDropsTip() {
     }]);
 }
 
-function renderMap() {
+/* 27/11 (« ce n'est pas fluide » au balayage vers le Parcours) : redessiner les 300 niveaux coûte ~50 ms + ~40 ms de mise en page.
+   En arrivant sur la page (showScreen), si rien n'a changé depuis le dernier dessin (aucune sauvegarde, même jour, même niveau
+   débloqué, même événement), on GARDE le parcours : seuls Kulti, les amis et le retour sur le niveau en cours sont refaits. */
+let mapBuiltSig = '';
+let mapFocusN = 0;
+const mapSig = () => `${todayKey()}|${MAX_LEVEL}|${state.data.unlocked}|${currentEvent()?.id || ''}|${noelHat ? noelHat() : ''}`;
+function mapReuse() {
+    $('placementBtn').hidden = !canTakePlacement();
+    renderMapFriends();
+    placeMapKulti();
+    const n = mapFocusLevel || mapFocusN;
+    const node = n && document.querySelector(`.stop[data-level="${n}"] .node`);
+    if (node) node.scrollIntoView({ block: 'center' });
+    mapFocusLevel = 0;
+    if (kultiHop) startKultiHop();
+    setTimeout(updateToCurrentBtn, 50);
+    if (!state.data.tipChest && readyChests().length) maybeShowChestTip();
+    else if (!state.data.tipReviews && currentReviewsLabel()) maybeShowReviewsTip();
+}
+function renderMap(opts = {}) {
+    if (opts.reuse && !mapDirty && mapBuiltSig === mapSig() && $('mapPath').children.length) { mapReuse(); return; }
     $('placementBtn').hidden = !canTakePlacement();
     const list = $('mapPath');
     list.replaceChildren();
     let focusNode = null;
+    mapFocusN = 0;
 
     for (let n = 1; n <= MAX_LEVEL; n++) {
         const info = levelInfo(n);
@@ -4111,6 +4134,7 @@ function renderMap() {
         li.append(btn, label);
         list.append(li);
 
+        if (!locked && (!done || n === state.data.unlocked)) mapFocusN = n;   // niveau sur lequel on revient (gardé pour mapReuse)
         if (!locked && (!done || n === state.data.unlocked) && !mapFocusLevel) focusNode = btn;
         if (mapFocusLevel && n === mapFocusLevel) focusNode = btn;   // niveau refait : on revient juste après lui
         if (n % CHEST_EVERY === 0) list.append(chestStop(n));
@@ -4120,6 +4144,8 @@ function renderMap() {
     placeMapKulti();
     if (focusNode) focusNode.scrollIntoView({ block: 'center' });
     mapFocusLevel = 0;
+    mapDirty = false;
+    mapBuiltSig = mapSig();
     if (PAL_ELEC) requestAnimationFrame(drawMapTrail);
     if (kultiHop) startKultiHop();
     setTimeout(updateToCurrentBtn, 50);

@@ -325,7 +325,7 @@ const escOrigRenderMap = renderMap;
 // et on voyait un instant le bas de la page des Escales, le carnet, avant le retour en haut)
 renderMap = function () {
     if (ESCALES_ON) $('mapScreen').classList.toggle('is-esc', escUi.tab === 'escales');
-    escOrigRenderMap(); escApplyTab();
+    escOrigRenderMap.apply(this, arguments); escApplyTab();
 };
 // En arrivant sur le parcours avec l'onglet Escales : liste en haut, ou petit parcours centré sur le niveau en cours
 // (passe après le défilement du grand parcours)
