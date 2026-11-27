@@ -2550,7 +2550,7 @@ function openEncFiche(q, list, backTheme, fromEnd = false) {
     meta.append(d2);
     // 27/11 (bac à sable) : part des joueurs qui la trouvent du 1er coup (pourcentages.json)
     const pc = typeof qPct === 'function' ? qPct(q.id) : null;
-    if (pc != null) { const d3 = el('span', 'enc-chip is-grey'); d3.textContent = `👥 ${pc} % des joueurs la trouvent`; meta.append(d3); }
+    if (pc != null) { const d3 = el('span', 'enc-chip is-grey'); d3.textContent = pc < 5 ? '👥 Très peu de joueurs la trouvent' : `👥 ${pc} % des joueurs la trouvent`; meta.append(d3); }
     fiche.append(meta);
     // 12/11 : à la place de « Me la reposer », Kulti commente CETTE question d'après tes réponses (rien à écrire en plus)
     {

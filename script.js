@@ -7972,7 +7972,8 @@ function renderQPct(q, ok) {
     if (pct == null) return;
     const rare = ok && pct <= 25;   // question que peu de joueurs trouvent, et toi oui : on le souligne
     tag.classList.toggle('is-rare', rare);
-    tag.textContent = rare ? `🎯 Seuls ${pct} % trouvent !` : `👥 ${pct} % ont trouvé`;
+    // moins de 5 % (souvent 0 sur 5 joueurs) : « Seuls 0 % trouvent ! » alors que tu viens de la trouver serait absurde
+    tag.textContent = rare ? (pct < 5 ? '🎯 Très peu la trouvent !' : `🎯 Seuls ${pct} % trouvent !`) : `👥 ${pct} % ont trouvé`;
 }
 function showFeedback(verdict, skipped) {
     const q = state.current.q;
