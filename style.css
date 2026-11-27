@@ -2883,7 +2883,8 @@ body.event-halloween .challenges-tab[data-sub="event"] { color: var(--r-event); 
 .event-pumpkins { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; background: rgba(255, 122, 0, 0.12); font-weight: 800; font-size: 0.9rem; }
 .pumpkin {
     position: absolute; z-index: 18; width: 30px; height: 30px; padding: 0; border: 0; background: none; cursor: pointer;
-    animation: pumpkinWobble 2.4s ease-in-out infinite; filter: drop-shadow(0 0 6px rgba(255, 160, 0, 0.9));
+    /* 27/11 : plus d'animation continue (pumpkinWobble) : mesuré sur le téléphone, elle faisait accrocher le balayage entre les onglets */
+    filter: drop-shadow(0 0 6px rgba(255, 160, 0, 0.9));
 }
 .pumpkin.is-left { left: 1px; }
 .pumpkin.is-right { right: 1px; }
