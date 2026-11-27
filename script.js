@@ -595,6 +595,7 @@ function typoCost(t, a) {
 /** Clé de prononciation française (simplifiée) d'un mot déjà sans accents, en minuscules. */
 function soundKey(w) {
     let s = w;
+    s = s.replace(/([aeiou])ill/g, '$1y');   // 27/11 : « -ill- » mouillé = « y » (cancoillotte / cancoyote, paille / paye)
     s = s.replace(/eaux?$/, 'o').replace(/eau/g, 'o').replace(/au/g, 'o');
     s = s.replace(/ph/g, 'f').replace(/pf/g, 'f').replace(/th/g, 't').replace(/rh/g, 'r');
     s = s.replace(/tch/g, 'ch').replace(/sch/g, 'ch').replace(/sh/g, 'ch');
@@ -618,7 +619,16 @@ function commonLetters(a, b) {
     return n;
 }
 /** Un mot tapé vaut-il le mot attendu (avec sa petite marge) ? */
+// 27/11 (signalement « bmanche neige ») : WORD_SAME ramène « blanche » à « blanc » ; une faute sur le mot d'ORIGINE (« bmanche »)
+// était alors comparée à « blanc » (trop loin). On essaie aussi les mots d'origine.
+let wordSameRev = null;
 function wordClose(t, a) {
+    if (t === a) return true;
+    if (wordClose1(t, a)) return true;
+    if (!wordSameRev) { wordSameRev = {}; for (const [k, v] of Object.entries(WORD_SAME)) (wordSameRev[v] || (wordSameRev[v] = [])).push(k); }
+    return (wordSameRev[a] || []).some(o => o !== t && wordClose1(t, o));
+}
+function wordClose1(t, a) {
     if (t === a) return true;
     if (/\d/.test(t) || /\d/.test(a)) return false;   // jamais de marge sur un nombre
     const len = a.length;
@@ -764,7 +774,8 @@ function surnames(raw) {
 }
 /* Petits mots de liaison des noms (10/11) : un oubli ou une confusion entre eux = petite faute (« du costa » / « Da Costa »).
    Pas « il » ni « un » (Kim Jong-il / Kim Jong-un). */
-const LINK_PARTICLES = new Set(['de', 'da', 'du', 'di', 'do', 'des', 'dos', 'das', 'del', 'della', 'van', 'von', 'der', 'den', 'ten', 'el', 'al', 'la', 'le', 'lo', 'los', 'las', 'les', 'd', 'l']);
+// 27/11 (« tarte citron meringuée ») : + « au, aux, à, en » oubliés ou faux au milieu = petite faute aussi
+const LINK_PARTICLES = new Set(['de', 'da', 'du', 'di', 'do', 'des', 'dos', 'das', 'del', 'della', 'van', 'von', 'der', 'den', 'ten', 'el', 'al', 'la', 'le', 'lo', 'los', 'las', 'les', 'd', 'l', 'au', 'aux', 'a', 'en']);
 const noParticles = str => str.split(' ').filter(w => w && !LINK_PARTICLES.has(w)).join('');
 /** Réponse sans le (ou les) article(s) du début, mais avec ceux du milieu : « la lune de miel » → « lune de miel ». */
 const innerForm = str => { const w = str.split(' ').filter(Boolean); let i = 0; while (i < w.length - 1 && ARTICLES.has(w[i])) i++; return w.slice(i).join(' '); };
