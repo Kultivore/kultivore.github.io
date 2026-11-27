@@ -5846,3 +5846,12 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
     .feedback.has-qpct .feedback-inner { gap: 8px; }
     .feedback.has-qpct .fb-foot { margin-top: 8px; }
 }
+/* Tablette / ordinateur (≥ 560 px) : la colonne des boutons est étroite (la pastille l'élargissait et le bandeau grandissait) →
+   la pastille devient une étiquette posée sur le bord haut du bandeau, à gauche (comme « Éclair » à droite) : aucune place prise */
+@media (min-width: 560px) {
+    .fb-foot.has-pct { justify-content: center; }
+    .feedback .fb-pct { position: absolute; left: var(--gutter, 16px); top: -15px; z-index: 1; padding: 3px 10px; background: var(--surface); }
+    .feedback.is-ok .fb-pct:not(.is-rare) { box-shadow: inset 0 0 0 2px var(--ok); }
+    .feedback.is-wrong .fb-pct { box-shadow: inset 0 0 0 2px var(--red); }
+    .feedback .fb-pct.is-rare { background: #ffd84d; }
+}

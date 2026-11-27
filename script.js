@@ -9542,7 +9542,11 @@ function writeStatsQueue(list) {
 function noteStatsAnswer(id, ok) {
     if (!STATS_MODES.includes(state.mode) || state.statsSeen.has(id)) return;
     state.statsSeen.add(id);
-    state.statsAnswers.push({ q: id, ok: !!ok });
+    // 27/11 : « f » = TOUTE PREMIÈRE réponse de ce joueur à cette question (comptée à part côté Supabase : colonnes players /
+    // players_right, supabase/statistiques-joueurs.sql) → « X % des joueurs » sans compter deux fois la même personne
+    // (révisions, défis, niveaux refaits, entraînement). Pas en duel : ses questions ne sont pas notées dans stats.
+    const first = state.mode !== 'duel' && !state.data.stats[id];
+    state.statsAnswers.push(first ? { q: id, ok: !!ok, f: 1 } : { q: id, ok: !!ok });
 }
 
 /** Fin (ou abandon) d'une partie : on met de côté ce qui n'a pas encore été envoyé. */
