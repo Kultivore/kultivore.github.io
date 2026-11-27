@@ -169,8 +169,8 @@ TRAINING_QUESTIONS.push(
 
 /* Sport · lot des paliers 6-10 (2026-11-10, faits vérifiés le 09/11) */
 TRAINING_QUESTIONS.push(
-    { id: 19151, theme: "Sport", d: 1.0, q: "Quel carton l’arbitre de football sort-il pour expulser un joueur ?", a: ["Le carton rouge", "Carton rouge", "Rouge"], exp: "Deux cartons jaunes valent aussi un rouge." },
-    { id: 19152, theme: "Sport", d: 1.1, q: "Quel carton l’arbitre sort-il pour un simple avertissement ?", a: ["Le carton jaune", "Carton jaune", "Jaune"], exp: "Inventé par l’arbitre anglais Ken Aston, pour la Coupe du monde 1970." },
+    { id: 19151, theme: "Sport", d: 1.0, q: "De quelle couleur est le carton qui fait expulser un joueur au football ?", a: ["Le carton rouge", "Carton rouge", "Rouge"], exp: "Deux cartons jaunes valent aussi un rouge." },
+    { id: 19152, theme: "Sport", d: 1.1, q: "De quelle couleur est le carton d’un simple avertissement au football ?", a: ["Le carton jaune", "Carton jaune", "Jaune"], exp: "Inventé par l’arbitre anglais Ken Aston, pour la Coupe du monde 1970." },
     { id: 19153, theme: "Sport", d: 1.2, q: "Quel objet l’arbitre utilise-t-il pour arrêter le jeu ?", a: ["Le sifflet", "Sifflet"], exp: "Les arbitres de football l’utilisent depuis la fin du XIXe siècle." },
     { id: 19154, theme: "Sport", d: 1.3, q: "Comment appelle-t-on le geste de faire passer le ballon entre les jambes d’un adversaire ?", a: ["Un petit pont", "Petit pont"], exp: "Le geste technique qui humilie le plus le défenseur." },
     { id: 19155, theme: "Sport", d: 1.4, q: "Comment appelle-t-on un tir qui entre dans l’angle supérieur du but ?", a: ["La lucarne", "Lucarne"], exp: "« En pleine lucarne ! », crient les commentateurs." },

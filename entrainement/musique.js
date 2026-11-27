@@ -275,7 +275,7 @@ TRAINING_QUESTIONS.push(
     { id: 14254, theme: "Musique", d: 2.6, q: "Quelle chanson de 1985 réunit Michael Jackson, Lionel Richie et des dizaines de stars pour l’Afrique ?", a: ["We Are the World"], exp: "Enregistrée par USA for Africa." },
     { id: 14255, theme: "Musique", d: 2.3, q: "Quel groupe suédois a chanté « The Final Countdown » en 1986 ?", a: ["Europe"], exp: "Son riff de synthé est joué dans tous les stades." },
     { id: 14256, theme: "Musique", d: 2.5, q: "Quel groupe norvégien a chanté « Take On Me », avec un clip en dessin au crayon ?", a: ["A-ha", "Aha"], exp: "1985 ; le clip mêle film et dessin animé." },
-    { id: 14257, theme: "Musique", d: 2.6, q: "Quel groupe de Jon Bon Jovi a chanté « Livin’ on a Prayer » ?", a: ["Bon Jovi"], exp: "1986, sur l’album « Slippery When Wet »." },
+    { id: 14257, theme: "Musique", d: 2.6, q: "Quel groupe américain a chanté « Livin’ on a Prayer » en 1986 ?", a: ["Bon Jovi"], exp: "1986, sur l’album « Slippery When Wet »." },
     { id: 14258, theme: "Musique", d: 2.8, q: "Quel groupe américain chante « Africa » (« I bless the rains down in Africa ») ?", a: ["Toto"], exp: "1982 ; redevenu culte grâce à Internet." },
     { id: 14259, theme: "Musique", d: 2.6, q: "Quel groupe de Sting a chanté « Every Breath You Take » et « Roxanne » ?", a: ["The Police", "Police"], exp: "Trio britannique formé en 1977." },
     { id: 14260, theme: "Musique", d: 2.2, q: "Quel tube de Gala (1996) chante « Na na na… » et est repris dans les stades ?", a: ["Freed from Desire"], exp: "Chanteuse italienne ; repris par les supporters dès 2016." },
