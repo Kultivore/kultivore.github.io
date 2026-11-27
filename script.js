@@ -7964,7 +7964,8 @@ function setupQPct() {
 function renderQPct(q, ok) {
     const tag = $('fbPct');
     if (!QPCT_ON || !tag) return;
-    const pct = ['sprint', 'placement'].includes(state.mode) ? null : qPct(q.id);
+    let pct = ['sprint', 'placement'].includes(state.mode) ? null : qPct(q.id);
+    if (!ok && pct != null && pct >= 50) pct = null;   // ratée alors que la plupart la trouvent : on ne l'écrit pas (ça ferait la leçon)
     $('fbFoot').classList.toggle('has-pct', pct != null);
     tag.hidden = pct == null;
     if (pct == null) return;
