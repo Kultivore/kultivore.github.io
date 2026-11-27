@@ -64,7 +64,7 @@ TRAINING_QUESTIONS.push(
 /* Lots 2 et 3 (2026-10-18) : questions modernes et classiques */
 TRAINING_QUESTIONS.push(
     // Lot 2
-    { id: 18051, theme: "Gastronomie", d: 1.0, q: "Quel pain long et croustillant est inscrit au patrimoine de l’Unesco depuis 2022 ?", a: ["La baguette", "Baguette"], exp: "Environ 6 milliards de baguettes sont vendues chaque année en France." },
+    { id: 18051, theme: "Gastronomie", d: 1.0, q: "Quel pain long et croustillant est inscrit au patrimoine de l’Unesco depuis 2022 ?", a: ["La baguette", "Baguette", "Baguette de pain"], exp: "Environ 6 milliards de baguettes sont vendues chaque année en France." },
     { id: 18052, theme: "Gastronomie", d: 1.0, q: "Quel aliment fabriqué par les abeilles peut se conserver des milliers d’années ?", a: ["Le miel", "Miel"], exp: "On en a retrouvé, encore mangeable, dans des tombes égyptiennes." },
     { id: 18053, theme: "Gastronomie", d: 1.2, q: "Quel gâteau mange-t-on à l’Épiphanie, en espérant trouver la fève ?", a: ["La galette des rois", "Galette des rois", "Galette", "Couronne des rois"], exp: "Celui qui trouve la fève devient roi ou reine." },
     { id: 18054, theme: "Gastronomie", d: 1.2, q: "Quel plat savoyard associe pommes de terre, lardons, oignons et reblochon ?", a: ["La tartiflette", "Tartiflette"], exp: "Une recette inventée dans les années 1980 pour vendre plus de reblochon." },
@@ -280,7 +280,7 @@ TRAINING_QUESTIONS.push(
     { id: 18259, theme: "Gastronomie", d: 3.8, q: "Quels petits rouleaux japonais entourés d’algue nori contiennent riz et poisson ?", a: ["Les makis", "Maki", "Makis"], exp: "Le californien (california roll) a le riz à l’extérieur." },
     { id: 18262, theme: "Gastronomie", d: 3.9, q: "Quel sucre roux de canne, en cristaux, sucre souvent les crêpes ?", a: ["La cassonade", "Cassonade"], exp: "Différente de la vergeoise, faite de betterave." },
     { id: 18263, theme: "Gastronomie", d: 4.0, q: "Comment appelle-t-on les fins cristaux de sel récoltés à la surface des marais salants ?", a: ["La fleur de sel", "Fleur de sel"], exp: "Celle de Guérande est la plus célèbre." },
-    { id: 18264, theme: "Gastronomie", d: 2.5, q: "Comment appelle-t-on la tarte au citron recouverte d’un nuage blanc doré au chalumeau ?", a: ["La tarte au citron meringuée", "Tarte au citron meringuée", "Citron meringuée", "Meringuée", "Tarte citron meringuée"], exp: "Une meringue italienne, faite avec un sirop chaud." },
+    { id: 18264, theme: "Gastronomie", d: 2.5, q: "Comment appelle-t-on la tarte au citron recouverte d’un nuage blanc doré au chalumeau ?", a: ["La tarte au citron meringuée", "Tarte au citron meringuée", "Citron meringuée", "Tarte citron meringuée"], exp: "Une meringue italienne, faite avec un sirop chaud." },
     { id: 18265, theme: "Gastronomie", d: 2.0, q: "Quel nœud de pain salé, en forme de cœur, est le symbole des boulangers alsaciens ?", a: ["Le bretzel", "Bretzel", "Bretzels"], exp: "Trempé dans une solution de bicarbonate avant cuisson." },
     { id: 18266, theme: "Gastronomie", d: 2.6, q: "Quel gâteau roulé viennois en pâte très fine est garni de pommes et de cannelle ?", a: ["Le strudel", "Strudel", "Apfelstrudel"], exp: "La pâte doit être si fine qu’on peut lire un journal au travers." },
     { id: 18267, theme: "Gastronomie", d: 1.7, q: "Quel nom italien donne-t-on à la crème glacée artisanale ?", a: ["Le gelato", "Gelato", "Gelati"], exp: "Plus dense et moins grasse que la glace américaine." },

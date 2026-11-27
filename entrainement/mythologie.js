@@ -66,7 +66,7 @@ TRAINING_QUESTIONS.push(
     // Lot 2
     { id: 22051, theme: "Mythologie", d: 1.0, q: "Quelle marque de sport porte le nom de la déesse grecque de la victoire ?", a: ["Nike", "Niké"], exp: "Son logo, le « swoosh », évoque l’aile de la déesse." },
     { id: 22052, theme: "Mythologie", d: 1.0, q: "Quel garçon a volé trop près du Soleil avec des ailes de cire ?", a: ["Icare"], exp: "La cire a fondu et il est tombé dans la mer." },
-    { id: 22053, theme: "Mythologie", d: 1.2, q: "Quel oiseau légendaire renaît de ses cendres ?", a: ["Le phénix", "Phénix", "Phenix"], exp: "Il apparaît aussi dans Harry Potter : Fumseck, l’oiseau de Dumbledore." },
+    { id: 22053, theme: "Mythologie", d: 1.2, q: "Quel oiseau légendaire renaît de ses cendres ?", a: ["Le phénix", "Phénix", "Phenix", "Phoenix", "Phœnix"], exp: "Il apparaît aussi dans Harry Potter : Fumseck, l’oiseau de Dumbledore." },
     { id: 22054, theme: "Mythologie", d: 1.2, q: "Quel dieu romain des rois correspond au grec Zeus ?", a: ["Jupiter"], exp: "La plus grande planète porte son nom." },
     { id: 22055, theme: "Mythologie", d: 1.3, q: "Combien de travaux Héraclès a-t-il dû accomplir ?", a: ["12", "Douze"], exp: "Du lion de Némée aux pommes d’or des Hespérides." },
     { id: 22056, theme: "Mythologie", d: 1.4, q: "Quel petit dieu romain de l’amour, armé d’un arc, correspond à Éros ?", a: ["Cupidon", "Cupid"], exp: "On le voit partout à la Saint-Valentin." },

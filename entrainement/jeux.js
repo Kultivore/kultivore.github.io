@@ -10,7 +10,7 @@ TRAINING_QUESTIONS.push(
     { id: 16007, theme: "Jeux", d: 1.2, q: "Dans quel jeu forme-t-on des mots croisés avec des lettres qui rapportent des points ?", a: ["Le Scrabble", "Scrabble"], exp: "Le « mot compte triple » peut changer une partie." },
     { id: 16008, theme: "Jeux", d: 1.2, q: "Dans quel jeu faut-il aligner quatre jetons de sa couleur ?", a: ["Puissance 4", "Puissance quatre", "Connect Four", "Connect 4"], exp: "Les jetons tombent dans une grille verticale." },
     { id: 16009, theme: "Jeux", d: 1.2, q: "Quel jeu de boules se joue avec un petit « cochonnet » ?", a: ["La pétanque", "Pétanque", "Petanque", "Les boules"], exp: "Née à La Ciotat en 1907." },
-    { id: 16010, theme: "Jeux", d: 1.4, q: "Quelle pièce des échecs se déplace en forme de L ?", a: ["Le cavalier", "Cavalier"], exp: "La seule pièce qui peut sauter par-dessus les autres." },
+    { id: 16010, theme: "Jeux", d: 1.4, q: "Quelle pièce des échecs se déplace en forme de L ?", a: ["Le cavalier", "Cavalier", "Cheval"], exp: "La seule pièce qui peut sauter par-dessus les autres." },
 
     // Palier 2
     { id: 16011, theme: "Jeux", d: 1.4, q: "Quel jeu de cartes se joue seul, livré pendant des années avec Windows ?", a: ["Le Solitaire", "Solitaire", "La réussite", "Patience"], exp: "Il servait aussi à apprendre à utiliser la souris." },
@@ -316,7 +316,7 @@ TRAINING_QUESTIONS.push(
     { id: 16303, theme: "Jeux", d: 2.9, q: "Que faisaient les joueurs dans une cartouche de jeu qui ne marchait pas ?", a: ["Ils soufflaient dedans", "Souffler", "Souffler dedans", "Souffler dans la cartouche"], exp: "Nintendo a dit que ça risquait plutôt d’abîmer les contacts." },
     { id: 16304, theme: "Jeux", d: 2.9, q: "Comment appelle-t-on un tuyau secret de Mario qui fait sauter plusieurs mondes d’un coup ?", a: ["Une warp zone", "Warp zone", "Zone de distorsion"], exp: "Dans le monde 1-2 de « Super Mario Bros »." },
     { id: 16305, theme: "Jeux", d: 3.0, q: "Quel champignon vert de Mario donne une vie supplémentaire ?", a: ["Le 1-UP", "1-UP", "1UP", "Champignon 1-UP"], exp: "Le rouge, lui, fait grandir." },
-    { id: 16306, theme: "Jeux", d: 3.0, q: "Comment appelle-t-on la passion pour les vieux jeux vidéo et consoles ?", a: ["Le retrogaming", "Retrogaming", "Rétrogaming"], exp: "Des mini-consoles rééditées comme la NES Mini en vivent." },
+    { id: 16306, theme: "Jeux", d: 3.0, q: "Comment appelle-t-on la passion pour les vieux jeux vidéo et consoles ?", a: ["Le retrogaming", "Retrogaming", "Rétrogaming", "Rétro gaming", "Retro gaming", "Rétro-gaming", "Jeu rétro", "Jeux rétro"], exp: "Des mini-consoles rééditées comme la NES Mini en vivent." },
     { id: 16307, theme: "Jeux", d: 3.1, q: "Quel ingénieur de Nintendo a inventé la croix directionnelle et la Game Boy ?", a: ["Gunpei Yokoi", "Yokoi"], exp: "Il l’avait d’abord conçue pour les Game & Watch." },
     { id: 16308, theme: "Jeux", d: 3.2, q: "Comment appelle-t-on un jeu vendu inachevé, que les joueurs testent avant sa sortie officielle ?", a: ["L’accès anticipé", "Early access", "Accès anticipé"], exp: "« Early access » sur Steam." }
 );

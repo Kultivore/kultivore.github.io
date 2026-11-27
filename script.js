@@ -596,6 +596,9 @@ function typoCost(t, a) {
 function soundKey(w) {
     let s = w;
     s = s.replace(/([aeiou])ill/g, '$1y');   // 27/11 : « -ill- » mouillé = « y » (cancoillotte / cancoyote, paille / paye)
+    // 27/11 (passe générale) : œu = eu (« œuf » / « euf »), -tion = -sion (pas « x muet » : « index » passait pour « Inde »),
+    // sons anglais courants dans les noms : oo = ou (« Hollywood » / « Hollywoud »), ee = i (« Greenwich » / « Grinwich »)
+    s = s.replace(/oeu/g, 'eu').replace(/tion/g, 'sion').replace(/oo/g, 'ou').replace(/ee/g, 'i');
     s = s.replace(/eaux?$/, 'o').replace(/eau/g, 'o').replace(/au/g, 'o');
     s = s.replace(/ph/g, 'f').replace(/pf/g, 'f').replace(/th/g, 't').replace(/rh/g, 'r');
     s = s.replace(/tch/g, 'ch').replace(/sch/g, 'ch').replace(/sh/g, 'ch');
