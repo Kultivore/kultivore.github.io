@@ -534,7 +534,19 @@ const JUDGE_VERSION = 2;
 const judgeRaw = (input, rawAnswers, question = '') => (JUDGE_VERSION === 1 ? judgeV1 : judgeV2)(input, rawAnswers, question);
 // 17/11 : apostrophe oubliée (« linde », « anatomie dune chute ») = réponse sans apostrophe, essayée seulement si c'était faux
 const APOS_RE = /['’‘ʼ`´]/g;
+// 27/11 (signalement « darius 1 ») : souverain « Ier / Ire / 1er / 1re » → « 1 » et « I » acceptés aussi (« Darius 1 », « Darius I »,
+// « François 1 ») ; « premier » l'était déjà. Seulement après un nom propre (majuscule), essayé seulement si c'était faux.
+const REGNAL_ONE = /(\p{Lu}[\p{L}’'-]*\s+)(?:Ier|Ire|Ière|1er|1re|1ère)(?![\p{L}\d])/u;
 function judge(input, rawAnswers, question = '') {
+    const v0 = judgeOne(input, rawAnswers, question);
+    if (v0 !== 'wrong') return v0;
+    const firsts = rawAnswers.filter(r => typeof r === 'string' && REGNAL_ONE.test(r));
+    if (!firsts.length) return v0;
+    const alt = firsts.flatMap(r => [r.replace(REGNAL_ONE, '$11'), r.replace(REGNAL_ONE, '$1I')]);
+    const w = judgeOne(input, alt, question);
+    return w === 'wrong' ? v0 : w;
+}
+function judgeOne(input, rawAnswers, question = '') {
     const v = judgeRaw(input, rawAnswers, question);
     if (v !== 'wrong' || /['’‘ʼ`´]/.test(String(input))) return v;
     const glued = rawAnswers.filter(r => typeof r === 'string' && /['’]/.test(r)).map(r => r.replace(APOS_RE, ''));
