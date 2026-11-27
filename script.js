@@ -7940,6 +7940,38 @@ function kultiEndLine(mood, stamp) {
 
 // bouton « J'avais juste » : retiré dans l'appli Android (18/11), gardé sur le site (demande de l'utilisateur, 18/11)
 const FORCE_ON = !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+/* 27/11 (BAC À SABLE, QPCT_ON ; pour tous : true) : part des joueurs qui trouvent la question du 1er coup, montrée APRÈS la
+   réponse, sur la ligne de « Signaler » (le bandeau ne grandit pas) et dans la fiche de l'encyclopédie. Chiffres : fichier
+   statique pourcentages.json (id → %, seulement les questions assez jouées), refait à la main depuis l'export de
+   question_stats : aucune requête Supabase en plus. Fichier absent ou illisible : rien ne s'affiche. */
+const QPCT_ON = BAC;
+let QPCT = null;
+function loadQPct() {
+    if (!QPCT_ON || QPCT) return;
+    QPCT = {};
+    fetch('pourcentages.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).then(j => { if (j && j.p) QPCT = j.p; }).catch(() => {});
+}
+const qPct = id => (QPCT_ON && QPCT && Number.isFinite(QPCT[id]) ? QPCT[id] : null);
+function setupQPct() {
+    if (!QPCT_ON) return;
+    const rb = $('reportBtn'), foot = document.createElement('div'), tag = document.createElement('span');
+    foot.id = 'fbFoot'; foot.className = 'fb-foot';
+    tag.id = 'fbPct'; tag.className = 'fb-pct'; tag.hidden = true;
+    rb.replaceWith(foot); foot.append(tag, rb);
+    rb.innerHTML = '🚩 Signaler<span class="rl-long"> cette question</span>';
+    setTimeout(loadQPct, 3000);
+}
+function renderQPct(q, ok) {
+    const tag = $('fbPct');
+    if (!QPCT_ON || !tag) return;
+    const pct = ['sprint', 'placement'].includes(state.mode) ? null : qPct(q.id);
+    $('fbFoot').classList.toggle('has-pct', pct != null);
+    tag.hidden = pct == null;
+    if (pct == null) return;
+    const rare = ok && pct <= 25;   // question que peu de joueurs trouvent, et toi oui : on le souligne
+    tag.classList.toggle('is-rare', rare);
+    tag.textContent = rare ? `🎯 Seuls ${pct} % trouvent !` : `👥 ${pct} % ont trouvé`;
+}
 function showFeedback(verdict, skipped) {
     const q = state.current.q;
     const ok = verdict !== 'wrong';
@@ -7985,6 +8017,7 @@ function showFeedback(verdict, skipped) {
     // 18/11 : « J'avais juste » RETIRÉ partout (décision de l'utilisateur : triche trop facile). Une réponse refusée à tort
     // se signale avec « 🚩 Signaler cette question ». Pour le remettre : FORCE_ON = true.
     $('forceBtn').hidden = !FORCE_ON || ok || skipped || strict;
+    renderQPct(q, ok && !skipped);
 
     box.classList.add('show');
     document.body.classList.add('has-feedback');
@@ -13920,6 +13953,7 @@ function init() {
     armBackGuard();   // touche retour du téléphone gérée par l'appli
     setupNav6();      // 15/11 : 6 onglets (bac à sable) — avant bindEvents, pour que le nouvel onglet réponde
     bindEvents();
+    setupQPct();      // 27/11 : « 👥 62 % ont trouvé » sur la ligne de « Signaler » (bac à sable)
     readInviteFromUrl();                                    // lien d'invitation « ?ami=pseudo »
     flushReports();                                         // signalements restés en attente
     cloudInit();                                            // compte connecté ? synchronisation
