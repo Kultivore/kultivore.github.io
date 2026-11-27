@@ -7959,6 +7959,7 @@ function setupQPct() {
     tag.id = 'fbPct'; tag.className = 'fb-pct'; tag.hidden = true;
     rb.replaceWith(foot); foot.append(tag, rb);
     rb.innerHTML = '🚩 Signaler<span class="rl-long"> cette question</span>';
+    $('feedback').classList.add('has-qpct');   // « Continuer » centré entre l'explication et cette ligne (style.css)
     setTimeout(loadQPct, 3000);
 }
 function renderQPct(q, ok) {

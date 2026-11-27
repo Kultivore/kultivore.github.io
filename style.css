@@ -5841,3 +5841,8 @@ body.acct-lost .brand::after { content: '!'; position: absolute; left: 22px; top
 .fb-pct.is-rare { background: #ffd84d; color: #5a3d00; }
 .fb-foot.has-pct .report-link { padding-right: 0; }
 @media (max-width: 380px) { .fb-foot.has-pct .rl-long { display: none; } }
+/* « Continuer » centré entre l'explication et la ligne du bas : 8 px pris au-dessus (16 → 8) et rendus en dessous (ombre du bouton comprise) → même hauteur totale */
+@media (max-width: 559px) {
+    .feedback.has-qpct .feedback-inner { gap: 8px; }
+    .feedback.has-qpct .fb-foot { margin-top: 8px; }
+}
