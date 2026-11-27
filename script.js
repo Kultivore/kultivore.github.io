@@ -13296,6 +13296,9 @@ function bindEvents() {
     $('coinChip').addEventListener('click', () => showScreen('shop'));
     $('dropChip').addEventListener('click', openDropsModal);
     $('eventBanner').addEventListener('click', () => { showScreen('challenges'); setChallengesTab('event'); });
+    // 27/11 : le bandeau était DANS la page du Parcours → pendant l'animation d'arrivée sur la page, il glissait avec elle et
+    // n'apparaissait qu'une seconde après. Sorti de la page : vraiment fixé à l'écran, comme la barre du haut.
+    document.body.append($('eventBanner'));
     window.addEventListener('resize', updateEventBanner);
     window.addEventListener('resize', () => { if (PAL_ELEC) drawMapTrail(); });   // pointillés du parcours (bac à sable)
     $('missionsRow').addEventListener('click', openMissionsModal);
